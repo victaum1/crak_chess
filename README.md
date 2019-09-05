@@ -2,7 +2,7 @@ crak_chess
 # README #
 
 ### Motivation ###
-This projec is a programming exercise where it is going to be
+This project is a programming exercise where it is going to be
 implemented a concrete case. The particular aplication is a simple
 chess engine. The language to use is "Haskell", like a prototyping
 squeme.
@@ -29,7 +29,7 @@ will be configured tests with "QuickCheck".
 
 * Deployment
 The target will be to build a standalone binary. This one should be
-comunicating with some chess protocol (uci/xboard). 
+communicating with some chess protocol (uci/xboard). 
 
 * Who do I talk to?
 With the repo owner or admin:
