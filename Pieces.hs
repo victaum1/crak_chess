@@ -1,4 +1,4 @@
-module Pieces where
+module Pieces (Ptype(..),Side(..), Piece(..)) where
 
 data Ptype = Pawn | Knight | Bishop | Rook | Queen | King
              deriving (Eq, Show)
@@ -8,9 +8,9 @@ data Side =  White | Black
 
 data Piece = Piece {
                       pieceSide   :: Side
-                    , getPtype  :: Ptype
+                    , pieceType  :: Ptype
                     } deriving (Eq)
 
 instance Show Piece where
- show (Piece a b) = show a ++ show b
+  show (Piece a b) = show a ++ show b
 

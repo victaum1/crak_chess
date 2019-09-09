@@ -1,4 +1,4 @@
-module Squares where
+module Squares (File(..), Rank(..), Square(..)) where
 
 data File = A_F | B_F | C_F | D_F | E_F | F_F | G_F | H_F
   deriving (Show,Eq,Ord)

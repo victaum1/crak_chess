@@ -1,4 +1,4 @@
-module Board where
+module Board (Pos(..), Board) where
 
 import Pieces
 import Squares
