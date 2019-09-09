@@ -23,7 +23,7 @@ Platform". In the future it could be used a building tool like "Cabal".
 * Dependencies
 The code will be based in the 8.0.2 version of "ghc".
 
-* How the test will be made?
+* How the tests will be made?
 the unit tests will be made using the package "HUnit". In the future
 will be configured tests with "QuickCheck".
 
