@@ -1,4 +1,10 @@
-module Pieces (PieceType(..), Side(..), Piece(..)) where
+module Pieces (
+  PieceType(..),
+  Side(..),
+  Piece(..),
+  showPiece,
+  readPiece
+  ) where
 
 import Data.Maybe
 import Data.Char (toUpper, toLower, isUpper)
