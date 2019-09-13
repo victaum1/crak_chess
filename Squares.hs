@@ -1,7 +1,9 @@
-module Squares (File(..), Rank(..), Square(..), intToSquare) where
+module Squares (File(..), Rank(..), Square(..)
+  , intToSquare, pSquare) where
 
 import Data.Char (toUpper)
 import Data.Maybe
+import Parsing
 
 data File = A_F | B_F | C_F | D_F | E_F | F_F | G_F | H_F
   deriving (Show,Eq,Ord)
@@ -57,4 +59,10 @@ makeSquare c1 c2 = if (isNothing (mkF c1) || isNothing (mkR c2))
 readSquare :: String -> Maybe Square
 readSquare str = if (length str < 2)  then Nothing else makeSquare  (str!!0)
  (str!!1)
+
+pSquare :: Parser (Maybe Square)
+pSquare = P(\inp -> case inp of
+                      [] -> []
+                      ('-':cs) -> [(Nothing,cs)]
+                      (f:r:cs)->  [(readSquare ([f]++[r]),cs)])
 
