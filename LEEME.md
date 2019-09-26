@@ -7,8 +7,8 @@ implementará un caso concreto. La aplicación en particular es un motor
 de ajedrez en principio simple. El lenguaje a utilizar es "Haskell" a
 modo de prototipado.
 
-* version 0.1.0
-El versionado que se adoptará será el de (https://semver.org/).
+* version 0.9.1.0
+El versionado que se adoptará será el de (https://pvp.haskell.org/).
 
 * [Aprende Markdown] (https://www.markdowntutorial.com/)
 
@@ -17,8 +17,8 @@ El versionado que se adoptará será el de (https://semver.org/).
 * Resumen de la preparación previa:
 
 Se utilizará el compilador ghc/ghci, Glascow Haskell Compiler. Por lo
-tanto se recomienda bajar la "Haskell Platform". En un futuro se
-podría utilizar una herramienta de construcción como "Cabal".
+tanto se recomienda bajar la "Haskell Platform". Se estará utilizando una
+herramienta de construcción como "Cabal".
 
 * Dependencias
 El código estará basado en la versión 8.0.2 de ghc.
