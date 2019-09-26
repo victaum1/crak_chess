@@ -1,15 +1,18 @@
 module Main where
 
+import Data.Maybe
 import System.IO
+import System.Console.Readline
 import Adapter
 
 main_loop = do
-              line <- getLine
-              case line of
-                "xboard" -> xboard_loop
-                "uci"    -> uci_loop
-                "quit"   -> return ()
-                otherwise -> do
+              maybeline <- readline ""
+              case maybeline of
+                Nothing       -> return () -- EOF / ctrl-d
+                Just "quit"   -> return ()
+                Just "xboard" -> xboard_loop
+                Just "uci"    -> uci_loop
+                Just line     -> do
                    putStrLn $ "Error (unknown command) : " ++ line
                    do main_loop
               

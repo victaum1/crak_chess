@@ -22,7 +22,7 @@ executable crak-chess
   other-modules: Squares, Pieces, Game, Engine, Adapter,
     Evaluate, Parsing
     -- other-extensions:
-  build-depends:       base >=4.9 && <4.10
+  build-depends:       readline >=1.0.3.0 && <2, base >=4.9 && <4.10
  
   hs-source-dirs: src
   default-language:    Haskell2010
