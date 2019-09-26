@@ -4,7 +4,7 @@ cabal-version:       >=1.10
 -- http://haskell.org/cabal/users-guide/
 
 name:                crak-chess
-version:             0.9.0.0
+version:             0.9.1.0
 synopsis: Simple chess engine in haskell by V., Manotas.
 -- description:
 -- bug-reports:
@@ -18,8 +18,8 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md, README.md, LEEME.md
 
 executable crak-chess
-  main-is:             Main.hs
-  other-modules: Squares, Pieces, Game, Engine, Adapter,
+  main-is:  Main.hs
+  other-modules:  Squares, Pieces, Game, Engine, Adapter,
     Evaluate, Parsing
     -- other-extensions:
   build-depends:       readline >=1.0.3.0 && <2, base >=4.9 && <4.10

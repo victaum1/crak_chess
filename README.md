@@ -7,8 +7,9 @@ implemented a concrete case. The particular application is a simple
 chess engine. The language to use is "Haskell", like a prototyping
 scheme.
 
-* version 0.1.0
-the versioning adopted will be the one like (https://semver.org/).
+* version 0.9.1.0
+the versioning adopted will be the one like
+(https://semver.org://pvp.haskell.org/).
 
 * [Learn Markdown] (https://www.markdowntutorial.com/)
 
@@ -18,13 +19,13 @@ the versioning adopted will be the one like (https://semver.org/).
 
 We will be using the "ghc/ghci" compiler, or "Glascow Haskell
 Compiler". Therefore it is recommended to download the "Haskell
-Platform". In the future it could be used a building tool like "Cabal".
+Platform". Will be using "Cabal" as building tool.
 
 * Dependencies
 The code will be based in the 8.0.2 version of "ghc".
 
 * How the tests will be made?
-the unit tests will be made using the package "HUnit". In the future
+The unit tests will be made using the package "HUnit". In the future
 will be configured tests with "QuickCheck".
 
 * Deployment
