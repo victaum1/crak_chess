@@ -3,9 +3,9 @@ crak_chess
 
 ### Motivation ###
 This project is a programming exercise where it is going to be
-implemented a concrete case. The particular aplication is a simple
+implemented a concrete case. The particular application is a simple
 chess engine. The language to use is "Haskell", like a prototyping
-squeme.
+scheme.
 
 * version 0.1.0
 the versioning adopted will be the one like (https://semver.org/).

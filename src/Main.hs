@@ -1,3 +1,5 @@
+module Main where
+
 import System.IO
 import Adapter
 
@@ -8,7 +10,7 @@ main_loop = do
                 "uci"    -> uci_loop
                 "quit"   -> return ()
                 otherwise -> do
-                   putStrLn "Error (unknown command) : " ++ line
+                   putStrLn $ "Error (unknown command) : " ++ line
                    do main_loop
               
 
