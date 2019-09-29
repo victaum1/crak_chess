@@ -53,9 +53,9 @@ checkSquare (p:ps) sq | (getSquare p) == sq = Just (getPiece p)
                       | otherwise = checkSquare ps sq
 
 subs :: Char -> Char -> String -> String
+subs _  _ [] = []
 subs ic oc (c:cs) | c == ic = oc:(subs ic oc cs)
                   | otherwise = c:(subs ic oc cs)
-subs _  _ [] = []
 
 showFENline :: String -> String
 showFENline = (showFENline' . subs '/' '\n') 
@@ -64,12 +64,12 @@ showFENline' :: String -> String
 showFENline' [] = []
 showFENline' (c:cs) | isDigit c = (take (digitToInt c) $ cycle ['.']) ++
   (showFENline' cs)
-                   | otherwise = c:(showFENline' cs)
+                    | otherwise = c:(showFENline' cs)
 
 countDots :: String -> Int -> Int
+countDots [] n = n
 countDots (c:cs) n | c == '.' = countDots cs (n+1)
                    | otherwise = n
-countDots [] n = n 
 
 packFENline :: String -> String
 packFENline [] = []

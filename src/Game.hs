@@ -3,28 +3,26 @@ module Game (Game(..), fen2Game, game2FEN, initGame) where
 import Data.Maybe
 import Squares
 import Board
+import Pieces(Side(..))
 import Parsing
 
 initFEN = initBoardFEN ++ " w KQkq - 0 1"
 
-data Turn = First | Second
-  deriving (Eq,Show)
-
 data Game = Game {
     getBoard  :: Board
-  , getTurn   :: Turn
+  , getTurn   :: Side
   , getCastle :: Int
   , getEpSq   :: Maybe Square
   , getNPlys   :: Int
   , getNMoves  :: Int
   } deriving Show
 
-pTurn :: Parser Turn
+pTurn :: Parser Side
 pTurn = P(\inp -> case inp of
-                      [] -> []
-                      (c:cs) -> if c == 'w' then [(First,cs)]
-                                else if c == 'b' then [(Second,cs)]
-                                else []) 
+  [] -> []
+  (c:cs) -> if c == 'w' then [(White,cs)]
+                        else if c == 'b' then [(Black,cs)]
+                        else []) 
 
 castleChars = "KQkq"
 castleCodes = [1,2,4,8]
@@ -94,7 +92,7 @@ showCflags n | isInTable = [findChar]
 
 game2FEN :: Game -> String
 game2FEN g = unwords [board2FEN $ getBoard $ g,turn,cf,sq,plys,moves] 
-            where turn = if (getTurn g) == First then "w" else "b"
+            where turn = if (getTurn g) == White then "w" else "b"
                   plys = show $ getNPlys g
                   cf = showCflags $ getCastle g
                   sq = if isJust (getEpSq g) then show (fromJust(getEpSq g))
