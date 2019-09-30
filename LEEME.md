@@ -7,7 +7,7 @@ implementará un caso concreto. La aplicación en particular es un motor
 de ajedrez en principio simple. El lenguaje a utilizar es "Haskell" a
 modo de prototipado.
 
-* version 0.0.9.0
+* versión 0.0.9.0
 El versionado que se adoptará será el de (https://pvp.haskell.org/).
 
 * [Aprende Markdown] (https://www.markdowntutorial.com/)
@@ -33,5 +33,5 @@ poder comunicarse con algún protocolo de ajedrez. (uci/xboard).
 
 * ¿Con quién me comunico para preguntar o colaborar?
 Con el dueño del repositorio o administrador:
-(victorma31@gmail.com)
+(mailto:victorma31@gmail.com)
 
