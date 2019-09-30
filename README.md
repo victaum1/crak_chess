@@ -7,9 +7,9 @@ implemented a concrete case. The particular application is a simple
 chess engine. The language to use is "Haskell", like a prototyping
 scheme.
 
-* version 0.9.1.0
+* version 0.0.9.0
 the versioning adopted will be the one like
-(https://semver.org://pvp.haskell.org/).
+(https://pvp.haskell.org/).
 
 * [Learn Markdown] (https://www.markdowntutorial.com/)
 

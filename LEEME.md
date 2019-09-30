@@ -7,7 +7,7 @@ implementará un caso concreto. La aplicación en particular es un motor
 de ajedrez en principio simple. El lenguaje a utilizar es "Haskell" a
 modo de prototipado.
 
-* version 0.9.1.0
+* version 0.0.9.0
 El versionado que se adoptará será el de (https://pvp.haskell.org/).
 
 * [Aprende Markdown] (https://www.markdowntutorial.com/)
