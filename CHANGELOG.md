@@ -1,6 +1,6 @@
 # Revision history for crak-chess
 
-## 0.0.9.0 -- 2019-08-25 
+## 0.0.9.0 -- 2019-08-29 
 
 * Adding Moves : Also parsing!
 ------------------------
