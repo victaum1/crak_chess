@@ -1,4 +1,4 @@
-module Board (Pos(..), Board, initBoardFEN, fen2Board,
+module Board (Board, Pos(..), initBoardFEN, fen2Board,
   board2FEN, pBoard) where
 
 import Pieces

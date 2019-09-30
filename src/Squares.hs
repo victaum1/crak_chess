@@ -60,9 +60,31 @@ readSquare :: String -> Maybe Square
 readSquare str = if (length str < 2)  then Nothing else makeSquare  (str!!0)
  (str!!1)
 
+pFile :: Parser (Maybe File)
+pFile = P(
+         \inp -> case inp of
+                 [] -> []
+                 (f:cs) -> if (readCFile f == Nothing) then
+                             [(Nothing, cs)]
+                           else [(readCFile f,cs)]
+         )
+
+pRank :: Parser (Maybe Rank)
+pRank = P(
+         \inp -> case inp of
+                 [] -> []
+                 (r:cs) -> if (readRank r == Nothing) then [(Nothing,cs)]
+                           else [(readRank r,cs)]
+         )
+
 pSquare :: Parser (Maybe Square)
-pSquare = P(\inp -> case inp of
-                      [] -> []
-                      ('-':cs) -> [(Nothing,cs)]
-                      (f:r:cs)->  [(readSquare ([f]++[r]),cs)])
+pSquare = do
+            f <- pFile
+            r <- pRank
+            return (Just $ Square (fromJust f) (fromJust r)) 
+--pSquare = P(\inp -> case inp of
+--                      ('-':cs) -> [(Nothing,cs)]
+--                      (f:r:cs)->  [(readSquare ([f]++[r]),cs)]
+--                      otherwise -> [])
+
 

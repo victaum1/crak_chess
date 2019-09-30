@@ -22,7 +22,7 @@ pTurn = P(\inp -> case inp of
   [] -> []
   (c:cs) -> if c == 'w' then [(White,cs)]
                         else if c == 'b' then [(Black,cs)]
-                        else []) 
+                        else [])
 
 castleChars = "KQkq"
 castleCodes = [1,2,4,8]
