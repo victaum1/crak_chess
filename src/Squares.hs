@@ -41,7 +41,7 @@ showRank :: Rank -> Char
 showRank r = fromJust (lookup r chr2Rank')
 
 instance Show Square where
-  show (Square a b) =  [showFile a] ++ [showRank b] 
+  show (Square a b) =  showFile a : [showRank b] 
 
 readCFile :: Char -> Maybe File
 readCFile c = lookup (toUpper c) chr2File 
@@ -50,32 +50,28 @@ readRank :: Char -> Maybe Rank
 readRank c = lookup (toUpper c) chr2Rank 
 
 makeSquare :: Char -> Char -> Maybe Square
-makeSquare c1 c2 = if (isNothing (mkF c1) || isNothing (mkR c2))
+makeSquare c1 c2 = if isNothing (mkF c1) || isNothing (mkR c2)
   then Nothing  else Just (Square (fromJust (mkF c1))
   (fromJust (mkR c2)))
   where mkF = readCFile
         mkR = readRank
 
 readSquare :: String -> Maybe Square
-readSquare str = if (length str < 2)  then Nothing else makeSquare  (str!!0)
+readSquare str = if length str < 2  then Nothing else makeSquare  (head str)
  (str!!1)
 
 pFile :: Parser (Maybe File)
-pFile = P(
-         \inp -> case inp of
-                 [] -> []
-                 (f:cs) -> if (readCFile f == Nothing) then
+pFile = P(\inp -> case inp of 
+              [] -> []
+              (f:cs) -> if isNothing (readCFile f) then
                              [(Nothing, cs)]
-                           else [(readCFile f,cs)]
-         )
+                        else [(readCFile f,cs)])
 
 pRank :: Parser (Maybe Rank)
-pRank = P(
-         \inp -> case inp of
-                 [] -> []
-                 (r:cs) -> if (readRank r == Nothing) then [(Nothing,cs)]
-                           else [(readRank r,cs)]
-         )
+pRank = P(\inp -> case inp of
+             [] -> []
+             (r:cs) -> if isNothing(readRank r) then [(Nothing,cs)]
+                       else [(readRank r,cs)])
 
 pSquare :: Parser (Maybe Square)
 pSquare = do

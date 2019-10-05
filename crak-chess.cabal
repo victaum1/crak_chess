@@ -20,7 +20,7 @@ Extra-source-files:  CHANGELOG.md, README.md, LEEME.md
 Executable crak-chess
   main-is:  Main.hs
   other-modules:  Squares, Pieces, Game, Engine, Adapter,
-    Evaluate, Parsing
+    Evaluate, Parsing, Moves
     -- other-extensions:
   build-depends:       readline >=1.0.3.0 && <2, base >=4.9 && <4.10
  

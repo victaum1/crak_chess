@@ -40,19 +40,19 @@ typeList = zip pieceCharList pieceTypeList
 typeList' = zip pieceTypeList pieceCharList
 
 readPieceType :: Char -> Maybe PieceType
-readPieceType c = if (elem (toUpper c) pieceCharList)
+readPieceType c = if elem (toUpper c) pieceCharList
   then Just(toPt c) else Nothing
   where toPt x = fromJust $ lookup (toUpper x) typeList
 
 readPiece :: Char -> Maybe Piece
-readPiece c =  if (elem (toUpper c) pieceCharList)
+readPiece c =  if elem (toUpper c) pieceCharList
   then Just(Piece (toSide c) (toPt c)) else Nothing
   where
     toPt x = fromJust $ lookup (toUpper x) typeList
-    toSide x = if (isUpper x) then White else Black
+    toSide x = if isUpper x then White else Black
 
 showPiece :: Piece -> Char
-showPiece p = if (pieceSide p == White) then p2char p else
+showPiece p = if pieceSide p == White then p2char p else
   (toLower . p2char) p
   where p2char x = fromJust $ lookup (pieceType x) typeList'
 
@@ -60,7 +60,7 @@ pPieceType :: Parser (Maybe PieceType)
 pPieceType = P(
                \inp -> case inp of
                  []  -> []
-                 (c:cs) -> if (isUpper c) then [((toPt c),(cs++" "))]
-                   else [(Nothing,(c:(cs++" ")))]
+                 (c:cs) -> if isUpper c then [(toPt c,cs++" ")]
+                   else [(Nothing,c:(cs++" "))]
                )
                where toPt = readPieceType
