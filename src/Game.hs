@@ -20,9 +20,9 @@ data Game = Game {
 pTurn :: Parser Side
 pTurn = P(\inp -> case inp of
   [] -> []
-  (c:cs) -> if c == 'w' then [(White,cs)]
-                        else if c == 'b' then [(Black,cs)]
-                        else [])
+  (c:cs) | c == 'w' -> [(White, cs)]
+         | c == 'b' -> [(Black, cs)]
+         | otherwise -> [])
 
 castleChars = "KQkq"
 castleCodes = [1,2,4,8]
@@ -36,24 +36,20 @@ packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
                        | otherwise = Nothing
                   where findCastle = lookup c castleTable
                         already = elem c xs
-                        isInTable = (isJust findCastle) && (not already)
-                        nCastle = n + fromJust (findCastle)
+                        isInTable = isJust findCastle && not already
+                        nCastle = n + fromJust findCastle
 
 pCastle :: Parser Int
 pCastle = do
-            x <- (many letter) <|> (string "-")
+            x <- many letter <|> string "-"
             if x == "-" then return 0
             else return (fromJust $ packCastle x 0 "")
 
 pPlys :: Parser Int
-pPlys = do
-          n <- natural
-          return n
+pPlys = natural
 
 pMoves :: Parser Int
-pMoves = do
-           n <- natural
-           return n
+pMoves = natural
 
 pGame :: Parser Game
 pGame = do
@@ -91,11 +87,10 @@ showCflags n | isInTable = [findChar]
                      findChar = fromJust $ lookup n castleTable'
 
 game2FEN :: Game -> String
-game2FEN g = unwords [board2FEN $ getBoard $ g,turn,cf,sq,plys,moves] 
-            where turn = if (getTurn g) == White then "w" else "b"
+game2FEN g = unwords [board2FEN $ getBoard g,turn,cf,sq,plys,moves] 
+            where turn = if getTurn g == White then "w" else "b"
                   plys = show $ getNPlys g
                   cf = showCflags $ getCastle g
-                  sq = if isJust (getEpSq g) then show (fromJust(getEpSq g))
-                       else  "-"
+                  sq = maybe "-" show $ getEpSq g
                   moves = show $ getNMoves g
 

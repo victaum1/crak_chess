@@ -10,13 +10,12 @@ data Move = Move {
   initSquare:: Maybe Square,
   finalSquare:: Square,
   movedPiece:: Maybe PieceType,
-  promotedPiece:: Maybe(PieceType)
+  promotedPiece:: Maybe PieceType
 } deriving (Eq,Show)
 
 showMove:: Move -> String
-showMove mv = (if mp == Just (Pawn) then "" else show $ mp) ++
-  (init) ++ (final) ++ (if promo == Nothing then "" else
-  (show $ fromJust $ promo))
+showMove mv = (if mp == Just Pawn then "" else show mp) ++
+  init ++ final ++ maybe "" show promo
   where init  = map toLower $ show $ initSquare mv
         final = map toLower $ show $ finalSquare mv
         mp    = movedPiece mv
@@ -33,5 +32,5 @@ pMove = do
           sqf <- pSquare
           return (Just $ Move sqi (fromJust sqf) Nothing Nothing)
 
-readMove:: String ->  (Maybe Move)
+readMove:: String -> Maybe Move
 readMove str = fst $ head $ parse pMove str

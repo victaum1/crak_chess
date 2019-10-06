@@ -14,7 +14,7 @@ main_loop = do
                 Just "uci"    -> uci_loop
                 Just line     -> do
                    putStrLn $ "Error (unknown command) : " ++ line
-                   do main_loop
+                   main_loop
               
 
 
@@ -22,4 +22,4 @@ main :: IO ()
 main = do
          hSetBuffering stdout NoBuffering
          putStrLn "Craken 0.9.x by V. Manotas"
-         do main_loop
+         main_loop
