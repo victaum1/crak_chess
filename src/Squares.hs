@@ -64,23 +64,28 @@ pFile :: Parser (Maybe File)
 pFile = P(\inp -> case inp of 
               [] -> []
               (f:cs) -> if isNothing (readCFile f) then
-                             [(Nothing, cs)]
+                             []
                         else [(readCFile f,cs)])
 
 pRank :: Parser (Maybe Rank)
 pRank = P(\inp -> case inp of
              [] -> []
-             (r:cs) -> if isNothing(readRank r) then [(Nothing,cs)]
+             (r:cs) -> if isNothing(readRank r) then []
                        else [(readRank r,cs)])
+
+pNoSq :: Parser (Maybe Char)
+pNoSq = P(\inp -> case inp of
+             [] -> []
+             (r:cs) -> if r == '-' then [(Nothing,cs)]
+                       else [(Just r, r:cs)])
 
 pSquare :: Parser (Maybe Square)
 pSquare = do
-            f <- pFile
-            r <- pRank
-            return (Just $ Square (fromJust f) (fromJust r)) 
---pSquare = P(\inp -> case inp of
---                      ('-':cs) -> [(Nothing,cs)]
---                      (f:r:cs)->  [(readSquare ([f]++[r]),cs)]
---                      otherwise -> [])
-
-
+            nsq <- pNoSq
+            if isNothing nsq then
+              return Nothing
+            else
+              do
+                f <- pFile
+                r <- pRank
+                return (Just $ Square (fromJust f) (fromJust r)) 

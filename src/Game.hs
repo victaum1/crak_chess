@@ -48,8 +48,8 @@ pCastle = do
 pPlys :: Parser Int
 pPlys = natural
 
-pMoves :: Parser Int
-pMoves = natural
+pNMoves :: Parser Int
+pNMoves = natural
 
 pGame :: Parser Game
 pGame = do
@@ -63,7 +63,7 @@ pGame = do
   space
   ps <- pPlys
   space
-  ms <- pMoves
+  ms <- pNMoves
   return (Game bd t c sq ps ms)
 
 fen2Game :: String -> Game
