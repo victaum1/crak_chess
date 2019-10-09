@@ -11,18 +11,18 @@ squareList = [Square (fromJust $ readCFile f) (fromJust $ readRank r)
   | f <- chrFileList, r <- chrRankList]
 
 instance Arbitrary Square where
-  arbitrary = elements (squareList)             
+  arbitrary = elements squareList             
 
 prop_success_read_file :: Char -> Bool
-prop_success_read_file c = if (elem (toUpper c) chrFileList)
-  then show (fromJust $ readCFile c) == [toUpper c] ++ "_F"
-  else (readCFile c) == Nothing
+prop_success_read_file c = if elem (toUpper c) chrFileList
+  then show (fromJust $ readCFile c) == toUpper c : "_F"
+  else isNothing (readCFile c)
 
 prop_success_read_rank :: Char -> Bool
-prop_success_read_rank c = if (elem c chrRankList)
+prop_success_read_rank c = if elem c chrRankList
                            then show (fromJust $ readRank c) ==
                              "R"++[c]
-                           else (readRank c) == Nothing
+                           else isNothing (readRank c)
 
 prop_show_square :: Square -> Bool
 prop_show_square sq = elem (show sq) strSquareList

@@ -1,4 +1,5 @@
-module Pieces (PieceType(..), Side(..), Piece(..), showPiece, readPiece)
+module Pieces (pieceTypeList, pieceCharList, Side(..), Piece(..), showPiece
+  , readCPiece)
   where
 
 import Data.Maybe
@@ -37,26 +38,17 @@ pieceCharList = "PNBRQK"
 typeList = zip pieceCharList pieceTypeList
 typeList' = zip pieceTypeList pieceCharList
 
-readPiece :: Char -> Maybe Piece
-readPiece c =  if elem (toUpper c) pieceCharList
-  then Just(Piece (toSide c) (toPt c)) else Nothing
-  where
-    toPt x = fromJust $ lookup (toUpper x) typeList
-    toSide x = if isUpper x then White else Black
-
+readCPiece :: Char -> Maybe (Maybe Piece)
+readCPiece c | c == '.' = Just Nothing
+             | elem (toUpper c) pieceCharList = Just(Just(Piece (toSide c) 
+               (toPt c)))
+             | otherwise = Nothing
+           where
+             toPt x = fromJust $ lookup (toUpper x) typeList
+             toSide x = if isUpper x then White else Black
+             
 showPiece :: Piece -> Char
 showPiece p = if pieceSide p == White then p2char p else
   (toLower . p2char) p
   where p2char x = fromJust $ lookup (pieceType x) typeList'
 
--- readPieceType :: Char -> Maybe PieceType
--- readPieceType c = if elem (toUpper c) pieceCharList
---                   then Just(toPt c) else Nothing
---                     where toPt x = fromJust $ lookup (toUpper x) typeList
--- 
--- pPieceType :: Parser (Maybe PieceType)
--- pPieceType = P(\inp -> case inp of
---                  []  -> []
---                  (c:cs) -> if isUpper c then [(toPt c,cs++" ")]
---                    else [(Nothing,c:(cs++" "))])
---                where toPt = readPieceType
