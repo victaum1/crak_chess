@@ -1,5 +1,6 @@
-module Squares (File(..), Rank(..), Square(..)
-  , intToSquare, pSquare) where
+module Squares (File(..), Rank(..), Square(..),intToSquare
+  , pSquare, chrFileList, chrRankList, readRank, readCFile, readSquare)
+  where
 
 import Data.Char (toUpper)
 import Data.Maybe

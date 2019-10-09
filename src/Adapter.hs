@@ -4,9 +4,9 @@ ui_loop = do
             line <- getLine
             case line of
               "quit" -> return ()
-              otherwise -> do 
-                   putStrLn "Error: Command not known!"
-                   ui_loop
+              otherwise -> do
+                putStrLn "Error: Command not known!"
+                ui_loop
 
 uci_loop = do
              putStrLn "uciok"

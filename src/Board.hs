@@ -23,7 +23,7 @@ type Board = [Pos]
 
 makePos :: [Maybe Piece] -> Int -> [Pos]
 makePos [] _ = []
-makePos (a:as) n | isJust a = Pos (fromJust $ intToSquare n) (fromJust a): 
+makePos (a:as) n | isJust a = Pos (fromJust $ intToSquare n) (fromJust a) : 
                     nexT
                  | otherwise = nexT
                    where nexT = makePos as (n+1)

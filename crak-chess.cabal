@@ -19,8 +19,8 @@ Extra-source-files:  CHANGELOG.md, README.md, LEEME.md
 
 Executable crak-chess
   main-is:  Main.hs
-  other-modules:  Squares, Pieces, Game, Engine, Adapter,
-    Evaluate, Parsing, Moves
+  other-modules:  Squares, Pieces, Board, Game, Parsing, Search, Moves,
+    Evaluate, Adapter, Engine
     -- other-extensions:
   build-depends:       readline >=1.0.3.0 && <2, base >=4.9 && <4.10
  
@@ -35,11 +35,12 @@ Test-Suite u-runner
   hs-source-dirs   : tests
   default-language :  Haskell2010
 
-Test-Suite q-runner
+Test-Suite q-squares
    type: exitcode-stdio-1.0
-   main-is: q-runner.hs
+   main-is: q_tests_squares.hs
    build-depends: base >= 4 && <5, Cabal >= 1.6.0.0 && <4, QuickCheck
      >= 2.13.2 && <3
-   hs-source-dirs: tests
+   other-modules: Squares
+   hs-source-dirs: tests, src
    default-language:  Haskell2010
 
