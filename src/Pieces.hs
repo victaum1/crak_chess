@@ -1,5 +1,5 @@
 module Pieces (pieceTypeList, pieceCharList, Side(..), Piece(..), showPiece
-  , readCPiece)
+  , readCPiece, PieceType(..))
   where
 
 import Data.Maybe

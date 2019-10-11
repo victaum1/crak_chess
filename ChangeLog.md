@@ -1,5 +1,10 @@
 # Revision history for crak-chess
 
+## 0.0.9.2 -- 2019-10-10 
+
+* Correcting Board
+------------------------
+
 ## 0.0.9.1 -- 2019-10-08 
 
 * Correcting Squares

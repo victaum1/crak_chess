@@ -1,25 +1,27 @@
 module Main where
 
-import Data.Maybe
+-- import Data.Maybe
 import System.IO
-import System.Console.Readline
+import System.Console.Haskeline
 import Adapter
 
 main_loop = do
-              maybeline <- readline ""
+              maybeline <- getInputLine "> "
               case maybeline of
                 Nothing       -> return () -- EOF / ctrl-d
                 Just "quit"   -> return ()
                 Just "xboard" -> xboard_loop
                 Just "uci"    -> uci_loop
                 Just line     -> do
-                   putStrLn $ "Error (unknown command) : " ++ line
+                   outputStrLn $ "Error (unknown command) : " ++ line
                    main_loop
-              
-
 
 main :: IO ()
 main = do
          hSetBuffering stdout NoBuffering
-         putStrLn "Craken 0.9.x by V. Manotas"
-         main_loop
+         runInputT defaultSettings entry
+       where
+         entry :: InputT IO ()
+         entry = do
+           outputStrLn "Craken 0.9.x by V. Manotas"
+           main_loop

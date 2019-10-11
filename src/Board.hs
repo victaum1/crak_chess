@@ -1,5 +1,5 @@
 module Board (Board, Pos(..), initBoardFEN, fen2Board,
-  board2FEN, pBoard) where
+  board2FEN, pBoard, showBoard, readBoard) where
 
 import Pieces
 import Squares
@@ -28,12 +28,15 @@ makePos (a:as) n | isJust a = Pos (fromJust $ intToSquare n) (fromJust a) :
                  | otherwise = nexT
                    where nexT = makePos as (n+1)
 
-readBoard :: String -> Board
-readBoard str = toPos $ reverse $ readBoard' str
-  where toPos (p:ps) = makePos (concat (p:ps)) 0
+readBoard :: String -> Maybe Board
+readBoard str = if isNull then Nothing
+                else fmap (toPos .  reverse) rB 
+  where toPos ps = makePos (concat ps) 0
+        isNull = isNothing rB 
+        rB = readBoard' str 
 
-readBoard' :: String -> [[Maybe Piece]]
-readBoard' = (map.map) readPiece . lines
+readBoard' :: String -> Maybe [[Maybe Piece]]
+readBoard' = (mapM . mapM) readCPiece . lines
 
 showBoard' :: Board -> [String]
 showBoard' ps = (map.map) showP $ reverse $ splitb lps
@@ -77,7 +80,7 @@ packFENline (c:cs) | c == '.' = intToDigit (countDots (c:cs) 0) :
   packFENline (drop (countDots (c:cs) 0) (c:cs))
                    | otherwise = c : packFENline cs
 
-fen2Board :: String -> Board
+fen2Board :: String -> Maybe Board
 fen2Board str = readBoard $ showFENline $ head $ words str
 
 board2FEN :: Board -> String
@@ -86,5 +89,6 @@ board2FEN bd = init $ packFENline $ subs '\n' '/' $ showBoard bd
 pBoard :: Parser Board
 pBoard = P (\inp -> case inp of
   [] -> [] 
-  _ -> [(fen2Board inp, unwords $ tail $ words inp)])
+  _ -> if isNothing $ fen2Board inp then [] else
+          [(fromJust $ fen2Board inp, unwords $ tail $ words inp)])
 
