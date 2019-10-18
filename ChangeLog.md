@@ -1,5 +1,10 @@
 # Revision history for crak-chess
 
+## 0.0.9.3 -- 2019-10-17 
+
+* Making tests for module "Game"
+------------------------
+
 ## 0.0.9.2 -- 2019-10-10 
 
 * Correcting Board

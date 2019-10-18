@@ -52,13 +52,14 @@ test-suite integral-test
       , crak-chess
   default-language: Haskell2010
 
-test-suite u-runner
+test-suite u-game
   type: exitcode-stdio-1.0
-  main-is: u-runner.hs
+  main-is: u_tests_game.hs
   hs-source-dirs:
       tests
   build-depends:
-      base >=4.10 && <5, HUnit >= 1.5.0.0 && <2 
+      base >=4.10 && <5, HUnit >= 1.5.0.0 && <2
+      , crak-chess
   default-language: Haskell2010
 
 test-suite q-squares 
