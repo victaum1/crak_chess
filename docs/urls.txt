@@ -1,0 +1,24 @@
+Rules of chess:
+https://en.wikipedia.org/wiki/Rules_of_chess
+
+Programing FairyMax:
+http://www.open-aurec.com/wbforum/viewtopic.php?f=24&t=52775
+
+Foro de "Computer Chess"
+http://talkchess.com/forum3/index.php
+
+CPW- Chess Programming Wiki:
+https://www.chessprogramming.org/Main_Page
+
+Bruce MoreLand Pages on chess programming:
+http://web.archive.org/web/20070707012511/http://www.brucemo.com/compchess/programming/index.htm
+
+Robert Hyatt Online Technical Papers:
+http://www.craftychess.com/hyatt/pubs.html
+
+Best Chess engines Tourneys:
+http://www.computerchess.org.uk/ccrl/4040/rating_list_all.html
+
+Video making a chess engine in C:
+https://www.youtube.com/watch?v=ZWcjcn4KVTk&index=37&list=PLZ1QII7yudbc-Ky058TEaOstZHVbT-2hg
+

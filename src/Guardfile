@@ -1,7 +1,7 @@
 guard :shell, all_on_start: true do
     watch (/.*\.hs$/) do |m|
-    puts "\n\n\nCompiling..."
-    `cd .. && cabal new-build && cd src && echo "Done!"`
+    puts "\nCompiling...\n"
+    `stack ghc #{m[0]}  && echo "Done!"`
   end
 end
 

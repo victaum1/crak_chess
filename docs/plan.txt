@@ -1,0 +1,34 @@
+Realizado hasta ahora
+---------------------
+Estructuras de datos:
+Escaques
+Piezas
+Tablero
+Estado del Juego
+Jugadas
+
+Conversiones a Texto:
+'FEN' a estructuras y viceversa.
+Estructuras a texto en el 'CLI'(linea de comandos) y viceversa.
+
+Conversiones de Escaques:
+Escaques a entero-64
+Escaques a entero-120
+
+Punto de entrada:
+Ciclo del programa principal llama a protocolos xboard y uci (no
+desarrollados).
+
+A desarrollar
+-------------
+Inversas de conversiones entre enteros y escaques.
+Generador de Jugadas.
+Verificador de legalidad de jugadas.
+Búsqueda de jugadas.
+Evaluador de posiciones.
+
+Protocolos:
+uci
+xboard
+
+Administración del tiempo.

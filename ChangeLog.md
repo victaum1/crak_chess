@@ -1,4 +1,8 @@
 # Revision history for crak-chess
+## 0.0.9.4 -- 2019-10-23 
+
+* Adding int120ToSquare
+------------------------
 
 ## 0.0.9.3 -- 2019-10-17 
 
