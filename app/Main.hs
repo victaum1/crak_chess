@@ -23,5 +23,5 @@ main = do
        where
          entry :: InputT IO ()
          entry = do
-           outputStrLn "Craken 0.9.x by V. Manotas"
+           outputStrLn "Craken 0.0.10.x by V. Manotas"
            main_loop

@@ -7,6 +7,7 @@ import Data.Char (toUpper)
 import Data.Maybe
 import Parsing
 
+-- Data Structures
 data File = A_F | B_F | C_F | D_F | E_F | F_F | G_F | H_F
   deriving (Show,Eq,Ord)
 
@@ -18,24 +19,10 @@ data Square = Square {
                        , squareRank :: Rank
                       } deriving Eq
 
+
+-- Representing Data Structures
 chrFileList = "ABCDEFGH"
 chrRankList = "12345678"
-
-int64ToSquare :: Int -> Maybe Square
-int64ToSquare n | n < 64 && n >= 0 = makeSquare a_file a_rank
-              | otherwise = Nothing
-  where a_file = chrFileList!!(n `mod` 8)
-        a_rank = chrRankList!!((n-(n `mod` 8)) `div` 8)
-
-int120To64 :: Int -> Int
-int120To64 n = toDec * 8 + toDig - 1 
-  where toDig = n `mod` 10
-        toDec = (n - toDig - 20) `div` 10
-
-int120ToSquare :: Int -> Maybe Square
-int120ToSquare n | or [n `mod` 10 == 0, n `mod` 10 == 9]  = Nothing
-                 | and [n > 98, n < 21] = Nothing 
-                 | otherwise = int64ToSquare (int120To64 n)
 
 fileList = [A_F,B_F,C_F,D_F,E_F,F_F,G_F,H_F]
 rankList = [R1,R2,R3,R4,R5,R6,R7,R8]
@@ -52,9 +39,13 @@ showFile f = fromJust (lookup f chr2File')
 showRank :: Rank -> Char
 showRank r = fromJust (lookup r chr2Rank')
 
+chrFileToInt = zip chrFileList [0..7]
+chrFileToInt' = zip [0..7] chrFileList
+
 instance Show Square where
   show (Square a b) =  showFile a : [showRank b] 
 
+-- Parsing Data Structures
 readCFile :: Char -> Maybe File
 readCFile c = lookup (toUpper c) chr2File 
 
@@ -101,3 +92,33 @@ pSquare = do
                 f <- pFile
                 r <- pRank
                 return (Just $ Square (fromJust f) (fromJust r)) 
+
+-- Integers encoding Squares
+int64ToSquare :: Int -> Maybe Square
+int64ToSquare n | n < 64 && n >= 0 = makeSquare a_file a_rank
+              | otherwise = Nothing
+  where a_file = chrFileList!!(n `mod` 8)
+        a_rank = chrRankList!!((n-(n `mod` 8)) `div` 8)
+
+int120To64 :: Int -> Int
+int120To64 n = toDec * 8 + toDig - 1 
+  where toDig = n `mod` 10
+        toDec = (n - toDig - 20) `div` 10
+
+int120ToSquare :: Int -> Maybe Square
+int120ToSquare n | or [n `mod` 10 == 0, n `mod` 10 == 9]  = Nothing
+                 | and [n > 98, n < 21] = Nothing 
+                 | otherwise = int64ToSquare (int120To64 n)
+
+int64To120 :: Int -> Int
+int64To120 n = toRow*10 + toFile + 21
+  where toFile = n `mod` 8
+        toRow = (n - toFile) `div` 8
+
+squareToInt64 :: Square -> Int
+squareToInt64 sq = aR*8 + aF
+  where aF = fromJust $ lookup (showFile $ squareFile sq) chrFileToInt
+        aR = (read [showRank $ squareRank sq]) - 1
+
+squareToInt120 :: Square -> Int
+squareToInt120 sq = int64To120 $ squareToInt64 sq
