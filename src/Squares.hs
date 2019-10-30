@@ -1,6 +1,6 @@
-module Squares (File(..), Rank(..), Square(..), int64ToSquare
+module Squares (File(..), Rank(..), Square(..), intToSquare
   , int120ToSquare, pSquare, chrFileList, chrRankList, readRank, readCFile
-  , readSquare)
+  , readSquare, files, ranks)
   where
 
 import Data.Char (toUpper)
@@ -24,14 +24,14 @@ data Square = Square {
 chrFileList = "ABCDEFGH"
 chrRankList = "12345678"
 
-fileList = [A_F,B_F,C_F,D_F,E_F,F_F,G_F,H_F]
-rankList = [R1,R2,R3,R4,R5,R6,R7,R8]
+files = [A_F,B_F,C_F,D_F,E_F,F_F,G_F,H_F]
+ranks = [R1,R2,R3,R4,R5,R6,R7,R8]
 
-chr2File = zip chrFileList fileList
-chr2File' = zip fileList chrFileList
+chr2File = zip chrFileList files
+chr2File' = zip files chrFileList
 
-chr2Rank = zip chrRankList rankList
-chr2Rank' = zip rankList chrRankList
+chr2Rank = zip chrRankList ranks
+chr2Rank' = zip ranks chrRankList
 
 showFile :: File -> Char
 showFile f = fromJust (lookup f chr2File')
@@ -94,6 +94,8 @@ pSquare = do
                 return (Just $ Square (fromJust f) (fromJust r)) 
 
 -- Integers encoding Squares
+intToSquare = int64ToSquare
+
 int64ToSquare :: Int -> Maybe Square
 int64ToSquare n | n < 64 && n >= 0 = makeSquare a_file a_rank
               | otherwise = Nothing
@@ -106,8 +108,8 @@ int120To64 n = toDec * 8 + toDig - 1
         toDec = (n - toDig - 20) `div` 10
 
 int120ToSquare :: Int -> Maybe Square
-int120ToSquare n | or [n `mod` 10 == 0, n `mod` 10 == 9]  = Nothing
-                 | and [n > 98, n < 21] = Nothing 
+int120ToSquare n | or [n > 98, n < 21] = Nothing 
+                 | or [n `mod` 10 == 0, n `mod` 10 == 9]  = Nothing
                  | otherwise = int64ToSquare (int120To64 n)
 
 int64To120 :: Int -> Int

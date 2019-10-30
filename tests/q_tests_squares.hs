@@ -7,11 +7,10 @@ import Data.Maybe (fromJust, isNothing)
 import qualified System.Exit as Exit
 
 strSquareList = [a:b:"" | a <- chrFileList, b <- chrRankList]
-squareList = [Square (fromJust $ readCFile f) (fromJust $ readRank r)
-  | f <- chrFileList, r <- chrRankList]
+squares = [Square f r | f <- files, r <- ranks]
 
 instance Arbitrary Square where
-  arbitrary = elements squareList             
+  arbitrary = elements squares             
 
 prop_success_read_file :: Char -> Bool
 prop_success_read_file c = if elem (toUpper c) chrFileList
@@ -31,8 +30,21 @@ prop_read_square :: String -> Bool
 prop_read_square str = if  isNothing (readSquare str)  
   then not (is_str str)  else is_sq str
   where is_sq s = elem (fromJust (readSquare (map toUpper s)))
-          squareList
+          squares
         is_str s = elem (take 2 (map toUpper s)) strSquareList
+
+prop_int_to_square :: Int -> Bool
+prop_int_to_square n | or [n < 0, n > 63] = chkNo
+                     | otherwise = chkSq 
+  where chkNo = isNothing $ intToSquare n
+        chkSq = elem (fromJust $ intToSquare n) squares
+
+prop_int120_to_square :: Int -> Bool
+prop_int120_to_square n | or [n < 21 , n > 98] = chkNo
+                        | or [n `mod` 10 == 0, n `mod` 10 == 9] = chkNo 
+                        | otherwise = chkSq 
+  where chkNo = isNothing $ int120ToSquare n
+        chkSq = elem (fromJust $ int120ToSquare n) squares
 
 return []
 runTests :: IO Bool
@@ -44,9 +56,7 @@ main = do
          x <- runTests
          if x then
            do
-             putStrLn "All tests passed! :)"
              return ()
          else
            do
-             putStrLn "Some tests failed! :|"
              Exit.exitFailure
