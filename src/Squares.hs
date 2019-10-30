@@ -1,6 +1,6 @@
 module Squares (File(..), Rank(..), Square(..), intToSquare
-  , int120ToSquare, pSquare, chrFileList, chrRankList, readRank, readCFile
-  , readSquare, files, ranks)
+  , int120ToSquare, pSquare, chrFileList, chrRankList, readRank
+  , readCFile, readSquare, files, ranks, squareToInt64,squareToInt120)
   where
 
 import Data.Char (toUpper)
@@ -60,8 +60,8 @@ makeSquare c1 c2 = if isNothing (mkF c1) || isNothing (mkR c2)
         mkR = readRank
 
 readSquare :: String -> Maybe Square
-readSquare str = if length str < 2  then Nothing else makeSquare  (head str)
- (str!!1)
+readSquare str = if length str < 2  then Nothing else makeSquare
+  (head str) (str!!1)
 
 pFile :: Parser (Maybe File)
 pFile = P(\inp -> case inp of 

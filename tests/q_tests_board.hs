@@ -32,9 +32,7 @@ main = do
          x <- runTests
          if x then
            do
-             putStrLn "All tests passed! :)"
              return ()
          else
            do
-             putStrLn "Some tests failed! :|"
              Exit.exitFailure

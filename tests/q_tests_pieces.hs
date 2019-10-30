@@ -19,8 +19,8 @@ prop_read_piece c | readCPiece c == Nothing = True
                   | otherwise = False
 
 prop_show_piece :: Piece -> Bool
-prop_show_piece p = elem (showPiece p) $ (map toLower pieceCharList) ++
-  pieceCharList
+prop_show_piece p = elem (showPiece p) $ (map toLower pieceCharList) 
+  ++ pieceCharList
 
 return []
 runTests :: IO Bool
@@ -32,9 +32,7 @@ main = do
          x <- runTests
          if x then
            do
-             putStrLn "All tests passed! :)"
              return ()
          else
            do
-             putStrLn "Some tests failed! :|"
              Exit.exitFailure

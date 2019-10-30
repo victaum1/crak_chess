@@ -41,10 +41,22 @@ prop_int_to_square n | or [n < 0, n > 63] = chkNo
 
 prop_int120_to_square :: Int -> Bool
 prop_int120_to_square n | or [n < 21 , n > 98] = chkNo
-                        | or [n `mod` 10 == 0, n `mod` 10 == 9] = chkNo 
+                        | or [n `mod` 10 == 0, n `mod` 10 == 9] =
+                          chkNo 
                         | otherwise = chkSq 
   where chkNo = isNothing $ int120ToSquare n
         chkSq = elem (fromJust $ int120ToSquare n) squares
+
+prop_square_to_int64 :: Square -> Bool
+prop_square_to_int64 sq | or [chkInt >= 0, chkInt < 64] = True
+                        | otherwise = False
+  where chkInt = squareToInt64 sq
+
+prop_square_to_int120 :: Square -> Bool
+prop_square_to_int120 sq | and [or [chkInt >= 21, chkInt < 99],
+  or [chkInt `mod` 10 /= 0, chkInt `mod` 10 /= 9]] = True
+                         | otherwise = False
+  where chkInt = squareToInt120 sq
 
 return []
 runTests :: IO Bool
