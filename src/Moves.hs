@@ -7,14 +7,15 @@ import Pieces
 import Parsing
 
 data Move = Move {
-  initSquare:: Maybe Square,
+  initSquare:: Square,
   finalSquare:: Square,
-  movedPiece:: Maybe PieceType,
+  movedPiece::  Maybe PieceType,
+  capturedPiece:: Maybe PieceType,
   promotedPiece:: Maybe PieceType
 } deriving (Eq,Show)
 
 showMove:: Move -> String
-showMove mv = (if mp == Just Pawn then "" else show mp) ++
+showMove mv = (if mp == Just Pawn then "" else maybe "" show mp) ++
   init ++ final ++ maybe "" show promo
   where init  = map toLower $ show $ initSquare mv
         final = map toLower $ show $ finalSquare mv
@@ -25,12 +26,13 @@ pLf:: Parser ()
 pLf = do many (sat (== '\n'))
          return ()
 
-pMove :: Parser (Maybe Move)
-pMove = do
+pMoveCoord :: Parser (Maybe Move)
+pMoveCoord = do
           space <|> pLf
           sqi <- pSquare 
           sqf <- pSquare
-          return (Just $ Move sqi (fromJust sqf) Nothing Nothing)
+          return $ Just $ Move (fromJust sqi) (fromJust sqf) Nothing Nothing
+            Nothing
 
 readMove:: String -> Maybe Move
-readMove str = fst $ head $ parse pMove str
+readMove str = fst $ head $ parse pMoveCoord str

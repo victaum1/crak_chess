@@ -62,6 +62,16 @@ test-suite u-game
       , crak-chess
   default-language: Haskell2010
 
+test-suite u-moves
+  type: exitcode-stdio-1.0
+  main-is: u_tests_moves.hs
+  hs-source-dirs:
+      tests,src
+  build-depends:
+      base >=4.10 && <5, HUnit >= 1.5.0.0 && <2
+      , crak-chess
+  default-language: Haskell2010
+
 test-suite q-squares 
   type: exitcode-stdio-1.0
   main-is: q_tests_squares.hs
