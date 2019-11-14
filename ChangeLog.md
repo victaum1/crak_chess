@@ -1,4 +1,9 @@
 # Revision history for crak-chess
+## 0.0.10.4 -- 2019-11-13 
+
+* Testing squareAttack, Failed!
+------------------------
+
 ## 0.0.10.0 -- 2019-10-29 
 
 * Testing intToSquare and  int120ToSquare passed!

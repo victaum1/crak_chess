@@ -8,7 +8,7 @@ import Parsing
 
 initFEN = initBoardFEN ++ " w KQkq - 0 1"
 
-data Game = Game {
+data GameState = GameState {
     getBoard  :: Board
   , getTurn   :: Side
   , getCastle :: Int
@@ -16,6 +16,8 @@ data Game = Game {
   , getNPlys   :: Int
   , getNMoves  :: Int
   } deriving Show
+
+type  Game = GameState
 
 pTurn :: Parser Side
 pTurn = P(\inp -> case inp of
@@ -64,7 +66,7 @@ pGame = do
   ps <- pPlys
   space
   ms <- pNMoves
-  return (Game bd t c sq ps ms)
+  return (GameState bd t c sq ps ms)
 
 fen2Game :: String -> Game
 fen2Game str = fst $ head $ parse pGame str

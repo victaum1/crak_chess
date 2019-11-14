@@ -23,7 +23,7 @@ source-repository head
 library
   exposed-modules:
       Squares, Pieces, Board, Game, Parsing, Search, Moves, Evaluate
-      , Adapter, Engine
+      , Adapter, Engine, Generator
 --  other-modules:
 --      Paths_crak_chess
   hs-source-dirs:
@@ -65,6 +65,16 @@ test-suite u-game
 test-suite u-moves
   type: exitcode-stdio-1.0
   main-is: u_tests_moves.hs
+  hs-source-dirs:
+      tests,src
+  build-depends:
+      base >=4.10 && <5, HUnit >= 1.5.0.0 && <2
+      , crak-chess
+  default-language: Haskell2010
+
+test-suite u-generator
+  type: exitcode-stdio-1.0
+  main-is: u_tests_generator.hs
   hs-source-dirs:
       tests,src
   build-depends:
