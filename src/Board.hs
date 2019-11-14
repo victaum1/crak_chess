@@ -15,6 +15,7 @@ initBoardStr = unlines [
 initBoardFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 data Pos = Pos {getSquare :: Square, getPiece :: Piece}
+  deriving Eq
 
 instance Show Pos where
   show (Pos a b) = "(" ++ show a ++ "," ++ show b ++ ")"

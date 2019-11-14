@@ -31,8 +31,7 @@ pMoveCoord = do
           space <|> pLf
           sqi <- pSquare 
           sqf <- pSquare
-          return $ Just $ Move (fromJust sqi) (fromJust sqf) Nothing Nothing
-            Nothing
+          return $ Just $ Move sqi sqf Nothing Nothing Nothing
 
 readMove:: String -> Maybe Move
 readMove str = fst $ head $ parse pMoveCoord str

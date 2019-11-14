@@ -15,7 +15,7 @@ data GameState = GameState {
   , getEpSq   :: Maybe Square
   , getNPlys   :: Int
   , getNMoves  :: Int
-  } deriving Show
+  } deriving (Show, Eq)
 
 type  Game = GameState
 
@@ -43,9 +43,12 @@ packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
 
 pCastle :: Parser Int
 pCastle = do
-            x <- many letter <|> string "-"
-            if x == "-" then return 0
-            else return (fromJust $ packCastle x 0 "")
+            char '-'
+            return (0)
+          <|> 
+          do
+            x <- many letter
+            return (fromJust $ packCastle x 0 "")
 
 pPlys :: Parser Int
 pPlys = natural
@@ -53,25 +56,39 @@ pPlys = natural
 pNMoves :: Parser Int
 pNMoves = natural
 
+pNoSq :: Parser Char
+pNoSq = P(\inp -> case inp of
+  [] -> []
+  (r:cs) | r == '-' -> [('-',cs)]
+         | otherwise -> []
+  )
+
+pEpSq :: Parser (Maybe Square)
+pEpSq = do
+          pNoSq
+          return Nothing
+        <|>
+        do
+          sq <- pSquare
+          return (Just sq)
+
 pGame :: Parser Game
 pGame = do
   bd <- pBoard
-  space
-  t <- pTurn
-  space
+  t <- token pTurn
   c <- pCastle
-  space
-  sq <- pSquare
-  space
+  sq <- token pEpSq
   ps <- pPlys
   space
   ms <- pNMoves
   return (GameState bd t c sq ps ms)
 
-fen2Game :: String -> Game
-fen2Game str = fst $ head $ parse pGame str
+fen2Game :: String -> Maybe Game
+fen2Game str | pG == [] = Nothing
+             | otherwise = Just $ fst $ head pG 
+  where pG = parse pGame str
 
-initGame = fen2Game initFEN
+initGame = fromJust $ fen2Game initFEN
 
 showCflags :: Int -> String
 showCflags n | isInTable = [findChar]

@@ -3,7 +3,7 @@ module Squares (File(..), Rank(..), Square(..), intToSquare
   , readCFile, readSquare, files, ranks, squareToInt64,squareToInt120)
   where
 
-import Data.Char (toUpper)
+import Data.Char (toUpper, toLower)
 import Data.Maybe
 import Parsing
 
@@ -21,7 +21,7 @@ data Square = Square {
 
 
 -- Representing Data Structures
-chrFileList = "ABCDEFGH"
+chrFileList = "abcdefgh"
 chrRankList = "12345678"
 
 files = [A_F,B_F,C_F,D_F,E_F,F_F,G_F,H_F]
@@ -47,10 +47,10 @@ instance Show Square where
 
 -- Parsing Data Structures
 readCFile :: Char -> Maybe File
-readCFile c = lookup (toUpper c) chr2File 
+readCFile c = lookup (toLower c) chr2File 
 
 readRank :: Char -> Maybe Rank
-readRank c = lookup (toUpper c) chr2Rank 
+readRank c = lookup c chr2Rank 
 
 makeSquare :: Char -> Char -> Maybe Square
 makeSquare c1 c2 = if isNothing (mkF c1) || isNothing (mkR c2)
@@ -63,35 +63,24 @@ readSquare :: String -> Maybe Square
 readSquare str = if length str < 2  then Nothing else makeSquare
   (head str) (str!!1)
 
-pFile :: Parser (Maybe File)
+pFile :: Parser File
 pFile = P(\inp -> case inp of 
               [] -> []
               (f:cs) -> if isNothing (readCFile f) then
                              []
-                        else [(readCFile f,cs)])
+                        else [(fromJust (readCFile f),cs)])
 
-pRank :: Parser (Maybe Rank)
+pRank :: Parser Rank
 pRank = P(\inp -> case inp of
              [] -> []
              (r:cs) -> if isNothing(readRank r) then []
-                       else [(readRank r,cs)])
+                       else [(fromJust (readRank r),cs)])
 
-pNoSq :: Parser (Maybe Char)
-pNoSq = P(\inp -> case inp of
-             [] -> []
-             (r:cs) -> if r == '-' then [(Nothing,cs)]
-                       else [(Just r, r:cs)])
-
-pSquare :: Parser (Maybe Square)
+pSquare :: Parser Square
 pSquare = do
-            nsq <- pNoSq
-            if isNothing nsq then
-              return Nothing
-            else
-              do
-                f <- pFile
-                r <- pRank
-                return (Just $ Square (fromJust f) (fromJust r)) 
+            f <- pFile
+            r <- pRank
+            return (Square f r) 
 
 -- Integers encoding Squares
 intToSquare = int64ToSquare

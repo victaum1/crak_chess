@@ -13,7 +13,7 @@ instance Arbitrary Square where
   arbitrary = elements squares             
 
 prop_success_read_file :: Char -> Bool
-prop_success_read_file c = if elem (toUpper c) chrFileList
+prop_success_read_file c = if elem (toLower c) chrFileList
   then show (fromJust $ readCFile c) == toUpper c : "_F"
   else isNothing (readCFile c)
 

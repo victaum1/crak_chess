@@ -1,8 +1,9 @@
 cabal-version: >= 1.10
 
 name:           crak-chess
-version:        0.0.9.2
-description:    Please see the README on GitHub at <https://github.com/victaum1/crak-chess#readme>
+version:        0.0.10.5
+description:    Please see the README on GitHub at 
+  <https://github.com/victaum1/crak-chess#readme>
 homepage:       https://github.com/victaum1/crak-chess#readme
 bug-reports:    https://github.com/victaum1/crak-chess/issues
 author:         Victor Hugo Manotas Garces

@@ -1,4 +1,5 @@
 module Main (main) where
+import Data.Maybe
 import Test.HUnit
 import Game
 import qualified System.Exit as Exit
@@ -14,20 +15,34 @@ inputFENs = [
   "r1bqkbnr/ppp2ppp/2np4/1B6/3pP3/5N2/PPP2PPP/RNBQK2R w KQkq - 0 5",
   "r1bqkbnr/ppp2ppp/2np4/1B6/3NP3/8/PPP2PPP/RNBQK2R b KQkq - 0 5",
   "r2qkbnr/pppb1ppp/2np4/1B6/3NP3/8/PPP2PPP/RNBQK2R w KQkq - 1 6",
-  "r2qkbnr/pppb1ppp/2Np4/1B6/4P3/8/PPP2PPP/RNBQK2R b KQkq - 0 6",
-  "r2qkbnr/ppp2ppp/2bp4/1B6/4P3/8/PPP2PPP/RNBQK2R w KQkq - 0 7",
-  "r2qkbnr/ppp2ppp/2Bp4/8/4P3/8/PPP2PPP/RNBQK2R b KQkq - 0 7",
-  "r2qkbnr/p1p2ppp/2pp4/8/4P3/8/PPP2PPP/RNBQK2R w KQkq - 0 8",
-  "r2qkbnr/p1p2ppp/2pp4/8/4P3/8/PPP2PPP/RNBQ1RK1 b kq - 1 8",
-  "r2qkb1r/p1p2ppp/2pp1n2/8/4P3/8/PPP2PPP/RNBQ1RK1 w kq - 2 9"]
+  "r2qkbnr/pppb1ppp/2Np4/1B6/4P3/8/PPP2PPP/RNBQK2R b KQkq - 0 6"
+  ,"1r2r1k1/p1p1qpp1/bb1p1n1p/2p1p3/4P3/2NPBNQ1/PPP2PPP/R4RK1 b - - 1 8"
+  ,"1r2r3/p1p1qppk/bb1p1n1p/2p1p3/4P3/3PBNQ1/PPP1NPPP/R4RK1 b - - 3 9"
+  ,"1r2r3/p3qppk/bbpp1n1p/2p1p3/4P3/3PBNQP/PPP1NPP1/R4RK1 b - - 0 1"
+  ,"1r2r3/p3qppk/bbpp1n1p/2p1p3/4P3/2PPBNQ1/PP2NPPP/R4RK1 b - - 0 2"
+  ,"1r2r3/p3qppk/bbpp1n1p/2p1p3/4P3/2PPBNQ1/PP2NPPP/R4RK1 b - - 0 2"
+  ,"1r2r3/p1b1qppk/b1pp1n1p/2p1p3/4P3/2PPBNQ1/PP2NPPP/R3R1K1 b - - 2 3"
+  ,"1r2r3/p1b1qppk/b1p2n1p/2ppp3/4P2P/2PPBNQ1/PP2NPP1/R3R1K1 b - h3 0 4"
+  ,"1r2r3/p1b1qp1k/b1p2npp/2ppp3/4P2P/2PPBNQ1/PP2NPP1/R3R1K1 w - - 0 2"
+  ,"1r2r3/p1b1qppk/b1p2n1p/2p1p3/3pP2P/2PPBNQ1/PP2NPP1/R3R1K1 w - - 0 5"
+  ,"1r2r3/p1b1qppk/b1p2n1p/2p1p3/3pP2P/2PP1NQ1/PP1BNPP1/R3R1K1 b - - 1 5"
+  ,"1r2r3/p1b1qppk/b1p2n1p/2p1p3/3PP2P/5NQ1/PP1BNPP1/R3R1K1 w - - 1 7"
+  ,"1r2r3/p3qppk/bbp2n1p/2p1p3/3PP2P/1P3NQ1/P2BNPP1/R3R1K1 w - - 1 2"
+  ,"1r2r3/p1b1qppk/b1p2n1p/4p3/1p1PP2P/5N1Q/P2BNPP1/R3R1K1 b - - 1 1"
+  ,"1r2r3/p1b1qppk/b1p2n1p/4P3/1p2P2P/5NQ1/P2BNPP1/R3R1K1 b - - 0 8"
+  ,"1r2r3/p3qppk/b1p2n1p/4b3/1p2P2P/5NQ1/P2BNPP1/R3R1K1 w - - 0 2"
+  ,"1r2r3/p3qppk/b1p2n1p/4b3/1p2P2P/5NQ1/P2BNPP1/R3R1K1 w - - 0 9"
+  ,"1r2r3/p3qppk/b1p2n1p/4b3/1p2P2P/5NQ1/P2BNPP1/R3R1K1 w - - 0 9"
+  ,"1r2r3/p3qppk/b1p2n1p/4Q3/1p2P2P/5N2/P2BNPP1/R3R1K1 b - - 0 1"
+  ,"1r2r3/p3qppk/b1p2n1p/4N3/1p2P2P/6Q1/P2BNPP1/R3R1K1 b - - 0 9"  
+  ]
 
 assertEq = assertEqual "Falla: " :: String -> String -> Assertion
-
-inputs = map fen2Game inputFENs
 
 inputC = [ fst tc (snd tc) | tc <- zip inputA inputB]
   where inputA = map assertEq inputFENs
         inputB = map game2FEN inputs
+        inputs = map (fromJust . fen2Game) inputFENs
 
 tests = TestList $ map TestCase inputC
 
