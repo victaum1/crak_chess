@@ -2,8 +2,8 @@ crak_chess
 # README #
 
 ### Motivation ###
-This project is a programming exercise where it is going to be implemented a
-concrete case. The particular application is a simple chess engine. The
+This project is a programming exercise where it is going to be implemented
+a concrete case. The particular application is a simple chess engine. The
 language to use is "Haskell", like a prototyping scheme.
 
 * version 0.0.10.5
@@ -21,15 +21,16 @@ Therefore it is recommended to download the "Haskell Platform". Will be
 using "Cabal" as building tool.
 
 * Dependencies
-The code will be based in the 8.0.2 version of "ghc".
+The code will be based in the 8.6.5 version of "ghc".
 
 * How the tests will be made?
-The unit tests will be made using the package "HUnit". In the future will be
-configured tests with "QuickCheck".
+The unit tests will be made using the package "HUnit". Also, it will
+be tests with "QuickCheck".
 
 * Deployment
 The target will be to build a standalone binary. This one should be
-communicating with some chess protocol (uci/xboard). 
+communicating with some chess protocol (uci/xboard). That should work on
+any machine. I will be versions for windows, MacOS and Linux.
 
 * Who do I talk to?
 With the repo owner or admin:

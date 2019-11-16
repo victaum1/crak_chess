@@ -20,17 +20,18 @@ se recomienda bajar la "Haskell Platform". Se estará utilizando una
 herramienta de construcción como "Cabal".
 
 * Dependencias
-El código estará basado en la versión 8.0.2 de ghc.
+El código estará basado en la versión 8.6.5 de ghc.
 
 * ¿Cómo se ejecutaran las pruebas?
 Las pruebas unitarias se realizarán con la herramienta HUnit.
-En un futuro se configurará pruebas con QuickCheck.
+Habrá pruebas con "QuickCheck".
 
 * Despliegue
 El objetivo es construir un binario independiente. Este binario debe poder
-comunicarse con algún protocolo de ajedrez. (uci/xboard).
+comunicarse con algún protocolo de ajedrez. (uci/xboard). Este deberia
+funcionar en cualquier máquina. Se harán versiones para windows, MacOS y
+Linux.
 
 * ¿Con quién me comunico para preguntar o colaborar?
 Con el dueño del repositorio o administrador:
 (mailto:victorma31@gmail.com)
-
