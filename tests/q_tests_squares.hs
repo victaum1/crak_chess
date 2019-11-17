@@ -14,14 +14,13 @@ instance Arbitrary Square where
 
 prop_success_read_file :: Char -> Bool
 prop_success_read_file c = if elem (toLower c) chrFileList
-  then show (fromJust $ readCFile c) == toUpper c : "_F"
+  then showFile (fromJust $ readCFile c) == (toLower c)
   else isNothing (readCFile c)
 
 prop_success_read_rank :: Char -> Bool
 prop_success_read_rank c = if elem c chrRankList
-                           then show (fromJust $ readRank c) ==
-                             "R"++[c]
-                           else isNothing (readRank c)
+  then showRank (fromJust $ readRank c) == c
+  else isNothing (readRank c)
 
 prop_show_square :: Square -> Bool
 prop_show_square sq = elem (show sq) strSquareList
@@ -39,24 +38,23 @@ prop_int_to_square n | or [n < 0, n > 63] = chkNo
   where chkNo = isNothing $ intToSquare n
         chkSq = elem (fromJust $ intToSquare n) squares
 
-prop_int120_to_square :: Int -> Bool
-prop_int120_to_square n | or [n < 21 , n > 98] = chkNo
-                        | or [n `mod` 10 == 0, n `mod` 10 == 9] =
-                          chkNo 
+prop_int100_to_square :: Int -> Bool
+prop_int100_to_square n | or [n < 11 , n > 89] = chkNo
+                        | or [n `mod` 10 == 0, n `mod` 10 == 9] = chkNo 
                         | otherwise = chkSq 
-  where chkNo = isNothing $ int120ToSquare n
-        chkSq = elem (fromJust $ int120ToSquare n) squares
+  where chkNo = isNothing $ int100ToSquare n
+        chkSq = elem (fromJust $ int100ToSquare n) squares
 
 prop_square_to_int64 :: Square -> Bool
 prop_square_to_int64 sq | or [chkInt >= 0, chkInt < 64] = True
                         | otherwise = False
   where chkInt = squareToInt64 sq
 
-prop_square_to_int120 :: Square -> Bool
-prop_square_to_int120 sq | and [or [chkInt >= 21, chkInt < 99],
+prop_square_to_int100 :: Square -> Bool
+prop_square_to_int100 sq | and [or [chkInt >= 11, chkInt < 89],
   or [chkInt `mod` 10 /= 0, chkInt `mod` 10 /= 9]] = True
                          | otherwise = False
-  where chkInt = squareToInt120 sq
+  where chkInt = squareToInt100 sq
 
 return []
 runTests :: IO Bool
