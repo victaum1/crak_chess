@@ -7,7 +7,7 @@ import Data.Char (toUpper, toLower, isUpper)
 import Parsing
 
 data PieceType = Pawn | Knight | Bishop | Rook | Queen | King
-  deriving Eq
+  deriving (Eq,Ord,Enum)
 
 instance Show PieceType where
   show a | a == Pawn   = "P"
@@ -18,21 +18,21 @@ instance Show PieceType where
          | a == King   = "K"
 
 data Side =  White | Black
-             deriving Eq
+             deriving (Eq,Ord,Enum)
 
 instance Show Side where
-  show s | s == White = "W"
-         | otherwise  = "B"
+  show s | s == White = "W_" -- First Team
+         | otherwise  = "B_" -- The other Team 
 
 data Piece = Piece {
                       pieceSide  :: Side
                     , pieceType  :: PieceType
-                    } deriving (Eq)
+                    } deriving (Eq,Ord)
 
 instance Show Piece where
-  show (Piece a b) = show a ++ show b
+  show (Piece s p) = show s ++ show p
 
-pieceTypeList = [Pawn, Knight, Bishop, Rook, Queen, King]
+pieceTypeList = [Pawn .. ]
 pieceCharList = "PNBRQK"
 
 typeList = zip pieceCharList pieceTypeList

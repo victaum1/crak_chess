@@ -13,7 +13,7 @@ Estructuras a texto en el 'CLI'(linea de comandos) y viceversa.
 
 Conversiones de Escaques:
 Escaques a entero-64
-Escaques a entero-120
+Escaques a entero-100
 Sus inversas.
 
 Punto de entrada:
@@ -30,4 +30,5 @@ Evaluador de posiciones.
 Protocolos:
 uci
 xboard
+
 Administración del tiempo.

@@ -3,16 +3,9 @@ module Squares (File, Rank, Square(..), intToSquare, showFile, showRank
   , readCFile, readSquare, files, ranks, squareToInt64,squareToInt100)
   where
 
-import Data.Char (toUpper, toLower)
+import Data.Char (toLower, chr, ord)
 import Data.Maybe
 import Parsing
-
--- Data Structures
--- data File = __F | A_F | B_F | C_F | D_F | E_F | F_F | G_F | H_F | I_F
---   deriving (Show,Eq,Ord,Enum)
--- 
--- data Rank = R0 | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9
---   deriving (Show,Eq,Ord,Enum)
 
 type File = Int
 type Rank = Int
@@ -20,41 +13,40 @@ type Rank = Int
 data Square = Square {
                          squareFile :: File
                        , squareRank :: Rank
-                      } deriving Eq
+                      } deriving (Eq, Ord)
+
+instance Show Square where
+  show (Square f r) =  showFile f : [showRank r] 
 
 
 -- Representing Data Structures
-chrFileList = "abcdefgh"
-chrRankList = "12345678"
+chrFileList =  ['a' .. 'h']
+chrRankList = ['1' .. '8']
 
-files = [0..7]
+files = [0..7]::[Int]
 ranks = files
 
-
-chr2File = zip chrFileList files
-chr2File' = zip files chrFileList
-
-chr2Rank = zip chrRankList ranks
-chr2Rank' = zip ranks chrRankList
-
 showFile :: File -> Char
-showFile f = fromJust (lookup f chr2File')
+showFile f | or [f<0,f>7] = error "showFile: Out of bounds"
+           | otherwise = chr $ 97 + f
 
 showRank :: Rank -> Char
-showRank r = fromJust (lookup r chr2Rank')
+showRank r | or [r<0,r>7] = error "showRank: Out of bounds"
+           | otherwise = chr $ 49 + r
 
-chrFileToInt = zip chrFileList files
-chrFileToInt' = zip files chrFileList
-
-instance Show Square where
-  show (Square a b) =  showFile a : [showRank b] 
+toInt c = ord c
 
 -- Parsing Data Structures
 readCFile :: Char -> Maybe File
-readCFile c = lookup (toLower c) chr2File 
+readCFile c | or [c2int <97,c2int>104] = Nothing 
+            | otherwise = Just $ c2int - 97  
+  where c2int = toInt low_c
+        low_c = toLower c
 
 readRank :: Char -> Maybe Rank
-readRank c = lookup c chr2Rank 
+readRank c | or [c2int <49,c2int>56] = Nothing 
+            | otherwise = Just $ c2int - 49  
+  where c2int = toInt c
 
 makeSquare :: Char -> Char -> Maybe Square
 makeSquare c1 c2 = if isNothing (mkF c1) || isNothing (mkR c2)
@@ -90,10 +82,10 @@ pSquare = do
 intToSquare = int64ToSquare
 
 int64ToSquare :: Int -> Maybe Square
-int64ToSquare n | n < 64 && n >= 0 = makeSquare a_file a_rank
-              | otherwise = Nothing
-  where a_file = chrFileList!!(n `mod` 8)
-        a_rank = chrRankList!!((n-(n `mod` 8)) `div` 8)
+int64ToSquare n | and [n < 64, n >= 0] = Just $ Square a_f a_r
+                | otherwise = Nothing
+  where a_f = n `mod` 8
+        a_r = (n-(n `mod` 8)) `div` 8
 
 int100To64 :: Int -> Int
 int100To64 n = toDec * 8 + toDig - 1 
@@ -112,8 +104,8 @@ int64To100 n = toRow*10 + toFile + 11
 
 squareToInt64 :: Square -> Int
 squareToInt64 sq = aR*8 + aF
-  where aF = fromJust $ lookup (showFile $ squareFile sq) chrFileToInt
-        aR = (read [showRank $ squareRank sq]) - 1
+  where aF = squareFile sq
+        aR = squareRank sq
 
 squareToInt100 :: Square -> Int
 squareToInt100 sq = int64To100 $ squareToInt64 sq
