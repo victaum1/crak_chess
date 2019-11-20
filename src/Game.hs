@@ -1,4 +1,4 @@
-module Game (Game(..), fen2Game, game2FEN, initGame) where
+module Game (Game, GameState(..), fen2Game, game2FEN, initGame) where
 
 import Data.Maybe
 import Squares

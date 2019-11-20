@@ -31,9 +31,8 @@ getListBoard' b = Set.toAscList b
 getListBoard :: Board -> [Pos]
 getListBoard (Board b) = getListBoard' b
 
-
 instance Show Board where
-  show (Board b) = show (getListBoard' b) 
+  show (Board b) = show (getListBoard' b)
 
 makePos :: [Maybe Piece] -> Int -> [Pos]
 makePos [] _ = []
