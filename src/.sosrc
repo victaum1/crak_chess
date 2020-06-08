@@ -1,0 +1,6 @@
+- pattern: .*\.hs
+  excludes:
+    - .*\.swp
+    - .*\.swx
+    - .*\.hs~
+  command: stack ghc \0

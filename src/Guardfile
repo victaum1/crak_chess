@@ -1,8 +1,0 @@
-guard :shell, all_on_start: true do
-    watch (/.*\.hs$/) do |m|
-    puts "\nCompiling...\n"
-    `stack ghc #{m[0]}  && echo "Done!"`
-  end
-end
-
-# vim:ft=ruby
