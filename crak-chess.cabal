@@ -8,7 +8,7 @@ homepage:       https://github.com/victaum1/crak-chess#readme
 bug-reports:    https://github.com/victaum1/crak-chess/issues
 author:         Victor Hugo Manotas Garces
 maintainer:     victorma31@gmail.com
-copyright:      [2019] [Victor Hugo Manotas Garces]
+copyright:      [2020] [Victor Hugo Manotas Garces]
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -29,8 +29,7 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.10 && <5,  containers >=0.6.0.1 && <2, haskeline >=0.7.5.0
-        && <2
+      base >=4.10 && <5,  containers >=0.6.0.1 && <2
   default-language: Haskell2010
 
 executable crak-chess-exe
@@ -41,7 +40,7 @@ executable crak-chess-exe
       app
 --  ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.10 && <5, haskeline >=0.7.5.0 && <2 
+      base >=4.10 && <5, readline >=1.0.3.0 && <2 
     , crak-chess
   default-language: Haskell2010
 
@@ -51,7 +50,7 @@ test-suite integral-test
   hs-source-dirs:
       tests, app, src
   build-depends:
-      base >=4.10 && <5, haskeline >= 0.7.5.0 && <2
+      base >=4.10 && <5, readline >=1.0.3.0 && <2
       , crak-chess
   default-language: Haskell2010
 

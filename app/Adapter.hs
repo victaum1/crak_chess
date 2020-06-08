@@ -1,31 +1,34 @@
 module Adapter where
 
-import System.Console.Haskeline
+import System.Console.Readline
+import Engine
 
-ui_loop = do
-            line <- getInputLine ""
+ui_loop :: Play_Args -> IO()
+ui_loop args = do
+            line <- readline ""
             case line of
               Nothing -> return ()
               Just "quit" -> return ()
               otherwise -> do
-                outputStrLn "Error: Command not known!"
-                ui_loop
+                putStrLn "Error: Command not known!"
+                ui_loop args
 
-uci_loop :: InputT IO ()
+uci_loop :: IO ()
 uci_loop = do
-             outputStrLn "uciok"
-             ui_loop
+             putStrLn "uciok"
+             ui_loop init_args
 
-xb_loop = do
-            line <- getInputLine ""
+xb_loop :: Play_Args -> IO ()
+xb_loop args = do
+            line <- readline ""
             case line of
               Nothing -> return ()
               Just "quit" -> return ()
               otherwise -> do 
-                   outputStrLn "Error: Command not known!"
-                   xb_loop
+                   putStrLn "Error: Command not known!"
+                   xb_loop init_args
 
-xboard_loop :: InputT IO ()
+xboard_loop :: IO ()
 xboard_loop = do
-                outputStrLn ""
-                xb_loop
+  putStrLn ""
+  xb_loop init_args
