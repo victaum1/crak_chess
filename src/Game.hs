@@ -44,7 +44,7 @@ packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
 pCastle :: Parser Int
 pCastle = do
             char '-'
-            0
+            return (0)
           <|> 
           do
             x <- many letter
