@@ -26,7 +26,7 @@ type Board' = Set.Set Pos
 newtype Board = Board Board' deriving Eq 
 
 getListBoard' :: Board' -> [Pos] 
-getListBoard' b = Set.toAscList b
+getListBoard' = Set.toAscList 
 
 getListBoard :: Board -> [Pos]
 getListBoard (Board b) = getListBoard' b
@@ -43,8 +43,8 @@ makePos (a:as) n | isJust a = Pos (fromJust $ intToSquare n) (fromJust a) :
 
 readBoard :: String -> Board
 readBoard str = if isNull then Board Set.empty
-                else Board $ Set.fromList $ fromJust $ fmap (toPos .
-                reverse) rB 
+                else Board $ Set.fromList $ (toPos .
+                reverse) (fromJust rB) 
   where toPos ps = makePos (concat ps) 0
         isNull = isNothing rB 
         rB = readBoard' str 
@@ -70,7 +70,7 @@ checkSquare' (p:ps) sq | getSquare p == sq = Just (getPiece p)
                        | otherwise = checkSquare' ps sq
 
 checkSquare :: Board -> Square -> Maybe Piece
-checkSquare ps sq = checkSquare' (getListBoard ps) sq 
+checkSquare ps = checkSquare' (getListBoard ps)  
 
 subs :: Char -> Char -> String -> String
 subs _  _ [] = []
@@ -106,8 +106,8 @@ board2FEN bd = init $ packFENline $ subs '\n' '/' $ showBoard bd
 pBoard :: Parser Board
 pBoard = P (\inp -> case inp of
   [] -> [] 
-  _ -> if Set.null $ bb $ fen2Board inp then [] else
-          [(fen2Board inp, unwords $ tail $ words inp)])
+  _ -> [(fen2Board inp, unwords $ tail $ words inp
+         )| not $ Set.null $ bb $ fen2Board inp])    
   where
     bb (Board b) = b
 

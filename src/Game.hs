@@ -44,7 +44,7 @@ packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
 pCastle :: Parser Int
 pCastle = do
             char '-'
-            return (0)
+            0
           <|> 
           do
             x <- many letter
@@ -69,8 +69,7 @@ pEpSq = do
           return Nothing
         <|>
         do
-          sq <- pSquare
-          return (Just sq)
+          Just <$> pSquare
 
 pGame :: Parser Game
 pGame = do
@@ -84,7 +83,7 @@ pGame = do
   return (GameState bd t c sq ps ms)
 
 fen2Game :: String -> Maybe Game
-fen2Game str | pG == [] = Nothing
+fen2Game str | null pG = Nothing
              | otherwise = Just $ fst $ head pG 
   where pG = parse pGame str
 

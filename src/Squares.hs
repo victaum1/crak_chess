@@ -34,7 +34,7 @@ showRank :: Rank -> Char
 showRank r | or [r<0,r>7] = error "showRank: Out of bounds"
            | otherwise = chr $ 49 + r
 
-toInt c = ord c
+toInt = ord 
 
 -- Parsing Data Structures
 readCFile :: Char -> Maybe File
@@ -62,15 +62,15 @@ readSquare str = if length str < 2  then Nothing else makeSquare
 pFile :: Parser File
 pFile = P(\inp -> case inp of 
               [] -> []
-              (f:cs) -> if isNothing (readCFile f) then
-                             []
-                        else [(fromJust (readCFile f),cs)])
+              (f:cs) -> [(fromJust (readCFile f), cs
+                ) | isJust $ readCFile f])
 
 pRank :: Parser Rank
 pRank = P(\inp -> case inp of
              [] -> []
-             (r:cs) -> if isNothing(readRank r) then []
-                       else [(fromJust (readRank r),cs)])
+             (r:cs) -> [(fromJust (readRank r), cs
+               )| isJust $ readRank r ]
+         )
 
 pSquare :: Parser Square
 pSquare = do

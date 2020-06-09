@@ -11,7 +11,7 @@ import Data.Char
 newtype Parser a = P (String -> [(a,String)])
 
 parse :: Parser a -> String -> [(a,String)]
-parse (P p) inp = p inp
+parse (P p) = p 
 
 item :: Parser Char
 item = P (\inp -> case inp of
@@ -45,7 +45,7 @@ instance Monad Parser where
 
 instance Alternative Parser where
    -- empty :: Parser a
-   empty = P (\inp -> [])
+   empty = P (const [])
 
    -- (<|>) :: Parser a -> Parser a -> Parser a
    p <|> q = P (\inp -> case parse p inp of

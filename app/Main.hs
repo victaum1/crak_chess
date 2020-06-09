@@ -25,33 +25,30 @@ help_str = unlines [
   ,"uci - Switch to uci protocol."
   ,"Enter moves in coordinate notation. Eg: 'e2e4', 'a7a8Q'"
   ]
-play_map :: [ ( String, Play_Args -> IO ())]
+play_map :: [ ( String, PlayArgs -> IO ())]
 play_map = [
-  ("play", play_loop)
+  ("play", playLoop)
   ,("stop", stop)
   ,("new", new)
   ,("undo", undo)
   ,("dump", dump)
-  ,("help", help_play)
-  ,("quit", quit_play)
-  ,("xboard", xboard_play)
-  ,("uci", uci_play)
+  ,("help", helpPlay)
+  ,("quit", quitPlay)
+  ,("xboard", xboardPlay)
+  ,("uci", uciPlay)
   ]
 
-help_play args = do
+helpPlay args = do
   putStr help_str 
-  play_loop args
+  playLoop args
 
-quit_play _ = do
-  quit
+quitPlay _ = quit
 
-xboard_play _ = do
-  xboard_loop
+xboardPlay _ = xboardLoop
 
-uci_play args = do
-  uci_loop
+uciPlay args = uciLoop
 
-play :: Move -> Play_Args -> IO ()
+play :: Move -> PlayArgs -> IO ()
 play move args = do
   let (st, sd, cp, game, history) = args
   if cp then do
@@ -59,126 +56,117 @@ play move args = do
     if isNothing move then adjudicate game
     else do
       let _game  = makeMove (fromJust move) game
-      let _history = (game : history)
-      putStrLn $ show move
+      let _history = game : history
+      print move
       let __game = fromJust _game
       let _args = (st, sd, False, __game, _history)
-      play_loop _args 
+      playLoop _args 
   else do
     let _game = makeMove move game
     if isNothing _game then
-      show_error move "Ilegal move: "
+      showMsg move "Ilegal move: "
     else do
       let (Just a_game) = _game
-      let a_history = (game : history)
-      play_loop (st, sd, True, a_game, a_history)
+      let a_history = game : history
+      playLoop (st, sd, True, a_game, a_history)
 
 stop args = do
   let (st, sd, cp, game, history) = args 
   let a_cp = False
-  play_loop (st, sd, a_cp, game, history)
+  playLoop (st, sd, a_cp, game, history)
 
-new  _ = play_loop init_args
+new  _ = playLoop init_args
 
-undo :: Play_Args -> IO ()
+undo :: PlayArgs -> IO ()
 undo args = do
   let (st, sd, cp, game, history) = args
-  if null history then 
-    do
-       new args
+  if null history then new args
   else
     let _game = head history
         _history = drop 1 history
         _args = (st, sd, cp,  _game, _history)
     in  
-      play_loop _args
+      playLoop _args
 
-play_loop :: Play_Args -> IO ()
-play_loop args = do
+playLoop :: PlayArgs -> IO ()
+playLoop args = do
   res <- getPlay "play"
-  if isNothing res then do
-    quit
+  if isNothing res then quit
   else do
     let (Just _res) = res 
     let action = lookup _res play_map
-    if isNothing action then do
-      validate res args
+    if isNothing action then validate res args
     else do
       let (Just _action) = action
       _action args
 
-validate line args = do
+validate line args = 
   case line of
     Nothing -> return ()
     Just inp -> do
       let move = parse pMoveCoord inp
       if null move then do
-        show_error inp "(not a command, not a move): "
-        play_loop args
+        showMsg inp "(not a command, not a move): "
+        playLoop args
       else do
         let [( _move, _ )] = move
         let (Just __move) = _move
         play __move args
 
-show_error :: Show a => a -> String -> IO ()
-show_error inp msg = do
-  putStrLn $ msg ++ (show inp)
+showMsg :: Show a => a -> String -> IO ()
+showMsg inp msg = putStrLn $ msg ++ show inp
 
 dump args = do
   let (_, _, _, game, _) = args 
   putStrLn $ showBoard $ getBoard game
-  play_loop args
+  playLoop args
 
 main_map :: [ (String, IO ()) ]
 main_map = [
   ("quit", quit)
-  ,("help", help_main)
-  ,("xboard", xboard_loop)
-  ,("uci", uci_loop)
-  ,("play", main_play)
+  ,("help", mainHelp)
+  ,("xboard", xboardLoop)
+  ,("uci", uciLoop)
+  ,("play", mainPlay)
   ]
 
-quit = do
-  return ()
+quit :: IO ()
+quit = return ()
 
-help_main = do
+mainHelp = do
   putStr help_str
-  main_loop
+  mainLoop
 
-xboard = do
-   xboard_loop 
+xboard = xboardLoop 
 
-uci = do
-  uci_loop
+uci = uciLoop
 
-main_play = do
-  play_loop init_args
+mainPlay = playLoop init_args
 
 
 getPlay caller = readline $ caller ++ "> "
 
 adjudicate game = do
   let side = getTurn game
-  if is_in_check side game then
+  if isInCheck side game then
     if side == Black then
      putStrLn "White wins: {1-0}"
     else
      putStrLn "Black wins: {0-1}"
   else
     putStrLn "A Draw: { 1/2 - 1/2}"
-  main_loop
+  mainLoop
 
-main_loop :: IO ()
-main_loop = do
+mainLoop :: IO ()
+mainLoop = do
    res <- getPlay "Crak"
-   if isNothing res then do
-     quit
+   if isNothing res then quit
    else do
      let (Just _res) = res
      let mbAction = lookup _res main_map
      if isNothing mbAction then do
        putStrLn ""
-       main_loop
+       mainLoop
      else do
        let (Just action) = mbAction
        action
@@ -190,4 +178,4 @@ main = do
     putStrLn "x/x/2020."
     putStrLn ""
     putStrLn "'help' show usage."
-    main_loop 
+    mainLoop 

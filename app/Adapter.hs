@@ -3,32 +3,32 @@ module Adapter where
 import System.Console.Readline
 import Engine
 
-ui_loop :: Play_Args -> IO()
-ui_loop args = do
+uiLoop :: PlayArgs -> IO()
+uiLoop args = do
             line <- readline ""
             case line of
               Nothing -> return ()
               Just "quit" -> return ()
-              otherwise -> do
+              _ -> do
                 putStrLn "Error: Command not known!"
-                ui_loop args
+                uiLoop args
 
-uci_loop :: IO ()
-uci_loop = do
+uciLoop :: IO ()
+uciLoop = do
              putStrLn "uciok"
-             ui_loop init_args
+             uiLoop init_args
 
-xb_loop :: Play_Args -> IO ()
-xb_loop args = do
+xbLoop :: PlayArgs -> IO ()
+xbLoop args = do
             line <- readline ""
             case line of
               Nothing -> return ()
               Just "quit" -> return ()
-              otherwise -> do 
+              _ -> do 
                    putStrLn "Error: Command not known!"
-                   xb_loop init_args
+                   xbLoop init_args
 
-xboard_loop :: IO ()
-xboard_loop = do
+xboardLoop :: IO ()
+xboardLoop = do
   putStrLn ""
-  xb_loop init_args
+  xbLoop init_args
