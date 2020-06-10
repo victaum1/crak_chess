@@ -23,8 +23,8 @@ source-repository head
 
 library
   exposed-modules:
-    Board, Engine, Evaluate, Game, Generator, Moves, Parsing, Pieces, Search
-      , Squares
+    Board, Engine, Evaluate, Game, Generator, Moves, Parsing, Pieces, Rules
+      , Search, Squares
 --      Paths_crak_chess
   hs-source-dirs:
       src
