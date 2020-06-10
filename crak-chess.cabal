@@ -1,7 +1,7 @@
 cabal-version: >= 1.10
 
 name:           crak-chess
-version: 0.0.11.0
+version: 0.0.13.8
 description:    Please see the README on GitHub at 
   <https://github.com/victaum1/crak-chess#readme>
 homepage:       https://github.com/victaum1/crak-chess#readme

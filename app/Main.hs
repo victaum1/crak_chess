@@ -11,7 +11,7 @@ import Data.Maybe
 import Engine
 import Moves
 
-version = "0.0.11.0"
+version = "0.0.13.8"
 help_str = unlines [
   "play  - Engine thinks and plays for the current turn."
   ,"stop - Engine Stops (Human vs Human)."
@@ -25,6 +25,7 @@ help_str = unlines [
   ,"uci - Switch to uci protocol."
   ,"Enter moves in coordinate notation. Eg: 'e2e4', 'a7a8Q'"
   ]
+
 play_map :: [ ( String, PlayArgs -> IO ())]
 play_map = [
   ("play", playLoop)
@@ -57,14 +58,15 @@ play move args = do
     else do
       let _game  = makeMove (fromJust move) game
       let _history = game : history
-      print move
+      print (maybe " " showMove move)
       let __game = fromJust _game
       let _args = (st, sd, False, __game, _history)
       playLoop _args 
   else do
     let _game = makeMove move game
-    if isNothing _game then
-      showMsg move "Ilegal move: "
+    if isNothing _game then do
+      showMsg (showMove move) "Ilegal move: "
+      playLoop args
     else do
       let (Just a_game) = _game
       let a_history = game : history
@@ -90,7 +92,7 @@ undo args = do
 
 playLoop :: PlayArgs -> IO ()
 playLoop args = do
-  res <- getPlay "play"
+  res <- getPlay "playing"
   if isNothing res then quit
   else do
     let (Just _res) = res 
@@ -106,7 +108,7 @@ validate line args =
     Just inp -> do
       let move = parse pMoveCoord inp
       if null move then do
-        showMsg inp "(not a command, not a move): "
+        showMsg inp "Error (not a command, not a move): "
         playLoop args
       else do
         let [( _move, _ )] = move
@@ -159,7 +161,7 @@ adjudicate game = do
 
 mainLoop :: IO ()
 mainLoop = do
-   res <- getPlay "Crak"
+   res <- getPlay "Idle"
    if isNothing res then quit
    else do
      let (Just _res) = res
