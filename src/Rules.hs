@@ -15,9 +15,9 @@ square2Tuple (Square f r) = (f,r)
 map_pieces :: [(PieceType, [[Dir]])]
 map_pieces = [
     (Knight, knight_rules)
-  , (Bishop, []) 
-  , (Rook,   []) 
-  , (Queen,  []) 
+  , (Bishop, bishop_rules) 
+  , (Rook,   rook_rules) 
+  , (Queen,  queen_rules) 
   , (King,   king_rules) 
   ]
 
@@ -42,7 +42,7 @@ makeSquares sq ds = map tuple2Square (makeSquares' (square2Tuple sq) ds)
 
 mini_rook_rules = [[North],[South],[East],[West]]
 
-mini_bishop_rules = [[North,East],[North,West],[South,East],[South,West]]
+mini_bishop_rules = [[North,East],[South,East],[South,West],[North,West]]
 
 king_rules = mini_rook_rules ++ mini_bishop_rules
 
@@ -83,4 +83,10 @@ movePiece' p sq | pieceType p == Pawn = movePawn p sq
 movePiece :: Piece -> Square -> [Square]
 movePiece p sq | onEmptyBoard sq = movePiece' p sq
                | otherwise = []
+
+rook_rules = replicate <$> [1..7] <*> (concat mini_rook_rules)
+
+bishop_rules = map concat (replicate <$> [1..7] <*> mini_bishop_rules)
+
+queen_rules = rook_rules ++ bishop_rules
 
