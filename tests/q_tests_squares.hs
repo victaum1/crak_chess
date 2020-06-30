@@ -9,16 +9,22 @@ import qualified System.Exit as Exit
 strSquareList = [a:b:"" | a <- chrFileList, b <- chrRankList]
 squares = [Square f r | f <- files, r <- ranks]
 
-newtype SafeRank = SRank {getSafeRank::Char} deriving Show
+newtype SafeFileChar = SFileC Char deriving Show
 
-instance Arbitrary SafeRank where
-  arbitrary = SRank <$> (elements chrRankList) 
+newtype SafeRankChar = SRankC Char deriving Show
+
+instance Arbitrary SafeRankChar where
+  arbitrary = SRankC <$> (elements chrRankList) 
+
+instance Arbitrary SafeFileChar where
+  arbitrary = SFileC <$> (elements chrFileList)
 
 instance Arbitrary Square where
   arbitrary = elements squares
 
-prop_successReadFile :: Char -> Property
-prop_successReadFile c = isJust (readCFile c) ==> elem (toLower c) chrFileList
+prop_successReadFile :: SafeFileChar -> Property
+prop_successReadFile (SFileC c) = isJust (readCFile c) ==> elem (toLower c)
+  chrFileList
 
 prop_failureReadFile :: Char -> Property
 prop_failureReadFile c = isNothing (readCFile c) ==> not (elem (toLower c) chrFileList)
@@ -28,8 +34,8 @@ prop_ReadFileIdemPot c = if elem (toLower c) chrFileList
   then showFile (fromJust $ readCFile c) == (toLower c)
   else isNothing (readCFile c)
 
-prop_successReadRank :: SafeRank -> Bool
-prop_successReadRank (SRank c) = isJust (readRank c)
+prop_successReadRank :: SafeRankChar -> Bool
+prop_successReadRank (SRankC c) = isJust (readRank c)
 
 prop_failureReadRank :: Char -> Property
 prop_failureReadRank c = isNothing (readRank c) ==> not (elem (toLower c) chrRankList)

@@ -1,15 +1,16 @@
-module Squares (File, Rank, Square(..), intToSquare, showFile, showRank
-  , int100ToSquare, pSquare, chrFileList, chrRankList, readRank
-  , readCFile, readSquare, files, ranks, squareToInt64,squareToInt100)
+module Squares (File, Rank, Square(..), showFile, showRank
+  , pSquare, chrFileList, chrRankList, readRank
+  , readCFile, readSquare, files, ranks, tuple2Square, square2Tuple, intToSquare)
   where
 
 import Data.Char (toLower, chr, ord)
 import Data.Maybe
 import Parsing
 
+
+
 type File = Int
 type Rank = Int
-
 data Square = Square {
                          squareFile :: File
                        , squareRank :: Rank
@@ -36,7 +37,9 @@ showRank r | or [r<0,r>7] = error "showRank: Out of bounds"
 
 toInt = ord 
 
--- Parsing Data Structures
+
+
+-- Reading Data Structures
 readCFile :: Char -> Maybe File
 readCFile c | or [c2int <97,c2int>104] = Nothing 
             | otherwise = Just $ c2int - 97  
@@ -48,17 +51,18 @@ readRank c | or [c2int <49,c2int>56] = Nothing
             | otherwise = Just $ c2int - 49  
   where c2int = toInt c
 
-makeSquare :: Char -> Char -> Maybe Square
-makeSquare c1 c2 = if isNothing (mkF c1) || isNothing (mkR c2)
+readSquare' :: Char -> Char -> Maybe Square
+readSquare' c1 c2 = if isNothing (mkF c1) || isNothing (mkR c2)
   then Nothing  else Just (Square (fromJust (mkF c1))
   (fromJust (mkR c2)))
   where mkF = readCFile
         mkR = readRank
 
 readSquare :: String -> Maybe Square
-readSquare str = if length str < 2  then Nothing else makeSquare
+readSquare str = if length str < 2  then Nothing else readSquare'
   (head str) (str!!1)
 
+-- Parsing
 pFile :: Parser File
 pFile = P(\inp -> case inp of 
               [] -> []
@@ -78,7 +82,17 @@ pSquare = do
             r <- pRank
             return (Square f r) 
 
--- Integers encoding Squares
+
+-- Integer tuple encoding
+tuple2Square :: (Int,Int) -> Square
+tuple2Square (f,r) = Square f r
+
+
+square2Tuple :: Square -> (Int,Int)
+square2Tuple (Square f r) = (f,r)
+
+
+--- Integers encoding Squares
 intToSquare = int64ToSquare
 
 int64ToSquare :: Int -> Maybe Square
@@ -87,25 +101,3 @@ int64ToSquare n | and [n < 64, n >= 0] = Just $ Square a_f a_r
   where a_f = n `mod` 8
         a_r = (n-(n `mod` 8)) `div` 8
 
-int100To64 :: Int -> Int
-int100To64 n = toDec * 8 + toDig - 1 
-  where toDig = n `mod` 10
-        toDec = (n - toDig - 10) `div` 10
-
-int100ToSquare :: Int -> Maybe Square
-int100ToSquare n | or [n > 88, n < 11] = Nothing 
-                 | or [n `mod` 10 == 0, n `mod` 10 == 9]  = Nothing
-                 | otherwise = int64ToSquare (int100To64 n)
-
-int64To100 :: Int -> Int
-int64To100 n = toRow*10 + toFile + 11
-  where toFile = n `mod` 8
-        toRow = (n - toFile) `div` 8
-
-squareToInt64 :: Square -> Int
-squareToInt64 sq = aR*8 + aF
-  where aF = squareFile sq
-        aR = squareRank sq
-
-squareToInt100 :: Square -> Int
-squareToInt100 sq = int64To100 $ squareToInt64 sq
