@@ -6,7 +6,6 @@ import Squares
 import Data.Maybe
 import Data.Char
 import Parsing
-import qualified Data.Set as Set
 
 initBoardStr = unlines [
                          "rnbqkbnr","pppppppp","........","........"
@@ -15,42 +14,30 @@ initBoardStr = unlines [
 
 initBoardFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
-data Pos = Pos {getSquare :: Square, getPiece :: Piece}
-  deriving (Eq,Ord)
+type Pos = (Square,Piece)
 
-instance Show Pos where
-  show (Pos a b) = "(" ++ show a ++ "," ++ show b ++ ")"
+type Board = [Pos] 
 
-type Board' = Set.Set Pos
 
-newtype Board = Board Board' deriving Eq 
-
-getListBoard' :: Board' -> [Pos] 
-getListBoard' = Set.toAscList 
-
-getListBoard :: Board -> [Pos]
-getListBoard (Board b) = getListBoard' b
-
-instance Show Board where
-  show (Board b) = show (getListBoard' b)
-
-makePos :: [Maybe Piece] -> Int -> [Pos]
+makePos :: [Maybe Piece] -> Int -> Board
 makePos [] _ = []
-makePos (a:as) n | isJust a = Pos (fromJust $ intToSquare n) (fromJust a) :
+makePos (a:as) n | isJust a = ((fromJust $ intToSquare n),(fromJust a)) :
                     nexT
                  | otherwise = nexT
                    where nexT = makePos as (n+1)
 
+
 readBoard :: String -> Board
-readBoard str = if isNull then Board Set.empty
-                else Board $ Set.fromList $ (toPos .
-                reverse) (fromJust rB) 
+readBoard str = if isNull then []
+                else (toPos .reverse) (fromJust rB) 
   where toPos ps = makePos (concat ps) 0
         isNull = isNothing rB 
         rB = readBoard' str 
 
+
 readBoard' :: String -> Maybe [[Maybe Piece]]
 readBoard' = (mapM . mapM) readCPiece . lines
+
 
 showBoard' :: Board -> [String]
 showBoard' ps = (map.map) showP $ reverse $ splitb lps
@@ -61,24 +48,24 @@ showBoard' ps = (map.map) showP $ reverse $ splitb lps
         showP p | isJust p = showPiece $ fromJust p
                 | otherwise = '.'
 
+
 showBoard :: Board-> String
 showBoard = unlines . showBoard'
 
-checkSquare' :: [Pos] -> Square -> Maybe Piece
-checkSquare' [] _ = Nothing
-checkSquare' (p:ps) sq | getSquare p == sq = Just (getPiece p)
-                       | otherwise = checkSquare' ps sq
 
 checkSquare :: Board -> Square -> Maybe Piece
-checkSquare ps = checkSquare' (getListBoard ps)  
+checkSquare bd sq = lookup sq bd
+
 
 subs :: Char -> Char -> String -> String
 subs _  _ [] = []
 subs ic oc (c:cs) | c == ic = oc : subs ic oc cs
                   | otherwise = c : subs ic oc cs
 
+
 showFENline :: String -> String
 showFENline = showFENline' . subs '/' '\n' 
+
 
 showFENline' :: String -> String
 showFENline' [] = []
@@ -86,10 +73,12 @@ showFENline' (c:cs) | isDigit c = replicate (digitToInt c) '.' ++
   showFENline' cs
                     | otherwise = c: showFENline' cs
 
+
 countDots :: String -> Int -> Int
 countDots [] n = n
 countDots (c:cs) n | c == '.' = countDots cs (n+1)
                    | otherwise = n
+
 
 packFENline :: String -> String
 packFENline [] = []
@@ -97,17 +86,18 @@ packFENline (c:cs) | c == '.' = intToDigit (countDots (c:cs) 0) :
   packFENline (drop (countDots (c:cs) 0) (c:cs))
                    | otherwise = c : packFENline cs
 
+
 fen2Board :: String -> Board
 fen2Board str = readBoard $ showFENline $ head $ words str
 
+
 board2FEN :: Board -> String
 board2FEN bd = init $ packFENline $ subs '\n' '/' $ showBoard bd
+
 
 pBoard :: Parser Board
 pBoard = P (\inp -> case inp of
   [] -> [] 
   _ -> [(fen2Board inp, unwords $ tail $ words inp
-         )| not $ Set.null $ bb $ fen2Board inp])    
-  where
-    bb (Board b) = b
+         )| not $ null $ fen2Board inp])
 

@@ -9,17 +9,13 @@ import Parsing
 data Move = Move {
   initSquare:: Square,
   finalSquare:: Square,
-  movedPiece::  Maybe PieceType,
-  capturedPiece:: Maybe PieceType,
   promotedPiece:: Maybe PieceType
 } deriving (Eq,Show)
 
 showMove:: Move -> String
-showMove mv = (if mp == Just Pawn then "" else maybe "" show mp) ++
-  init ++ final ++ maybe "" show promo
+showMove mv = init ++ final ++ maybe "" show promo
   where init  = map toLower $ show $ initSquare mv
         final = map toLower $ show $ finalSquare mv
-        mp    = movedPiece mv
         promo = promotedPiece mv
 
 pLf:: Parser ()
@@ -31,7 +27,7 @@ pMoveCoord = do
           space <|> pLf
           sqi <- pSquare 
           sqf <- pSquare
-          return $ Just $ Move sqi sqf Nothing Nothing Nothing
+          return $ Just $ Move sqi sqf Nothing
 
 readMove:: String -> Maybe Move
 readMove str = fst $ head $ parse pMoveCoord str

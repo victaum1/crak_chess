@@ -18,7 +18,7 @@ instance Arbitrary SafeCString where
   arbitrary = SafeCString <$> genSafeCString 
 
 prop_read_board_8by8 :: SafeCString -> Bool
-prop_read_board_8by8 vstr = showBoard (fromJust $ readBoard a_vstr) ==
+prop_read_board_8by8 vstr = showBoard (readBoard a_vstr) ==
   a_vstr
   where a_vstr = getCString vstr
 
