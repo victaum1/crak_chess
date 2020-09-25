@@ -1,8 +1,6 @@
 #+title: ReadMe of crak_chess
 #+author: Victor H. Manotas G.
 #+date: <2020-09-25 vie>  
-
-crak_chess
 * README
 
 ** Motivation
