@@ -5,7 +5,7 @@ set -e
 VER_FILE=VERSION
 FILE_0="app/Main.hs"
 FILE_1="crak-chess.cabal"
-FILE_2="README.md"
+FILE_2="README.org"
 FILE_3="LEEME.md"
 FILES="${FILE_0} ${FILE_1} ${FILE_2} ${FILE_3}" 
 
