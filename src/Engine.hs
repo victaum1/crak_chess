@@ -1,9 +1,9 @@
 module Engine where
 
-import Data.Maybe
-import Moves
-import Game
-import Pieces(Side(..))
+import           Data.Maybe
+import           Game
+import           Moves
+import           Pieces     (Side (..))
 
 st_time = 5000::Int
 st_depth = 10::Int
@@ -23,12 +23,12 @@ init_args = (st_time, st_depth, st_cp, initGame, [])
 
 isInCheck :: Side -> Game -> Bool
 isInCheck s g | s == White && g == game_in_check = True
-              | otherwise = False 
+              | otherwise = False
 
 makeMove :: Move -> Game -> Maybe Game
 makeMove m g | m == move_w && g == initGame = game_b
              | otherwise = Nothing
 
 think :: Game ->  Maybe Move
-think g | g == fromJust game_b = move_b 
+think g | g == fromJust game_b = move_b
         | otherwise = Nothing

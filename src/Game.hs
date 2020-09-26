@@ -1,10 +1,11 @@
+{-# LANGUAGE LambdaCase #-}
 module Game (Game, GameState(..), fen2Game, game2FEN, initGame) where
 
-import Data.Maybe
-import Squares
-import Board
-import Pieces(Side(..))
-import Parsing
+import           Board
+import           Data.Maybe
+import           Parsing
+import           Pieces     (Side (..))
+import           Squares
 
 initFEN = initBoardFEN ++ " w KQkq - 0 1"
 
@@ -13,14 +14,14 @@ data GameState = GameState {
   , getTurn   :: Side
   , getCastle :: Int
   , getEpSq   :: Maybe Square
-  , getNPlys   :: Int
-  , getNMoves  :: Int
+  , getNPlys  :: Int
+  , getNMoves :: Int
   } deriving (Show, Eq)
 
 type  Game = GameState
 
 pTurn :: Parser Side
-pTurn = P(\inp -> case inp of
+pTurn = P(\case
   [] -> []
   (c:cs) | c == 'w' -> [(White, cs)]
          | c == 'b' -> [(Black, cs)]
@@ -37,7 +38,7 @@ packCastle [] n _ = Just n
 packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
                        | otherwise = Nothing
                   where findCastle = lookup c castleTable
-                        already = elem c xs
+                        already = c `elem` xs
                         isInTable = isJust findCastle && not already
                         nCastle = n + fromJust findCastle
 
@@ -45,7 +46,7 @@ pCastle :: Parser Int
 pCastle = do
             char '-'
             return (0)
-          <|> 
+          <|>
           do
             x <- many letter
             return (fromJust $ packCastle x 0 "")
@@ -57,7 +58,7 @@ pNMoves :: Parser Int
 pNMoves = natural
 
 pNoSq :: Parser Char
-pNoSq = P(\inp -> case inp of
+pNoSq = P(\case
   [] -> []
   (r:cs) | r == '-' -> [('-',cs)]
          | otherwise -> []
@@ -79,12 +80,11 @@ pGame = do
   sq <- token pEpSq
   ps <- pPlys
   space
-  ms <- pNMoves
-  return (GameState bd t c sq ps ms)
+  GameState bd t c sq ps <$> pNMoves
 
 fen2Game :: String -> Maybe Game
 fen2Game str | null pG = Nothing
-             | otherwise = Just $ fst $ head pG 
+             | otherwise = Just $ fst $ head pG
   where pG = parse pGame str
 
 initGame = fromJust $ fen2Game initFEN
@@ -105,7 +105,7 @@ showCflags n | isInTable = [findChar]
                      findChar = fromJust $ lookup n castleTable'
 
 game2FEN :: Game -> String
-game2FEN g = unwords [board2FEN $ getBoard g,turn,cf,sq,plys,moves] 
+game2FEN g = unwords [board2FEN $ getBoard g,turn,cf,sq,plys,moves]
             where turn = if getTurn g == White then "w" else "b"
                   plys = show $ getNPlys g
                   cf = showCflags $ getCastle g

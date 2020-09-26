@@ -1,15 +1,15 @@
 module Main where
 
-import System.IO
-import System.Console.Readline
-import Adapter
-import Game
-import Parsing
-import Board
-import Pieces(Side(..))
-import Data.Maybe
-import Engine
-import Moves
+import           Adapter
+import           Board
+import           Data.Maybe
+import           Engine
+import           Game
+import           Moves
+import           Parsing
+import           Pieces                  (Side (..))
+import           System.Console.Readline
+import           System.IO
 
 version = "0.0.13.8"
 help_str = unlines [
@@ -40,7 +40,7 @@ play_map = [
   ]
 
 helpPlay args = do
-  putStr help_str 
+  putStr help_str
   playLoop args
 
 quitPlay _ = quit
@@ -61,7 +61,7 @@ play move args = do
       print (maybe " " showMove move)
       let __game = fromJust _game
       let _args = (st, sd, False, __game, _history)
-      playLoop _args 
+      playLoop _args
   else do
     let _game = makeMove move game
     if isNothing _game then do
@@ -73,7 +73,7 @@ play move args = do
       playLoop (st, sd, True, a_game, a_history)
 
 stop args = do
-  let (st, sd, cp, game, history) = args 
+  let (st, sd, _, game, history) = args
   let a_cp = False
   playLoop (st, sd, a_cp, game, history)
 
@@ -81,13 +81,13 @@ new  _ = playLoop init_args
 
 undo :: PlayArgs -> IO ()
 undo args = do
-  let (st, sd, cp, game, history) = args
+  let (st, sd, cp, _, history) = args
   if null history then new args
   else
     let _game = head history
         _history = drop 1 history
         _args = (st, sd, cp,  _game, _history)
-    in  
+    in
       playLoop _args
 
 playLoop :: PlayArgs -> IO ()
@@ -95,14 +95,15 @@ playLoop args = do
   res <- getPlay "playing"
   if isNothing res then quit
   else do
-    let (Just _res) = res 
+    let (Just _res) = res
     let action = lookup _res play_map
     if isNothing action then validate res args
     else do
       let (Just _action) = action
       _action args
 
-validate line args = 
+validate :: Maybe String -> PlayArgs -> IO ()
+validate line args =
   case line of
     Nothing -> return ()
     Just inp -> do
@@ -118,8 +119,9 @@ validate line args =
 showMsg :: Show a => a -> String -> IO ()
 showMsg inp msg = putStrLn $ msg ++ show inp
 
+dump :: PlayArgs -> IO ()
 dump args = do
-  let (_, _, _, game, _) = args 
+  let (_, _, _, game, _) = args
   putStrLn $ showBoard $ getBoard game
   playLoop args
 
@@ -139,7 +141,7 @@ mainHelp = do
   putStr help_str
   mainLoop
 
-xboard = xboardLoop 
+xboard = xboardLoop
 
 uci = uciLoop
 
@@ -180,4 +182,4 @@ main = do
     putStrLn "x/x/2020."
     putStrLn ""
     putStrLn "'help' show usage."
-    mainLoop 
+    mainLoop

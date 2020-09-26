@@ -1,7 +1,7 @@
 module Adapter where
 
-import System.Console.Readline
-import Engine
+import           Engine
+import           System.Console.Readline
 
 uiLoop :: PlayArgs -> IO()
 uiLoop args = do
@@ -24,7 +24,7 @@ xbLoop args = do
             case line of
               Nothing -> return ()
               Just "quit" -> return ()
-              _ -> do 
+              _ -> do
                    putStrLn "Error: Command not known!"
                    xbLoop init_args
 

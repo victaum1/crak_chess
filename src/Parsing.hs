@@ -1,22 +1,23 @@
--- Functional parsing library from chapter 13 of Programming in Haskell,
+{-# LANGUAGE LambdaCase #-}
+-- Based on Functional parsing library from chapter 13 of Programming in Haskell,
 -- Graham Hutton, Cambridge University Press, 2016.
 
 module Parsing (module Parsing, module Control.Applicative) where
 
-import Control.Applicative
-import Data.Char
+import           Control.Applicative
+import           Data.Char
 
 -- Basic definitions
 
 newtype Parser a = P (String -> [(a,String)])
 
 parse :: Parser a -> String -> [(a,String)]
-parse (P p) = p 
+parse (P p) = p
 
 item :: Parser Char
-item = P (\inp -> case inp of
-                     []     -> []
-                     (x:xs) -> [(x,xs)])
+item = P (\case
+             []     -> []
+             (x:xs) -> [(x,xs)])
 
 -- Sequencing parsers
 
@@ -78,8 +79,8 @@ char x = sat (== x)
 
 string :: String -> Parser String
 string []     = return []
-string (x:xs) = do char x
-                   string xs
+string (x:xs) = do _ <- char x
+                   _ <- string xs
                    return (x:xs)
 
 ident :: Parser String

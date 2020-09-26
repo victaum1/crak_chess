@@ -13,7 +13,7 @@ license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    README.md
+    README.org
     LEEME.md
     ChangeLog.md
 

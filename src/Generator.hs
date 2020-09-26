@@ -1,9 +1,9 @@
 module Generator (moveGenerator, squareAttack) where
-import Squares
-import Pieces
-import Game
-import Moves
-import Rules
+import           Game
+import           Moves
+import           Pieces
+import           Rules
+import           Squares
 
 
 squareAttack :: Square -> Game -> Bool
@@ -11,7 +11,7 @@ squareAttack _ _ = False
 
 
 moveGenerator :: Game -> [Move]
-moveGenerator _ = undefined
+moveGenerator _ = []
 
 
 makeSquares' :: (Int,Int) -> [[Dir]] -> [(Int,Int)]
@@ -27,7 +27,7 @@ addTuple' (f1,r1) (f2,r2) = (f1+f2,r1+r2)
 
 
 compose :: [Dir] -> (Int,Int) -> (Int,Int)
-compose ds = addTuple' (foldr orthoMove (0,0) ds) 
+compose ds = addTuple' (foldr orthoMove (0,0) ds)
 
 
 orthoMove :: Dir -> (Int,Int) -> (Int,Int)
@@ -44,7 +44,7 @@ movePieceType pt sq = filter onEmptyBoard (makeSquares sq ruleMap)
 
 movePawn :: Piece -> Square -> [Square]
 movePawn pn sq = filter onEmptyBoard (makeSquares sq ruleMap)
-  where ruleMap = seekMap pn map_pawns 
+  where ruleMap = seekMap pn map_pawns
 
 
 movePiece' :: Piece -> Square -> [Square]

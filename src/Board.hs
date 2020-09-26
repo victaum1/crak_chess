@@ -1,11 +1,11 @@
-module Board (Board, Pos(..), initBoardFEN, fen2Board,
-  board2FEN, pBoard, showBoard, readBoard) where
+module Board (Board, Pos, initBoardFEN, fen2Board,
+  board2FEN, pBoard, showBoard, readBoard, initBoardStr) where
 
-import Pieces
-import Squares
-import Data.Maybe
-import Data.Char
-import Parsing
+import           Data.Char
+import           Data.Maybe
+import           Parsing
+import           Pieces
+import           Squares
 
 initBoardStr = unlines [
                          "rnbqkbnr","pppppppp","........","........"
@@ -16,12 +16,12 @@ initBoardFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 type Pos = (Square,Piece)
 
-type Board = [Pos] 
+type Board = [Pos]
 
 
 makePos :: [Maybe Piece] -> Int -> Board
 makePos [] _ = []
-makePos (a:as) n | isJust a = ((fromJust $ intToSquare n),(fromJust a)) :
+makePos (a:as) n | isJust a = (fromJust $ intToSquare n,fromJust a) :
                     nexT
                  | otherwise = nexT
                    where nexT = makePos as (n+1)
@@ -29,10 +29,10 @@ makePos (a:as) n | isJust a = ((fromJust $ intToSquare n),(fromJust a)) :
 
 readBoard :: String -> Board
 readBoard str = if isNull then []
-                else (toPos .reverse) (fromJust rB) 
+                else (toPos .reverse) (fromJust rB)
   where toPos ps = makePos (concat ps) 0
-        isNull = isNothing rB 
-        rB = readBoard' str 
+        isNull = isNothing rB
+        rB = readBoard' str
 
 
 readBoard' :: String -> Maybe [[Maybe Piece]]
@@ -64,7 +64,7 @@ subs ic oc (c:cs) | c == ic = oc : subs ic oc cs
 
 
 showFENline :: String -> String
-showFENline = showFENline' . subs '/' '\n' 
+showFENline = showFENline' . subs '/' '\n'
 
 
 showFENline' :: String -> String
@@ -97,7 +97,7 @@ board2FEN bd = init $ packFENline $ subs '\n' '/' $ showBoard bd
 
 pBoard :: Parser Board
 pBoard = P (\inp -> case inp of
-  [] -> [] 
+  [] -> []
   _ -> [(fen2Board inp, unwords $ tail $ words inp
          )| not $ null $ fen2Board inp])
 
