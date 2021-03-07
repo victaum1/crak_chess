@@ -1,0 +1,64 @@
+name: crak-chess
+version: 0.0.13.8
+synopsis: A simple chess engine in haskell by Victaum
+description: See README at <https://gitlab.com/victaum/vichess#readme>
+maintainer: Victor H. Manotas G. <victorma32@gmail.com>
+copyright:
+  - (2020) Victor Hugo Manotas Garces
+git: https://gitlab.com/victaum/vichess
+license: MIT
+extra-source-files:
+  - doc/*
+    #  - README.org
+    #  - ChangeLog.org
+category: Games
+
+dependencies:
+  - base >= 4.6 && < 5
+
+library:
+    source-dirs: src
+    exposed-modules:
+      - Board
+      - Moves
+      - Pieces
+      - Squares
+      - Game
+      - Parsing
+      - Defs
+    dependencies:
+      - containers
+      - transformers
+
+executables:
+  crakchess-exe:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+        #      - readline >= 1.0.3.0 && < 2
+      - transformers
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs:
+      - app
+      - tests
+      - src
+    ghc-options:
+      - -theaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+      # - hspec
+      # - QuickCheck
+      # - mockery
+      - template-haskell
+      # - HUnit
+      # - build-tools: hspec-discover

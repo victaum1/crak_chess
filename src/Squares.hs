@@ -1,16 +1,24 @@
 {-# LANGUAGE LambdaCase #-}
 module Squares (File, Rank, Square(..), showFile, showRank
-  , pSquare, chrFileList, chrRankList, readRank
-  , readCFile, readSquare, files, ranks, tuple2Square, square2Tuple, intToSquare)
+  , pSquare, readRank, readCFile, readSquare, files, ranks, tuple2Square
+  , square2Tuple, intToSquare)
   where
 
 import           Data.Char  (chr, ord, toLower)
 import           Data.Maybe
 import           Parsing
 
+-- vars
+chr_file_ls = ['a' .. 'h']
+chr_rank_ls = ['1' .. '8']
+files = [0..7]::[Int]
+ranks = files
 
+
+--adts
 type File = Int
 type Rank = Int
+
 data Square = Square {
                          squareFile :: File
                        , squareRank :: Rank
@@ -20,26 +28,21 @@ instance Show Square where
   show (Square f r) =  showFile f : [showRank r]
 
 
--- Representing Data Structures
-chrFileList =  ['a' .. 'h']
-chrRankList = ['1' .. '8']
-
-files = [0..7]::[Int]
-ranks = files
-
+-- funcs
 showFile :: File -> Char
 showFile f | (f<0) || (f>7) = error "showFile: Out of bounds"
            | otherwise = chr $ 97 + f
+
 
 showRank :: Rank -> Char
 showRank r | (r<0) || (r>7) = error "showRank: Out of bounds"
            | otherwise = chr $ 49 + r
 
+
 toInt = ord
 
 
-
--- Reading Data Structures
+-- Reading Data Structures / Parsing
 readCFile :: Char -> Maybe File
 readCFile c | (c2int <97) || (c2int>104) = Nothing
             | otherwise = Just $ c2int - 97
@@ -62,7 +65,7 @@ readSquare :: String -> Maybe Square
 readSquare str = if length str < 2  then Nothing else readSquare'
   (head str) (str!!1)
 
--- Parsing
+
 pFile :: Parser File
 pFile = P(\case
     [] -> []
@@ -89,7 +92,6 @@ tuple2Square (f,r) = Square f r
 
 square2Tuple :: Square -> (Int,Int)
 square2Tuple (Square f r) = (f,r)
-
 
 --- Integers encoding Squares
 intToSquare = int64ToSquare

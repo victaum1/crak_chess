@@ -1,5 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
-module Game (Game, GameState(..), fen2Game, game2FEN, initGame) where
+module Game (Game, GameState(..), fen2Game, game2FEN, init_game
+            , init_fen, pGame) where
+
 
 import           Board
 import           Data.Maybe
@@ -7,18 +9,26 @@ import           Parsing
 import           Pieces     (Side (..))
 import           Squares
 
-initFEN = initBoardFEN ++ " w KQkq - 0 1"
 
+-- vars / const
+init_fen = init_board_fen ++ "w KQkq - 0 1"
+castle_chars = "KQkq"
+castle_codes = [1,2,4,8] :: [Int]
+init_game = fromJust $ fen2Game init_fen
+castle_table = zip castle_chars castle_codes
+castle_table' = zip castle_codes castle_chars
+
+-- adts
 data GameState = GameState {
-    getBoard  :: Board
-  , getTurn   :: Side
-  , getCastle :: Int
-  , getEpSq   :: Maybe Square
-  , getNPlys  :: Int
-  , getNMoves :: Int
-  } deriving (Show, Eq)
+     board :: Board
+    ,turn :: Side
+    ,castleFlag :: Int
+    ,epSquare :: Maybe Square
+    ,nPlys :: Int
+    ,nMoves :: Int
+  } deriving (Eq,Show)
 
-type  Game = GameState
+type Game = GameState
 
 pTurn :: Parser Side
 pTurn = P(\case
@@ -27,17 +37,13 @@ pTurn = P(\case
          | c == 'b' -> [(Black, cs)]
          | otherwise -> [])
 
-castleChars = "KQkq"
-castleCodes = [1,2,4,8]
 
-castleTable = zip castleChars castleCodes
-castleTable' = zip castleCodes castleChars
 
 packCastle :: String -> Int -> String -> Maybe Int
 packCastle [] n _ = Just n
 packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
                        | otherwise = Nothing
-                  where findCastle = lookup c castleTable
+                  where findCastle = lookup c castle_table
                         already = c `elem` xs
                         isInTable = isJust findCastle && not already
                         nCastle = n + fromJust findCastle
@@ -74,20 +80,18 @@ pEpSq = do
 
 pGame :: Parser Game
 pGame = do
-  bd <- pBoard
-  t <- token pTurn
-  c <- pCastle
+  bd <- pFenBoard
+  t <- pTurn
+  c <- token pCastle
   sq <- token pEpSq
-  ps <- pPlys
-  space
-  GameState bd t c sq ps <$> pNMoves
+  ps <- token pPlys
+  GameState bd t c sq ps <$> token pNMoves
 
 fen2Game :: String -> Maybe Game
 fen2Game str | null pG = Nothing
              | otherwise = Just $ fst $ head pG
   where pG = parse pGame str
 
-initGame = fromJust $ fen2Game initFEN
 
 showCflags :: Int -> String
 showCflags n | isInTable = [findChar]
@@ -101,14 +105,15 @@ showCflags n | isInTable = [findChar]
              | n == 13 = "Kkq"
              | n == 15 = "KQkq"
              | otherwise = "-"
-               where isInTable = isJust $ lookup n castleTable'
-                     findChar = fromJust $ lookup n castleTable'
+               where isInTable = isJust $ lookup n castle_table'
+                     findChar = fromJust $ lookup n castle_table'
 
 game2FEN :: Game -> String
-game2FEN g = unwords [board2FEN $ getBoard g,turn,cf,sq,plys,moves]
-            where turn = if getTurn g == White then "w" else "b"
-                  plys = show $ getNPlys g
-                  cf = showCflags $ getCastle g
-                  sq = maybe "-" show $ getEpSq g
-                  moves = show $ getNMoves g
+game2FEN g = unwords [board2FEN getBoard,getTurn,getCf,getSq,getPlys,getMoves]
+            where getBoard = board g
+                  getTurn = if turn g == White then "w" else "b"
+                  getPlys = show $ nPlys g
+                  getCf = showCflags $ castleFlag g
+                  getSq = maybe "-" show $ epSquare g
+                  getMoves = show $ nMoves g
 

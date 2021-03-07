@@ -1,131 +1,90 @@
 module Main where
 
-import           Adapter
-import           Board
-import           Data.Maybe
-import           Engine
-import           Game
-import           Moves
-import           Parsing
-import           Pieces                  (Side (..))
-import           System.Console.Readline
-import           System.IO
+import Parsing
+import Moves
+import Defs (mio, quit, version)
+import Uci -- Uci protocol
+import Xboard -- Xboard protocol
+import Board
+import Game
+import System.IO
+import Control.Monad.Trans.State
+import Engine
 
-version = "0.0.13.8"
+
 help_str = unlines [
-  "play  - Engine thinks and plays for the current turn."
+  "quit - Exits the engine."
+  ,"uci - Switch to uci protocol."
+  ,"xboard - Switch to xboard protocol."
+  ,"play - play Mode"
+  ,"In play Mode: "
+  ,"play  - Engine thinks and plays for the current turn."
   ,"stop - Engine Stops (Human vs Human)."
   ,"st n - Sets the time per move in seconds."
   ,"sd n - Sets the deph of searching."
   ,"undo - Undo a move."
   ,"new - New game."
   ,"dump - Dumps the board."
-  ,"quit - Exits the engine."
-  ,"xboard - Switch to xboard protocol."
-  ,"uci - Switch to uci protocol."
   ,"Enter moves in coordinate notation. Eg: 'e2e4', 'a7a8Q'"
   ]
 
-play_map :: [ ( String, PlayArgs -> IO ())]
-play_map = [
-  ("play", playLoop)
-  ,("stop", stop)
-  ,("new", new)
-  ,("undo", undo)
-  ,("dump", dump)
-  ,("help", helpPlay)
-  ,("quit", quitPlay)
-  ,("xboard", xboardPlay)
-  ,("uci", uciPlay)
+
+play_map :: [(String, StateT PlayArgs IO ())]
+play_map = [("play", playGo), ("stop", stop), ("new", mio mainPlay)
+  ,("undo", playUndo), ("dump", dump), ("help", helpPlay) ,("quit", quitPlay)
+  ,("xboard", mio xboardLoop)
+  ,("uci", mio uciLoop)
   ]
 
-helpPlay args = do
-  putStr help_str
-  playLoop args
 
-quitPlay _ = quit
-
-xboardPlay _ = xboardLoop
-
-uciPlay args = uciLoop
-
-play :: Move -> PlayArgs -> IO ()
-play move args = do
-  let (st, sd, cp, game, history) = args
-  if cp then do
-    let move = think game
-    if isNothing move then adjudicate game
-    else do
-      let _game  = makeMove (fromJust move) game
-      let _history = game : history
-      print (maybe " " showMove move)
-      let __game = fromJust _game
-      let _args = (st, sd, False, __game, _history)
-      playLoop _args
+playLoop = do
+  line <- mio $ getPlay "play"
+  if null line then playLoop
   else do
-    let _game = makeMove move game
-    if isNothing _game then do
-      showMsg (showMove move) "Ilegal move: "
-      playLoop args
+    let input = words line
+    let cmd = head input
+    let a_move = parse pMoveCoord cmd
+    if null a_move then do
+        let res = lookup cmd play_map
+        maybe (mio (errorCmd ["unknown command", unwords input]) >> playLoop)
+          id res
     else do
-      let (Just a_game) = _game
-      let a_history = game : history
-      playLoop (st, sd, True, a_game, a_history)
+      xMakeMove $ fst $ head a_move
+      playLoop
 
-stop args = do
-  let (st, sd, _, game, history) = args
-  let a_cp = False
-  playLoop (st, sd, a_cp, game, history)
 
-new  _ = playLoop init_args
+playGo = thinkMove >> playLoop
 
-undo :: PlayArgs -> IO ()
-undo args = do
-  let (st, sd, cp, _, history) = args
-  if null history then new args
-  else
-    let _game = head history
-        _history = drop 1 history
-        _args = (st, sd, cp,  _game, _history)
-    in
-      playLoop _args
 
-playLoop :: PlayArgs -> IO ()
-playLoop args = do
-  res <- getPlay "playing"
-  if isNothing res then quit
-  else do
-    let (Just _res) = res
-    let action = lookup _res play_map
-    if isNothing action then validate res args
+stop = playLoop
+
+
+playUndo = do
+  args <- get
+  let a_hist = getHist args
+  if length a_hist < 2 then playLoop
     else do
-      let (Just _action) = action
-      _action args
+           takeBack
+           takeBack
+           playLoop
 
-validate :: Maybe String -> PlayArgs -> IO ()
-validate line args =
-  case line of
-    Nothing -> return ()
-    Just inp -> do
-      let move = parse pMoveCoord inp
-      if null move then do
-        showMsg inp "Error (not a command, not a move): "
-        playLoop args
-      else do
-        let [( _move, _ )] = move
-        let (Just __move) = _move
-        play __move args
 
-showMsg :: Show a => a -> String -> IO ()
-showMsg inp msg = putStrLn $ msg ++ show inp
+dump :: StateT PlayArgs IO ()
+dump = do
+  args <- get
+  let a_game = getGame args
+  mio $ putStrLn $ showBoard $ board a_game
+  playLoop
 
-dump :: PlayArgs -> IO ()
-dump args = do
-  let (_, _, _, game, _) = args
-  putStrLn $ showBoard $ getBoard game
-  playLoop args
 
-main_map :: [ (String, IO ()) ]
+helpPlay = do
+  mio $ putStr help_str
+  playLoop
+
+quitPlay = mio quit
+
+
+main_map :: [(String, IO ())]
 main_map = [
   ("quit", quit)
   ,("help", mainHelp)
@@ -134,52 +93,36 @@ main_map = [
   ,("play", mainPlay)
   ]
 
-quit :: IO ()
-quit = return ()
 
 mainHelp = do
   putStr help_str
   mainLoop
 
-xboard = xboardLoop
 
-uci = uciLoop
-
-mainPlay = playLoop init_args
+mainPlay = evalStateT playLoop init_args
 
 
-getPlay caller = readline $ caller ++ "> "
+getPlay caller = do
+  putStr $ caller ++ "> "
+  getLine
 
-adjudicate game = do
-  let side = getTurn game
-  if isInCheck side game then
-    if side == Black then
-     putStrLn "White wins: {1-0}"
-    else
-     putStrLn "Black wins: {0-1}"
-  else
-    putStrLn "A Draw: { 1/2 - 1/2}"
-  mainLoop
 
 mainLoop :: IO ()
 mainLoop = do
-   res <- getPlay "Idle"
-   if isNothing res then quit
-   else do
-     let (Just _res) = res
-     let mbAction = lookup _res main_map
-     if isNothing mbAction then do
-       putStrLn ""
-       mainLoop
-     else do
-       let (Just action) = mbAction
-       action
+  res <- getPlay "Craken"
+  if null res then mainLoop
+  else do
+    let mbAction = lookup res main_map
+    maybe (putStrLn "" >> mainLoop)
+          id mbAction
+
 
 main :: IO ()
 main = do
-    hSetBuffering stdout NoBuffering
-    putStrLn $ "Craken " ++ version ++ " by V. Manotas."
-    putStrLn "x/x/2020."
-    putStrLn ""
-    putStrLn "'help' show usage."
-    mainLoop
+  hSetBuffering stdout NoBuffering
+  putStrLn $ "Craken " ++ version ++ " by V. Manotas."
+  putStrLn "x/x/2020."
+  putStrLn "'help' show usage."
+  putStrLn ""
+  mainLoop
+

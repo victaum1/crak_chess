@@ -5,7 +5,7 @@ Escaques
 Piezas
 Tablero
 Estado del Juego
-Jugadas
+Presentación de Jugadas
 
 Conversiones a Texto:
 'FEN' a estructuras y viceversa.

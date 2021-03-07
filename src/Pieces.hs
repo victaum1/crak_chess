@@ -1,10 +1,23 @@
-module Pieces (pieceTypeList, pieceCharList, Side(..), Piece(..), showPiece
-  , readCPiece, PieceType(..))
+{-# LANGUAGE LambdaCase #-}
+module Pieces (piece_type_list, piece_char_list, Side(..), Piece(..), showPiece
+  , readCPiece, PieceType(..), piece_fen_list, pPiece)
   where
 
+import Parsing
 import           Data.Char  (isUpper, toLower, toUpper)
 import           Data.Maybe
 
+
+-- vars / const
+piece_type_list = [Pawn .. ]
+piece_char_list = "PNBRQK"
+piece_fen_list = "." ++ piece_char_list
+
+type_list = zip piece_char_list piece_type_list
+type_list' = zip piece_type_list piece_char_list
+
+
+-- adts
 data PieceType = Pawn | Knight | Bishop | Rook | Queen | King
   deriving (Eq,Ord,Enum)
 
@@ -20,8 +33,8 @@ data Side =  White | Black
              deriving (Eq,Ord,Enum)
 
 instance Show Side where
-  show s | s == White = "W_" -- First Team
-         | otherwise  = "B_" -- The other Team
+  show s | s == White = "W" -- First Team
+         | otherwise  = "B" -- The other Team
 
 data Piece = Piece {
                       pieceSide :: Side
@@ -31,23 +44,23 @@ data Piece = Piece {
 instance Show Piece where
   show (Piece s p) = show s ++ show p
 
-pieceTypeList = [Pawn .. ]
-pieceCharList = "PNBRQK"
 
-typeList = zip pieceCharList pieceTypeList
-typeList' = zip pieceTypeList pieceCharList
-
-readCPiece :: Char -> Maybe (Maybe Piece)
-readCPiece c | c == '.' = Just Nothing
-             | toUpper c `elem` pieceCharList = Just(Just(Piece (toSide c)
-               (toPt c)))
+-- funcs
+readCPiece :: Char -> Maybe Piece
+readCPiece c | toUpper c `elem` piece_char_list = Just(Piece (toSide c)
+               (toPt c))
              | otherwise = Nothing
            where
-             toPt x = fromJust $ lookup (toUpper x) typeList
+             toPt x = fromJust $ lookup (toUpper x) type_list
              toSide x = if isUpper x then White else Black
 
 showPiece :: Piece -> Char
 showPiece p = if pieceSide p == White then p2char p else
   (toLower . p2char) p
-  where p2char x = fromJust $ lookup (pieceType x) typeList'
+  where p2char x = fromJust $ lookup (pieceType x) type_list'
 
+pPiece :: Parser Piece
+pPiece = P(\case
+  [] -> []
+  (r:cs) -> [(fromJust (readCPiece r),cs)|isJust $ readCPiece r]
+          )

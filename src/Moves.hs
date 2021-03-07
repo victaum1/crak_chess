@@ -5,29 +5,35 @@ import Squares
 import Pieces
 import Parsing
 
+-- adts
+type InitSquare = Square
+type EndSquare = Square
+
+-- type Move = (InitSquare,EndSquare)
 data Move = Move {
-  initSquare :: Square,
-  finalSquare :: Square,
-  promotedPiece :: Maybe PieceType
-} deriving (Eq,Show)
+  getInitSq :: Square
+  , getDestSq :: Square
+                 } deriving (Eq)
 
-showMove :: Move -> String
-showMove mv = initM ++ final ++ maybe "" show promo
-  where initM  = map toLower $ show $ initSquare mv
-        final = map toLower $ show $ finalSquare mv
-        promo = promotedPiece mv
+instance Show Move where
+  show (Move a b) = show a ++ show b
 
+
+-- funcs
 pLf :: Parser ()
 pLf = do many (sat (== '\n'))
          return ()
 
-pMoveCoord :: Parser (Maybe Move)
+
+pMoveCoord :: Parser Move
 pMoveCoord = do
           space <|> pLf
           sqi <- pSquare
           sqf <- pSquare
-          return $ Just $ Move sqi sqf Nothing
+          return (Move sqi sqf)
+
 
 readMove :: String -> Maybe Move
-readMove str = fst $ head $ parse pMoveCoord str
+readMove str = if null $ parse pMoveCoord str then Nothing
+                 else Just $ fst $ head $ parse pMoveCoord str
 
