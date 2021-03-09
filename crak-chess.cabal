@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3dec9e9ad21e7f2ead54daaedc31922cb992d82cd89dbf42e82df6e5a9d32305
+-- hash: cd9c66bee3f91401f0c5e07829a093bbc2e52315a5e1c526faf2ca19968c5670
 
 name:           crak-chess
 version:        0.0.13.8
@@ -19,7 +19,7 @@ build-type:     Simple
 
 source-repository head
   type: git
-  location: https://gitlab.com/victaum/vichess
+  location: https://github.com/victaum1/crak_chess
 
 library
   exposed-modules:

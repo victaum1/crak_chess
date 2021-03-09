@@ -5,7 +5,7 @@ description: See README at <https://gitlab.com/victaum/vichess#readme>
 maintainer: Victor H. Manotas G. <victorma32@gmail.com>
 copyright:
   - (2020) Victor Hugo Manotas Garces
-git: https://gitlab.com/victaum/vichess
+git: https://github.com/victaum1/crak_chess
 license: MIT
 extra-source-files:
   - doc/*

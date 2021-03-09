@@ -1,13 +1,14 @@
-module Board (Board, Pos, init_board_fen, init_board, fen2Board, pFenBoard,
-  board2FEN, pBoard, showBoard, readBoard) where
+module Board (Board, Pos, init_board_str, init_board_fen, init_board, fen2Board
+             ,pFenBoard,board2FEN, pBoard, showBoard, readBoard, checkSquare) where
 
+import qualified Data.Set as Set
 import Data.Char
 import Data.Maybe
 import Parsing
 import Pieces
 import Squares
 
--- vars
+-- vars / const
 init_board_str = unlines [
                          "rnbqkbnr","pppppppp","........","........"
                        , "........","........","PPPPPPPP","RNBQKBNR"
@@ -18,28 +19,35 @@ init_board = fen2Board init_board_fen
 
 -- adts
 type Pos = (Square,Piece)
-type Board = [Pos]
-type BoardList = [Maybe Piece]
+type Board = Set.Set Pos
+type PosList = [Pos]
 
 
 -- funcs
-makePos :: [Maybe Piece] -> Int -> Board
-makePos [] _ = []
-makePos (a:as) n | isJust a = (fromJust $ intToSquare n,fromJust a) :
+makePosList :: [Maybe Piece] -> Int -> PosList
+makePosList [] _ = []
+makePosList (a:as) n | isJust a = (fromJust $ intToSquare n,fromJust a) :
                     nexT
                  | otherwise = nexT
-                   where nexT = makePos as (n+1)
+                   where nexT = makePosList as (n+1)
 
 
 readBoard :: String -> Board
-readBoard str = if isNull then []
-                else (toPos . reverse) (fromJust rB)
-  where toPos ps = makePos (concat ps) 0
-        isNull = isNothing rB
-        rB = readBoard' str
+readBoard = Set.fromList . readBoardList
+
+readBoardList :: String -> PosList
+readBoardList str | isNull = []
+                  | otherwise = (toPos . reverse) (fromJust rB)
+                  where toPos ps = makePosList (concat ps) 0
+                        isNull = isNothing rB
+                        rB = readBoardList' str
+
+readBoardList' :: String -> Maybe [[Maybe Piece]]
+readBoardList' str | null (filterBoard $ concat $ lines str) = Nothing
+                   | otherwise =Just $ readBd $ lines str 
+                   where readBd = (map . map) readCPiece
 
 
-inPiece r = toUpper r `elem` piece_fen_list
 filterBoard :: String -> String
 filterBoard [] = []
 filterBoard [r]    | inPiece r = [r]
@@ -48,20 +56,17 @@ filterBoard (r:cs) | inPiece r = if null (filterBoard cs)
                                    then []
                                    else r:filterBoard cs
                    | otherwise = []
+inPiece r = toUpper r `elem` piece_fen_list
 
 
-readBoard' :: String -> Maybe [[Maybe Piece]]
-readBoard' str = if null (filterBoard $ concat $ lines str) then Nothing
-                   else Just (readBoard_ (lines str))
+showBoard :: Board -> String
+showBoard = showBoard_ . Set.toAscList
 
+showBoard_ = unlines . showBoardList
 
-readBoard_ :: [String] -> [[Maybe Piece]]
-readBoard_ = (map . map) readCPiece
-
-
-showBoard' :: Board -> [String]
-showBoard' ps = (map.map) showP $ reverse $ splitb lps
-  where lps = [checkSquare ps (toSq n) | n <- [0..63]]
+showBoardList :: PosList -> [String]
+showBoardList ps = (map.map) showP $ reverse $ splitb lps
+  where lps = [lookup  (toSq n) ps | n <- [0..63]]
         toSq n = fromJust $ intToSquare n
         splitb [] = []
         splitb xs = take 8 xs : splitb (drop 8 xs)
@@ -69,12 +74,8 @@ showBoard' ps = (map.map) showP $ reverse $ splitb lps
                 | otherwise = '.'
 
 
-showBoard :: Board -> String
-showBoard = unlines . showBoard'
-
-
-checkSquare :: Board -> Square -> Maybe Piece
-checkSquare bd sq = lookup sq bd
+checkSquare :: Square -> Board -> Maybe Piece
+checkSquare sq bd = lookup sq (Set.toAscList bd)
 
 
 subs :: Char -> Char -> String -> String
@@ -108,21 +109,27 @@ packFENline (c:cs) | c == '.' = intToDigit (countDots (c:cs) 0) :
 
 
 fen2Board :: String -> Board
-fen2Board str = readBoard $ showFENline $ head $ words str
+fen2Board = Set.fromList . fen2Board_
+
+fen2Board_ :: String -> PosList
+fen2Board_ = readBoardList . showFENline . head . words
 
 
 board2FEN :: Board -> String
-board2FEN bd = init $ packFENline $ subs '\n' '/' $ showBoard bd
+board2FEN = board2FEN_ . Set.toAscList
+
+board2FEN_ :: PosList -> String
+board2FEN_ = init . packFENline . subs '\n' '/' . showBoard_
 
 
 pBoard :: Parser Board
-pBoard = P (\inp -> if not $ null $ res inp then [(res inp, drop 72 inp)]
+pBoard = P (\inp -> if not $ null $ res inp then [(Set.fromList $ res inp
+                                                  , drop 72 inp)]
                     else []
               )
-         where res x = if length x >= 72 then readBoard $ take 72 x
-                       else []
+         where res x = if length x >= 72 then readBoardList $ take 72 x else []
 
--- bL2Board :: Int -> BoardList -> Board
+-- bL2Board :: Int -> BoardList -> BoardList
 -- bL2Board _ [] = []
 -- bL2Board _ [Nothing] = []
 -- bL2Board n [Just p] = [(fromJust $ intToSquare n,p)]
@@ -133,9 +140,9 @@ pBoard = P (\inp -> if not $ null $ res inp then [(res inp, drop 72 inp)]
 pFenBoard :: Parser Board
 pFenBoard = P(\str -> case str of
                  [] -> []
-                 _  -> if isNull $ f2B str then []
+                 _  -> if null $ f2B_ str then []
                    else [(f2B str, unwords $ tail $ words str)]
              )
             where f2B    = fen2Board
-                  isNull = null
+                  f2B_   = fen2Board_
 

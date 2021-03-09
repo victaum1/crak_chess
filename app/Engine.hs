@@ -1,14 +1,17 @@
 module Engine where
 
 import Defs
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isNothing)
+import qualified Data.Set as Set
 import Control.Monad.Trans.State
 import Pieces (Side (..))
 import Moves
 import Game
+import Board
+import Pieces
 
 
--- vars
+-- vars / cons
 dft_time = 5000 :: Int
 dft_depth = 10 :: Int
 dft_post_flag = True
@@ -17,8 +20,8 @@ dft_str_move_b = "e7e5"
 game_fen1 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
 game_fen2 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
 dft_cp_flag = Black
-move_w = fromJust $ readMove "e2e4"
-move_b = fromJust $ readMove "e7e5"
+move_w = fromJust $ readMove dft_str_move_w
+move_b = fromJust $ readMove dft_str_move_b
 game_st1 = fromJust $ fen2Game game_fen1
 game_st2 = fromJust $ fen2Game game_fen2
 init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game [] dft_post_flag
@@ -35,7 +38,7 @@ data PlayArgs = PlayArgs {
   } deriving (Eq,Show)
 
 
--- getters and setters
+-- setters for PlayArgs
 setTime :: Int -> PlayArgs -> PlayArgs
 setTime a_time args = args{getTime=a_time}
 
@@ -71,6 +74,24 @@ makeMove :: Move -> Game -> Maybe Game
 makeMove m g | (m == move_w) && (g == init_game) = Just game_st1
              | (m == move_b) && (g == game_st1) = Just game_st2
              | otherwise = Nothing
+
+
+makeSeudoMove :: Move -> Game -> Maybe Game
+makeSeudoMove m g = undefined
+
+
+mkMoveBoard :: Move -> Board -> Maybe Board
+mkMoveBoard m b = do
+  let initsq = getInitSq m
+  let desq   = getDestSq m
+  initpiece <- checkSquare initsq b
+  let o_pos = (desq,initpiece)
+  let i_pos = (initsq,initpiece)
+  let a_bd = Set.delete i_pos b
+  let destpiece = checkSquare desq b
+  if isNothing destpiece then return (Set.insert o_pos a_bd)
+  else if (pieceSide <$> destpiece) == Just (pieceSide initpiece) then Nothing
+    else return (Set.insert o_pos a_bd)
 
 
 think :: Game -> Maybe Move
