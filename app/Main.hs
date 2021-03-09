@@ -29,11 +29,18 @@ help_str = unlines [
   ]
 
 
-play_map :: [(String, StateT PlayArgs IO ())]
-play_map = [("play", playGo), ("stop", stop), ("new", mio mainPlay)
-  ,("undo", playUndo), ("dump", dump), ("help", helpPlay) ,("quit", quitPlay)
-  ,("xboard", mio xboardLoop)
-  ,("uci", mio uciLoop)
+play_map :: [(String, String -> StateT PlayArgs IO ())]
+play_map = [
+  ("play", const playGo)
+  ,("stop", const stop)
+  ,("new", const $ mio mainPlay)
+  ,("undo", const playUndo)
+  ,("dump", const dump)
+  ,("help", const helpPlay)
+  ,("quit", const quitPlay)
+  ,("xboard", const $ mio xboardLoop)
+  ,("uci", const $ mio uciLoop)
+  ,("setposition", setPos)
   ]
 
 
@@ -43,19 +50,22 @@ playLoop = do
   else do
     let input = words line
     let cmd = head input
+    let args = unwords $ tail input
     let a_move = parse pMoveCoord cmd
     if null a_move then do
         let res = lookup cmd play_map
         maybe (mio (errorCmd ["unknown command", unwords input]) >> playLoop)
-          id res
+          (\a -> a args) res
     else do
       xMakeMove $ fst $ head a_move
       playLoop
 
 
+setPos :: String -> StateT PlayArgs IO ()
+setPos strs = setPosition strs >> playLoop
+
+
 playGo = thinkMove >> playLoop
-
-
 stop = playLoop
 
 

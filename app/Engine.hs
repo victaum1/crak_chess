@@ -151,3 +151,13 @@ adjudicate = do
   else do
     mio $ putStrLn "result 1/2-1/2 {Stalemate}"
 
+
+setPosition :: String -> StateT PlayArgs IO ()
+setPosition strs = do
+  pargs <- get
+  let a_pos = fen2Game strs
+  maybe (mio $ errorCmd ["not a FEN position!", strs])
+    (\res -> do
+        let o_args = setGame res pargs
+        put o_args
+    ) a_pos
