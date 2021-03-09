@@ -44,7 +44,7 @@ readBoardList str | isNull = []
 
 readBoardList' :: String -> Maybe [[Maybe Piece]]
 readBoardList' str | null (filterBoard $ concat $ lines str) = Nothing
-                   | otherwise =Just $ readBd $ lines str 
+                   | otherwise =Just $ readBd $ lines str
                    where readBd = (map . map) readCPiece
 
 

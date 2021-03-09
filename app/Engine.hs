@@ -71,13 +71,16 @@ isInCheck _ _ = False
 
 
 makeMove :: Move -> Game -> Maybe Game
-makeMove m g | (m == move_w) && (g == init_game) = Just game_st1
-             | (m == move_b) && (g == game_st1) = Just game_st2
-             | otherwise = Nothing
+makeMove m g = makeSeudoMove m g
 
 
 makeSeudoMove :: Move -> Game -> Maybe Game
-makeSeudoMove m g = undefined
+makeSeudoMove m g = do
+  let i_bd = board g
+  let i_side = turn g
+  o_bd <- mkMoveBoard m i_bd
+  return (g{board=o_bd, turn = revertSide i_side})
+  where revertSide s = if s == White then Black else White
 
 
 mkMoveBoard :: Move -> Board -> Maybe Board
@@ -136,7 +139,7 @@ thinkMove = do
 
 
 adjudicate :: StateT PlayArgs IO ()
-adjudicate = do 
+adjudicate = do
   args <- get
   let a_game = getGame args
   let a_side = turn a_game
