@@ -17,6 +17,7 @@ features_str = unwords [
   ,"myname=\"Craken 0.0.13.8\""
   ,"colors=0"
   ,"ping=1"
+  ,"setboard=1"
                        ]
 
 xb_map :: [(String, [String] -> StateT PlayArgs IO ())]
@@ -37,14 +38,11 @@ xb_map = [
            ,("usermove", userMove)
            ,("accepted", const accepted)
            ,("rejected", const rejected)
+           ,("setboard", setXpos)
          ]
 
 
 -- funcs
-accepted = xbLoop
-rejected = xbLoop
-
-
 -- inner xboard loop
 xbLoop :: StateT PlayArgs IO ()
 xbLoop = do
@@ -57,6 +55,16 @@ xbLoop = do
       let res = lookup cmd xb_map
       maybe (mio (errorCmd ["unknown command", unwords input]) >> xbLoop)
         (\a -> a args) res
+
+
+setXpos :: [String] -> StateT PlayArgs IO ()
+setXpos args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
+            | otherwise = do
+                setPosition $ unwords args
+                xbLoop
+
+accepted = xbLoop
+rejected = xbLoop
 
 
 ping :: [String] -> StateT PlayArgs IO ()

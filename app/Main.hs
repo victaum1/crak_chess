@@ -41,6 +41,7 @@ play_map = [
   ,("xboard", const $ mio xboardLoop)
   ,("uci", const $ mio uciLoop)
   ,("setposition", setPos)
+  ,("sp", setPos)
   ]
 
 
