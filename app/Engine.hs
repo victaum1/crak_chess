@@ -161,3 +161,10 @@ setPosition strs = do
         let o_args = setGame res pargs
         put o_args
     ) a_pos
+
+
+dump :: StateT PlayArgs IO ()
+dump = do
+  args <- get
+  let a_game = getGame args
+  mio $ putStrLn $ showBoard $ board a_game

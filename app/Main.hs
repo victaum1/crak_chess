@@ -35,7 +35,7 @@ play_map = [
   ,("stop", const stop)
   ,("new", const $ mio mainPlay)
   ,("undo", const playUndo)
-  ,("dump", const dump)
+  ,("dump", const mainDump)
   ,("help", const helpPlay)
   ,("quit", const quitPlay)
   ,("xboard", const $ mio xboardLoop)
@@ -80,11 +80,9 @@ playUndo = do
            playLoop
 
 
-dump :: StateT PlayArgs IO ()
-dump = do
-  args <- get
-  let a_game = getGame args
-  mio $ putStrLn $ showBoard $ board a_game
+mainDump :: StateT PlayArgs IO ()
+mainDump = do
+  dump
   playLoop
 
 
