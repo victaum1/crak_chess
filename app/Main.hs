@@ -1,10 +1,11 @@
 module Main where
 
+import SubEngine
 import Parsing
 import Moves
 import Defs
-import Uci -- Uci protocol
-import Xboard -- Xboard protocol
+import Uci (uciLoop) -- Uci protocol
+import Xboard (xboardLoop)-- Xboard protocol
 import System.IO
 import Control.Monad.Trans.State
 import Engine
@@ -40,6 +41,8 @@ play_map = [
   ,("uci", const $ mio uciLoop)
   ,("setposition", setPos)
   ,("sp", setPos)
+  ,("dumpfen", const (mDumpFEN >> playLoop))
+  ,("dumpplay", const (mDumpPlay >> playLoop))
   ]
 
 
@@ -56,15 +59,14 @@ playLoop = do
         maybe (mio (errorCmd ["unknown command", unwords input]) >> playLoop)
           (\a -> a args) res
     else do
-      xMakeMove $ fst $ head a_move
+      mMakeMove $ fst $ head a_move
       playLoop
 
-
 setPos :: String -> StateT PlayArgs IO ()
-setPos strs = setPosition strs >> playLoop
+setPos strs = mSetPosition strs >> playLoop
 
 
-playGo = thinkMove >> playLoop
+playGo = mThinkMove >> playLoop
 stop = playLoop
 
 
@@ -73,14 +75,14 @@ playUndo = do
   let a_hist = getHist args
   if length a_hist < 2 then playLoop
     else do
-           takeBack
-           takeBack
+           mTakeBack
+           mTakeBack
            playLoop
 
 
 mainDump :: StateT PlayArgs IO ()
 mainDump = do
-  dump
+  mDump
   playLoop
 
 
@@ -114,6 +116,7 @@ getPlay caller = do
   getLine
 
 
+
 mainLoop :: IO ()
 mainLoop = do
   res <- getPlay "Craken"
@@ -122,7 +125,6 @@ mainLoop = do
     let mbAction = lookup res main_map
     maybe (putStrLn "" >> mainLoop)
           id mbAction
-
 
 main :: IO ()
 main = do

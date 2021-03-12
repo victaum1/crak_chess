@@ -1,5 +1,6 @@
 module Uci where
 
+import SubEngine
 import Parsing
 import Moves
 import Game
@@ -20,9 +21,9 @@ ui_map = [
        mio $ putStrLn "bestmove 0000"
        uiLoop)
   ,("position", \ss -> setUpos ss >> uiLoop)
-  ,("dump", const uDump)
-  ,("dumpfen", const (dumpFEN >> uiLoop))
-  ,("dumpplay", const (dumpPlayArgs >> uiLoop))
+  ,("dump", const (mDump >> uiLoop))
+  ,("dumpfen", const (mDumpFEN >> uiLoop))
+  ,("dumpplay", const (mDumpPlay >> uiLoop))
          ]
 
 
@@ -39,18 +40,13 @@ uiLoop = do
                             uiLoop)
                        (\a -> a args) res
 
--- debugging
-uDump = do
-  dump
-  uiLoop
-
 
 setUpos :: [String] -> StateT PlayArgs IO ()
 setUpos [] = mio $ errorCmd ["incomplete", []]
 setUpos [s] = do
   let p = parse (symbol "startpos") s
   if null p then mio $ errorCmd ["unknown command", s]
-  else setPosition init_fen
+  else mSetPosition init_fen
 setUpos (s:ss) = do
   let input = unwords (s:ss)
   let pinp0 = parse (symbol "startpos" >> symbol "moves" ) input
@@ -60,7 +56,7 @@ setUpos (s:ss) = do
          let g = fst $ head pinp1
          let ns = snd $ head pinp1
          if null ns then do
-           setPosition $ game2FEN g
+           mSetPosition $ game2FEN g
          else do
            let pms = words ns
            let hmoves = head pms
@@ -91,9 +87,9 @@ setPosWithMoves g ms = do
 
 setListMoves :: [Move] -> StateT PlayArgs IO ()
 setListMoves []     = return ()
-setListMoves [m]    = xMakeMove m
+setListMoves [m]    = mMakeMove m
 setListMoves (m:ms) = do
-  xMakeMove m
+  mMakeMove m
   setListMoves ms
 
 

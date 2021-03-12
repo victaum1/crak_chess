@@ -98,89 +98,32 @@ think g | g == init_game = Just move_w
         | otherwise = Nothing
 
 
-takeBack :: StateT PlayArgs IO ()
-takeBack = do
-              args <- get
-              let a_hist = getHist args
-              let a_game = head a_hist
-              let o_hist = drop 1 a_hist
-              let args_ = setHist o_hist args
-              let args__ = setGame a_game args_
-              put args__
+takeBack :: PlayArgs -> PlayArgs
+takeBack iargs = setGame a_game args_
+  where a_hist = getHist iargs
+        a_game = head a_hist
+        o_hist = drop 1 a_hist
+        args_ = setHist o_hist iargs
 
 
-xMakeMove :: Move -> StateT PlayArgs IO ()
-xMakeMove m = do
-  args <- get
-  let a_hist = getHist args
-  let a_game = getGame args
-  let n_game = makeMove m a_game
-  maybe (mio $ putStrLn $ "ILLegal move: " ++ show m) (
-    \g -> do
-      let o_hist = a_game:a_hist
-      let args_ = args{ getGame = g, getHist = o_hist}
-      put args_
-           ) n_game
-
-
-thinkMove :: StateT PlayArgs IO ()
-thinkMove = do
-  args <- get
-  let a_game = getGame args
-  let a_move = think a_game
-  maybe adjudicate (
-    \m -> do
-      xMakeMove m
-      mio $ putStrLn $ "move " ++ show m
-    ) a_move
-
-
-adjudicate :: StateT PlayArgs IO ()
-adjudicate = do
-  args <- get
-  let a_game = getGame args
-  let a_side = turn a_game
-  if isInCheck a_side a_game then do
-    if a_side == White then do
-      mio $ putStrLn "result 1-0 {White mates}"
-    else do
-      mio $ putStrLn "result 0-1 {Black mates}"
-  else do
-    mio $ putStrLn "result 1/2-1/2 {Stalemate}"
-
-
-setPosition :: String -> StateT PlayArgs IO ()
-setPosition strs = do
-  pargs <- get
-  let a_pos = fen2Game strs
-  maybe (mio $ errorCmd ["not a FEN position!", strs])
-    (\res -> do
-        let o_args = setGame res pargs
-        put o_args
-    ) a_pos
-
-
-dump :: StateT PlayArgs IO ()
-dump = do
-  args <- get
-  let a_game = getGame args
-  mio $ putStrLn $ showBoard $ board a_game
+dump :: PlayArgs -> String
+dump pa = do
+  let a_game = getGame pa
+  showBoard $ board a_game
 
 -- for debugging
-dumpFEN :: StateT PlayArgs IO ()
-dumpFEN = do
-  args <- get
-  let a_game = getGame args
-  mio $ putStrLn $ "... " ++ unwords (drop 1 $ words $ game2FEN a_game)
+dumpFEN :: PlayArgs -> String
+dumpFEN pa = do
+  let a_game = getGame pa
+  "... " ++ unwords (drop 1 $ words $ game2FEN a_game)
 
-dumpPlayArgs :: StateT PlayArgs IO ()
-dumpPlayArgs = do
-  args <- get
-  let a_time = getTime args
-  let a_depth = getDepth args
-  let cp_flag = getCpFlag args
-  let a_hist = getHist args
-  let a_post = getPost args
-  mio $ putStrLn $ "... Time: " ++ show a_time ++ ", Depth: " ++ show a_depth
+dumpPlay :: PlayArgs -> String
+dumpPlay pa = do
+  let a_time = getTime pa
+  let a_depth = getDepth pa
+  let cp_flag = getCpFlag pa
+  let a_hist = getHist pa
+  let a_post = getPost pa
+  "... Time: " ++ show a_time ++ ", Depth: " ++ show a_depth
     ++ ", CpFlat: " ++ show cp_flag ++ ", Hist: " ++ show (length a_hist)
     ++ ", Post: " ++ show a_post

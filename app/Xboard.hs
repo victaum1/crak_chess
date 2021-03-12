@@ -1,5 +1,6 @@
 module Xboard where
 
+import SubEngine
 import Moves
 import Parsing
 import Defs
@@ -39,9 +40,9 @@ xb_map = [
            ,("accepted", const accepted)
            ,("rejected", const rejected)
            ,("setboard", setXpos)
-           ,("dump", const (dump >> xbLoop))
-           ,("dumpfen", const (dumpFEN >> xbLoop))
-           ,("dumpplay", const (dumpPlayArgs >> xbLoop))
+           ,("dump", const (mDump >> xbLoop))
+           ,("dumpfen", const (mDumpFEN >> xbLoop))
+           ,("dumpplay", const (mDumpPlay >> xbLoop))
          ]
 
 
@@ -63,7 +64,7 @@ xbLoop = do
 setXpos :: [String] -> StateT PlayArgs IO ()
 setXpos args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
              | otherwise = do
-                setPosition $ unwords args
+                mSetPosition $ unwords args
                 xbLoop
 
 accepted = xbLoop
@@ -74,10 +75,11 @@ ping :: [String] -> StateT PlayArgs IO ()
 ping args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
           | otherwise = do
               let n = parse nat $ head $ take 1 args
-              if null n then mio (errorCmd ["not a number", unwords args]) >> xbLoop
-                else do
-                  mio $ putStrLn $ "pong " ++ show (fst $ head n)
-                  xbLoop
+              if null n then mio (errorCmd ["not a number", unwords args]) >>
+                xbLoop
+              else do
+                mio $ putStrLn $ "pong " ++ show (fst $ head n)
+                xbLoop
 
 
 protover :: [String] -> StateT PlayArgs IO ()
@@ -103,7 +105,7 @@ userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
     xbLoop
   else do
          let m = fst $ head res_m
-         xMakeMove m
+         mMakeMove m
          go
 
 
@@ -112,7 +114,7 @@ undo = do
          let a_hist = getHist args
          if  null a_hist then xbLoop
            else do
-                  takeBack
+                  mTakeBack
                   xbLoop
 
 
@@ -121,8 +123,8 @@ remove = do
            let a_hist = getHist args
            if length a_hist < 2 then xbLoop
              else do
-                    takeBack
-                    takeBack
+                    mTakeBack
+                    mTakeBack
                     xbLoop
 
 
@@ -149,9 +151,9 @@ xThink = do
           args <- get
           if getPost args then do
             printPost
-            thinkMove
+            mThinkMove
             xbLoop
-          else thinkMove >> xbLoop
+          else mThinkMove >> xbLoop
 
 
 printPost = do
@@ -181,6 +183,8 @@ noPost = do
           let args_ = setPost False args
           put args_
           xbLoop
+
+
 
 -- main loop
 xboardLoop :: IO ()
