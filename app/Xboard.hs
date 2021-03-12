@@ -2,7 +2,7 @@ module Xboard where
 
 import Moves
 import Parsing
-import Defs (mio, quit)
+import Defs
 import Pieces
 import Game
 import Engine
@@ -39,6 +39,9 @@ xb_map = [
            ,("accepted", const accepted)
            ,("rejected", const rejected)
            ,("setboard", setXpos)
+           ,("dump", const (dump >> xbLoop))
+           ,("dumpfen", const (dumpFEN >> xbLoop))
+           ,("dumpplay", const (dumpPlayArgs >> xbLoop))
          ]
 
 
@@ -59,7 +62,7 @@ xbLoop = do
 
 setXpos :: [String] -> StateT PlayArgs IO ()
 setXpos args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
-            | otherwise = do
+             | otherwise = do
                 setPosition $ unwords args
                 xbLoop
 

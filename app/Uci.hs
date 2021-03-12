@@ -1,10 +1,9 @@
 module Uci where
 
 import Parsing
-import Board
 import Moves
 import Game
-import Defs(mio, quit, version)
+import Defs
 import Engine
 -- import System.Console.Readline
 import Control.Monad.Trans.State
@@ -22,6 +21,8 @@ ui_map = [
        uiLoop)
   ,("position", \ss -> setUpos ss >> uiLoop)
   ,("dump", const uDump)
+  ,("dumpfen", const (dumpFEN >> uiLoop))
+  ,("dumpplay", const (dumpPlayArgs >> uiLoop))
          ]
 
 

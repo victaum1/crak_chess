@@ -2,11 +2,9 @@ module Main where
 
 import Parsing
 import Moves
-import Defs (mio, quit, version)
+import Defs
 import Uci -- Uci protocol
 import Xboard -- Xboard protocol
-import Board
-import Game
 import System.IO
 import Control.Monad.Trans.State
 import Engine

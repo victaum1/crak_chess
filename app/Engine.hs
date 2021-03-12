@@ -1,7 +1,7 @@
 module Engine where
 
 import Defs
-import Data.Maybe (fromJust, isNothing)
+import Data.Maybe (fromJust, isNothing, isJust)
 import qualified Data.Set as Set
 import Control.Monad.Trans.State
 import Pieces (Side (..))
@@ -29,12 +29,12 @@ init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game [] dft_post_flag
 
 -- adts
 data PlayArgs = PlayArgs {
-  getTime :: Int
-  ,getDepth :: Int
+   getTime   :: Int
+  ,getDepth  :: Int
   ,getCpFlag :: Side
-  ,getGame :: Game
-  ,getHist :: [Game]
-  ,getPost :: Bool
+  ,getGame   :: Game
+  ,getHist   :: [Game]
+  ,getPost   :: Bool
   } deriving (Eq,Show)
 
 
@@ -59,29 +59,24 @@ setPost a_post args = args{getPost=a_post}
 
 
 -- main funcs
-errorCmd :: [String] -> IO ()
-errorCmd [] = putStrLn "Error (Incomplete)"
-errorCmd [_] = putStrLn "Error (Incomplete)"
-errorCmd  [a_type, a_msg] = putStrLn $ "Error (" ++ a_type ++  "): " ++ a_msg
-errorCmd (r:cs) = errorCmd [r,head cs]
-
-
 isInCheck :: Side -> Game -> Bool
 isInCheck _ _ = False
 
 
 makeMove :: Move -> Game -> Maybe Game
-makeMove m g = makeSeudoMove m g
-
-
-makeSeudoMove :: Move -> Game -> Maybe Game
-makeSeudoMove m g = do
-  let i_bd = board g
+makeMove m g = do
   let i_side = turn g
+  let i_nplys = nPlys g
+  let i_nMoves = nMoves g
+  let o_nplys = if isPawn || isCapture then 0 else i_nplys + 1
+  let o_nMoves = if i_side == Black then i_nMoves + 1 else i_nMoves
   o_bd <- mkMoveBoard m i_bd
-  return (g{board=o_bd, turn = revertSide i_side})
+  return (g{board=o_bd, turn = revertSide i_side, nPlys = o_nplys
+           , nMoves = o_nMoves})
   where revertSide s = if s == White then Black else White
-
+        isPawn = Just Pawn == (pieceType <$> checkSquare (getInitSq m) i_bd)
+        i_bd = board g
+        isCapture = isJust $ checkSquare (getDestSq m) i_bd
 
 mkMoveBoard :: Move -> Board -> Maybe Board
 mkMoveBoard m b = do
@@ -117,11 +112,13 @@ takeBack = do
 xMakeMove :: Move -> StateT PlayArgs IO ()
 xMakeMove m = do
   args <- get
+  let a_hist = getHist args
   let a_game = getGame args
   let n_game = makeMove m a_game
   maybe (mio $ putStrLn $ "ILLegal move: " ++ show m) (
     \g -> do
-      let args_ = setGame g args
+      let o_hist = a_game:a_hist
+      let args_ = args{ getGame = g, getHist = o_hist}
       put args_
            ) n_game
 
@@ -147,7 +144,7 @@ adjudicate = do
     if a_side == White then do
       mio $ putStrLn "result 1-0 {White mates}"
     else do
-      mio $ putStrLn "result 1-0 {Black mates}"
+      mio $ putStrLn "result 0-1 {Black mates}"
   else do
     mio $ putStrLn "result 1/2-1/2 {Stalemate}"
 
@@ -168,3 +165,22 @@ dump = do
   args <- get
   let a_game = getGame args
   mio $ putStrLn $ showBoard $ board a_game
+
+-- for debugging
+dumpFEN :: StateT PlayArgs IO ()
+dumpFEN = do
+  args <- get
+  let a_game = getGame args
+  mio $ putStrLn $ "... " ++ unwords (drop 1 $ words $ game2FEN a_game)
+
+dumpPlayArgs :: StateT PlayArgs IO ()
+dumpPlayArgs = do
+  args <- get
+  let a_time = getTime args
+  let a_depth = getDepth args
+  let cp_flag = getCpFlag args
+  let a_hist = getHist args
+  let a_post = getPost args
+  mio $ putStrLn $ "... Time: " ++ show a_time ++ ", Depth: " ++ show a_depth
+    ++ ", CpFlat: " ++ show cp_flag ++ ", Hist: " ++ show (length a_hist)
+    ++ ", Post: " ++ show a_post
