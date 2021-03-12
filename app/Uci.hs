@@ -1,10 +1,10 @@
 module Uci where
 
-import SubEngine
+import Defs
 import Parsing
 import Moves
 import Game
-import Defs
+import SubEngine
 import Engine
 -- import System.Console.Readline
 import Control.Monad.Trans.State
@@ -13,17 +13,14 @@ import Control.Monad.Trans.State
 ui_map :: [(String, [String] -> StateT PlayArgs IO())]
 ui_map = [
    ("quit", const $ mio quit)
-  ,("isready", \_ -> do
-       mio $ putStrLn "readyok"
-       uiLoop)
+  ,("isready", const $ mio (putStrLn "readyok")>>uiLoop)
   ,("ucinewgame", const $ mio $ evalStateT uiLoop init_args)
-  ,("stop", \_ -> do
-       mio $ putStrLn "bestmove 0000"
-       uiLoop)
+  ,("stop", const $ mio (putStrLn "bestmove 0000")>>uiLoop)
   ,("position", \ss -> setUpos ss >> uiLoop)
   ,("dump", const (mDump >> uiLoop))
   ,("dumpfen", const (mDumpFEN >> uiLoop))
   ,("dumpplay", const (mDumpPlay >> uiLoop))
+  ,("go", const uGo)
          ]
 
 
@@ -39,6 +36,25 @@ uiLoop = do
                      maybe (mio (errorCmd ["unknown command", unwords input]) >>
                             uiLoop)
                        (\a -> a args) res
+
+
+uGo :: StateT PlayArgs IO ()
+uGo = do
+  infoPost
+  uThink
+  uiLoop
+
+infoPost = do
+  mio $ putStrLn "info depth 1 score cp 0 time 1 pv 0000"
+
+uThink = do
+  args <- get
+  let a_game = getGame args
+  let a_move = think a_game
+  maybe (mio $ putStrLn "bestmove 0000") (
+    \m -> do
+      mio $ putStrLn $ "bestmove " ++ show m
+    ) a_move
 
 
 setUpos :: [String] -> StateT PlayArgs IO ()

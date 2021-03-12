@@ -1,11 +1,11 @@
 module Xboard where
 
-import SubEngine
-import Moves
-import Parsing
 import Defs
+import Parsing
 import Pieces
+import Moves
 import Game
+import SubEngine
 import Engine
 -- import System.Console.Readline
 import Control.Monad.Trans.State
@@ -28,7 +28,7 @@ xb_map = [
            ,("quit"    , const $ mio quit)
            ,("new"     , const $ mio xboardLoop)
            ,("force"   , const force)
-           ,("go"      , const go)
+           ,("go"      , const xGo)
            ,("hint"    , const hint)
            ,("undo"    , const undo)
            ,("remove"  , const remove)
@@ -59,6 +59,20 @@ xbLoop = do
       let res = lookup cmd xb_map
       maybe (mio (errorCmd ["unknown command", unwords input]) >> xbLoop)
         (\a -> a args) res
+
+
+xGo = do
+        force'
+        xThink
+
+xThink :: StateT PlayArgs IO ()
+xThink = do
+          args <- get
+          if getPost args then do
+            printPost
+            mThinkMove
+            xbLoop
+          else mThinkMove >> xbLoop
 
 
 setXpos :: [String] -> StateT PlayArgs IO ()
@@ -106,7 +120,7 @@ userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
   else do
          let m = fst $ head res_m
          mMakeMove m
-         go
+         xGo
 
 
 undo = do
@@ -133,9 +147,6 @@ force = do
           xbLoop
 
 
-go = do
-        force'
-        xThink
 
 
 force' :: StateT PlayArgs IO ()
@@ -146,14 +157,6 @@ force' = do
           put args_
 
 
-xThink :: StateT PlayArgs IO ()
-xThink = do
-          args <- get
-          if getPost args then do
-            printPost
-            mThinkMove
-            xbLoop
-          else mThinkMove >> xbLoop
 
 
 printPost = do
