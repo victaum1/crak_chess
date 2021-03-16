@@ -4,6 +4,7 @@ import qualified System.Exit as Exit
 import Pieces
 import Data.Char(toLower)
 import Data.Maybe(fromJust)
+import Control.Monad(when)
 
 -- showPiece and readCPiece are reverses
 valid_chars = (map toLower piece_char_list) ++ piece_char_list
@@ -20,4 +21,4 @@ tests_idem = TestList $ map TestCase inputC
 main :: IO ()
 main = do
          count <- runTestTT tests_idem
-         if failures count > 0 then Exit.exitFailure else return ()
+         when (failures count > 0) Exit.exitFailure

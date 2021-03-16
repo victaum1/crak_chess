@@ -3,6 +3,7 @@ import Squares
 import Test.HUnit
 import qualified System.Exit as Exit
 import Data.Maybe(fromJust)
+import Control.Monad(when)
 
 -- showSquare and readSquare are reverses
 valid_square_list = [a:b:[] | a <- chr_file_ls, b <- chr_rank_ls]
@@ -19,5 +20,5 @@ tests_idem = TestList $ map TestCase inputC
 main :: IO ()
 main = do
          count <- runTestTT tests_idem
-         if failures count > 0 then Exit.exitFailure else return ()
+         when (failures count > 0) Exit.exitFailure
 

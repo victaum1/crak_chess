@@ -26,9 +26,8 @@ type PosList = [Pos]
 -- funcs
 makePosList :: [Maybe Piece] -> Int -> PosList
 makePosList [] _ = []
-makePosList (a:as) n | isJust a = (fromJust $ intToSquare n,fromJust a) :
-                    nexT
-                 | otherwise = nexT
+makePosList (a:as) n | isJust a = (fromJust $ intToSquare n,fromJust a) : nexT
+                     | otherwise = nexT
                    where nexT = makePosList as (n+1)
 
 

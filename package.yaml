@@ -45,6 +45,21 @@ executables:
       - containers
 
 tests:
+  q-board:
+    main: q-board.hs
+    source-dirs:
+      - test
+      - src
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - vichess
+      - QuickCheck
+      - transformers
+      - containers
+
   q-squares:
     main: q-squares.hs
     source-dirs:
@@ -56,12 +71,7 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - vichess
-      # - hspec
       - QuickCheck
-      # - mockery
-      #- template-haskell
-      #- HUnit
-      # - build-tools: hspec-discover
       - transformers
       - containers
 
@@ -76,12 +86,7 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - vichess
-      # - hspec
-      # - QuickCheck
-      # - mockery
-      #- template-haskell
       - HUnit
-      # - build-tools: hspec-discover
       - transformers
       - containers
 
@@ -95,12 +100,13 @@ tests:
       - -rtsopts 
       - -with-rtsopts=-N
     dependencies:
-      - crak-chess
+      - vichess
       # - hspec
       # - QuickCheck
       # - mockery
-      # - template-haskell
+      #- template-haskell
       - HUnit
       # - build-tools: hspec-discover
-      - containers
       - transformers
+      - containers
+
