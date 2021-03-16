@@ -45,6 +45,46 @@ executables:
       - containers
 
 tests:
+  q-squares:
+    main: q-squares.hs
+    source-dirs:
+      - test
+      - src
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - vichess
+      # - hspec
+      - QuickCheck
+      # - mockery
+      #- template-haskell
+      #- HUnit
+      # - build-tools: hspec-discover
+      - transformers
+      - containers
+
+  u-squares:
+    main: u-squares.hs
+    source-dirs:
+      - test
+      - src
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - vichess
+      # - hspec
+      # - QuickCheck
+      # - mockery
+      #- template-haskell
+      - HUnit
+      # - build-tools: hspec-discover
+      - transformers
+      - containers
+
   u-pieces:
     main: u-pieces.hs
     source-dirs:
