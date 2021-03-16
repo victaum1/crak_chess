@@ -40,18 +40,18 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - crak-chess
-        #      - readline >= 1.0.3.0 && < 2
+      # - readline >= 1.0.3.0 && < 2
       - transformers
+      - containers
 
 tests:
-  spec:
-    main: Spec.hs
+  u-pieces:
+    main: u-pieces.hs
     source-dirs:
-      - app
       - tests
       - src
     ghc-options:
-      - -theaded 
+      - -threaded 
       - -rtsopts 
       - -with-rtsopts=-N
     dependencies:
@@ -59,6 +59,8 @@ tests:
       # - hspec
       # - QuickCheck
       # - mockery
-      - template-haskell
-      # - HUnit
+      # - template-haskell
+      - HUnit
       # - build-tools: hspec-discover
+      - containers
+      - transformers
