@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c687be04ea3da70d812ac9a06c8eb6aa3583f53b054a3e9584bb1770237a9e7a
+-- hash: 1ff20979f1f5c5f1a8049d1a503c93f9113a958b1edb2304bf04ac2d5c8fa586
 
 name:           crak-chess
 version:        0.0.13.8
@@ -63,9 +63,125 @@ executable crakchess-exe
     , transformers
   default-language: Haskell2010
 
+test-suite q-board
+  type: exitcode-stdio-1.0
+  main-is: q-board.hs
+  other-modules:
+      Board
+      Defs
+      Evaluate
+      Game
+      Generator
+      Moves
+      Parsing
+      Pieces
+      Rules
+      Search
+      Squares
+      Valid
+      Paths_crak_chess
+  hs-source-dirs:
+      tests
+      src
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , base >=4.6 && <5
+    , containers
+    , crak-chess
+    , transformers
+  default-language: Haskell2010
+
+test-suite q-squares
+  type: exitcode-stdio-1.0
+  main-is: q-squares.hs
+  other-modules:
+      Board
+      Defs
+      Evaluate
+      Game
+      Generator
+      Moves
+      Parsing
+      Pieces
+      Rules
+      Search
+      Squares
+      Valid
+      Paths_crak_chess
+  hs-source-dirs:
+      tests
+      src
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , base >=4.6 && <5
+    , containers
+    , crak-chess
+    , transformers
+  default-language: Haskell2010
+
+test-suite u-game
+  type: exitcode-stdio-1.0
+  main-is: u-game.hs
+  other-modules:
+      Board
+      Defs
+      Evaluate
+      Game
+      Generator
+      Moves
+      Parsing
+      Pieces
+      Rules
+      Search
+      Squares
+      Valid
+      Paths_crak_chess
+  hs-source-dirs:
+      tests
+      src
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HUnit
+    , base >=4.6 && <5
+    , containers
+    , crak-chess
+    , transformers
+  default-language: Haskell2010
+
 test-suite u-pieces
   type: exitcode-stdio-1.0
   main-is: u-pieces.hs
+  other-modules:
+      Board
+      Defs
+      Evaluate
+      Game
+      Generator
+      Moves
+      Parsing
+      Pieces
+      Rules
+      Search
+      Squares
+      Valid
+      Paths_crak_chess
+  hs-source-dirs:
+      tests
+      src
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HUnit
+    , base >=4.6 && <5
+    , containers
+    , crak-chess
+    , transformers
+  default-language: Haskell2010
+
+test-suite u-squares
+  type: exitcode-stdio-1.0
+  main-is: u-squares.hs
   other-modules:
       Board
       Defs

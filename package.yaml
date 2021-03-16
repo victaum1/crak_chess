@@ -45,17 +45,32 @@ executables:
       - containers
 
 tests:
-  q-board:
-    main: q-board.hs
+  u-game:
+    main: u-game.hs
     source-dirs:
-      - test
+      - tests
       - src
     ghc-options:
       - -threaded 
       - -rtsopts 
       - -with-rtsopts=-N
     dependencies:
-      - vichess
+      - crak-chess
+      - HUnit
+      - transformers
+      - containers
+
+  q-board:
+    main: q-board.hs
+    source-dirs:
+      - tests
+      - src
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
       - QuickCheck
       - transformers
       - containers
@@ -63,14 +78,14 @@ tests:
   q-squares:
     main: q-squares.hs
     source-dirs:
-      - test
+      - tests
       - src
     ghc-options:
       - -threaded 
       - -rtsopts 
       - -with-rtsopts=-N
     dependencies:
-      - vichess
+      - crak-chess
       - QuickCheck
       - transformers
       - containers
@@ -78,14 +93,14 @@ tests:
   u-squares:
     main: u-squares.hs
     source-dirs:
-      - test
+      - tests
       - src
     ghc-options:
       - -threaded 
       - -rtsopts 
       - -with-rtsopts=-N
     dependencies:
-      - vichess
+      - crak-chess
       - HUnit
       - transformers
       - containers
@@ -100,7 +115,7 @@ tests:
       - -rtsopts 
       - -with-rtsopts=-N
     dependencies:
-      - vichess
+      - crak-chess
       # - hspec
       # - QuickCheck
       # - mockery

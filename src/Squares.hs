@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Squares (File, Rank, Square(..), showFile, showRank
   , pSquare, readRank, readCFile, readSquare, files, ranks, tuple2Square
-  , square2Tuple, intToSquare)
+  , square2Tuple, intToSquare, chr_file_ls,chr_rank_ls)
   where
 
 import           Data.Char  (chr, ord, toLower)
