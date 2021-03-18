@@ -45,6 +45,21 @@ executables:
       - containers
 
 tests:
+  u-moves:
+    main: u-moves.hs
+    source-dirs:
+      - tests
+      - src
+    ghc-options:
+      - -threaded 
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+      - HUnit
+      - transformers
+      - containers
+
   u-game:
     main: u-game.hs
     source-dirs:
