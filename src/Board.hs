@@ -122,26 +122,15 @@ board2FEN_ = init . packFENline . subs '\n' '/' . showBoard_
 
 
 pBoard :: Parser Board
-pBoard = P (\inp -> if not $ null $ res inp then [(Set.fromList $ res inp
-                                                  , drop 72 inp)]
-                    else []
+pBoard = P (\inp -> [(Set.fromList $ res inp
+                              , drop 72 inp) | not $ null $ res inp]
               )
          where res x = if length x >= 72 then readBoardList $ take 72 x else []
-
--- bL2Board :: Int -> BoardList -> BoardList
--- bL2Board _ [] = []
--- bL2Board _ [Nothing] = []
--- bL2Board n [Just p] = [(fromJust $ intToSquare n,p)]
--- bL2Board n (Just p:cs) = (fromJust $ intToSquare n,p)
---   :bL2Board (n+1) cs
--- bL2Board n (Nothing:cs) = bL2Board (n+1) cs
 
 pFenBoard :: Parser Board
 pFenBoard = P(\str -> case str of
                  [] -> []
-                 _  -> if null $ f2B_ str then []
-                   else [(f2B str, unwords $ tail $ words str)]
+                 _  -> [(f2B str, unwords $ tail $ words str) | not (null $ f2B_ str)]
              )
             where f2B    = fen2Board
                   f2B_   = fen2Board_
-

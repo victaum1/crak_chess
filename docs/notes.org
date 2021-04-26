@@ -1,6 +1,4 @@
 * Ideas para Generador de Jugadas
-  - Distancia entre escaques: Para encontrar las piezas que están más cerca
-    a cierta pieza.
   - Filtrar rayos: una pieza amiga o contraria bloquea el rayo. La pieza amiga
     bloquea el rayo antes de su posición. La contraria la bloquea justo en su
     posición.

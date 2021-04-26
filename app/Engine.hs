@@ -1,10 +1,8 @@
 module Engine where
 
-import Defs
 import Data.Maybe (fromJust, isNothing, isJust)
 import qualified Data.Set as Set
 import Control.Monad.Trans.State
-import Pieces (Side (..))
 import Moves
 import Game
 import Board

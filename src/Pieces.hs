@@ -1,11 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 module Pieces (piece_type_list, piece_char_list, Side(..), Piece(..), showPiece
-  , readCPiece, PieceType(..), piece_fen_list, pPiece)
+  , readCPiece, PieceType(..), piece_fen_list, pPiece, pPieceType)
   where
 
-import Parsing
+import Parsing ( Parser(..) )
 import           Data.Char  (isUpper, toLower, toUpper)
-import           Data.Maybe
+import Data.Maybe ( fromJust, isJust )
 
 
 -- vars / const
@@ -46,12 +46,15 @@ instance Show Piece where
 
 
 -- funcs
+readPieceType :: Char -> Maybe PieceType
+readPieceType c = lookup c type_list
+
 readCPiece :: Char -> Maybe Piece
 readCPiece c | toUpper c `elem` piece_char_list = Just(Piece (toSide c)
                (toPt c))
              | otherwise = Nothing
            where
-             toPt x = fromJust $ lookup (toUpper x) type_list
+             toPt x = fromJust $ readPieceType (toUpper c)
              toSide x = if isUpper x then White else Black
 
 showPiece :: Piece -> Char
@@ -59,8 +62,15 @@ showPiece p = if pieceSide p == White then p2char p else
   (toLower . p2char) p
   where p2char x = fromJust $ lookup (pieceType x) type_list'
 
+
 pPiece :: Parser Piece
 pPiece = P(\case
   [] -> []
   (r:cs) -> [(fromJust (readCPiece r),cs)|isJust $ readCPiece r]
           )
+
+
+pPieceType :: Parser (Maybe PieceType)
+pPieceType = P(\case
+  [] -> []
+  (r:cs) -> [(readPieceType r, cs)])

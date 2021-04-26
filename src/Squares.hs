@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module Squares (File, Rank, Square(..), showFile, showRank
+module Squares (File, Rank,SquareTuple, Square(..), showFile, showRank
   , pSquare, readRank, readCFile, readSquare, files, ranks, tuple2Square
   , square2Tuple, intToSquare, chr_file_ls,chr_rank_ls)
   where
@@ -18,6 +18,8 @@ ranks = files
 --adts
 type File = Int
 type Rank = Int
+type SquareTuple = (Int,Int)
+
 
 data Square = Square {
                          squareFile :: File
@@ -86,11 +88,11 @@ pSquare = do
 
 
 -- Integer tuple encoding
-tuple2Square :: (Int,Int) -> Square
+tuple2Square :: SquareTuple -> Square
 tuple2Square (f,r) = Square f r
 
 
-square2Tuple :: Square -> (Int,Int)
+square2Tuple :: Square -> SquareTuple
 square2Tuple (Square f r) = (f,r)
 
 --- Integers encoding Squares
@@ -101,4 +103,3 @@ int64ToSquare n | (n < 64) && (n >= 0) = Just $ Square a_f a_r
                 | otherwise = Nothing
   where a_f = n `mod` 8
         a_r = (n-(n `mod` 8)) `div` 8
-

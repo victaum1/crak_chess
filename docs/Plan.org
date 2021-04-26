@@ -1,0 +1,53 @@
+* PROJ PLAN DE DESARROLLO CRACKCHESS
+** DONE Estructuras de datos
+CLOSED: [2021-04-22 jue 19:41]
+*** DONE Escaques
+CLOSED: [2021-04-22 jue 19:41]
+*** DONE Piezas
+CLOSED: [2021-04-22 jue 19:41]
+*** DONE Tablero
+CLOSED: [2021-04-22 jue 19:41]
+*** DONE Estado del Juego
+CLOSED: [2021-04-22 jue 19:41]
+*** DONE Presentación de Jugadas
+CLOSED: [2021-04-22 jue 19:41]
+** DONE Parseo
+CLOSED: [2021-04-22 jue 19:41]
+*** DONE FEN a Estructuras y vice
+CLOSED: [2021-04-22 jue 19:41]
+** DONE Conversiones de Escaques
+CLOSED: [2021-04-22 jue 19:44]
+*** DONE Escage a entero-64 y vice
+CLOSED: [2021-04-22 jue 19:41]
+** DONE Punto de Entrada
+CLOSED: [2021-04-22 jue 19:42]
+Bucle principal del programa.
+LLama a protocolos 'xboard' y 'uci'.
+*** DONE Main
+CLOSED: [2021-04-22 jue 19:42]
+*** DONE Xboard
+CLOSED: [2021-04-22 jue 19:42]
+*** DONE UCI
+CLOSED: [2021-04-22 jue 19:42]
+** PROJ Generador de Jugadas
+*** PROJ Reglas de Movimiento
+**** DONE Reglas del Caballero
+CLOSED: [2021-04-25 dom 22:31]
+**** TODO Reglas del Alfil
+**** TODO Reglas de la Torre
+**** TODO Reglas del Rey
+**** TODO Reglas de la Dama
+**** TODO Reglas del Peón
+*** TODO Generación de Jugadas según Reglas anteriores.
+**** DONE Jugadas del Caballero
+CLOSED: [2021-04-25 dom 22:31]
+**** TODO Jugadas del Alfil
+**** TODO Jugadas de la Torre
+**** TODO Jugadas del Rey
+**** TODO Jugadas de la Dama
+**** TODO Jugadas del Peón
+** PROJ Legalidad
+*** TODO Verificar los movimientos generados según Reglas posteriores.
+** PROJ Busqueda
+** PROJ Evaluador
+** PROJ Administrar Tiempos

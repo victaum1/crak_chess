@@ -1,14 +1,21 @@
 module Main where
 
+import Control.Monad.Trans.State ( evalStateT, get, StateT )
+import Defs ( version, quit, errorCmd, mio )
+import Engine ( init_args, PlayArgs(getHist) )
+import Moves ( pMoveCoord )
+import Parsing ( parse )
 import SubEngine
-import Parsing
-import Moves
-import Defs
-import Uci (uciLoop) -- Uci protocol
-import Xboard (xboardLoop)-- Xboard protocol
-import System.IO
-import Control.Monad.Trans.State
-import Engine
+    ( mDump,
+      mTakeBack,
+      mThinkMove,
+      mSetPosition,
+      mMakeMove,
+      mDumpPlay,
+      mDumpFEN )
+import System.IO ( stdout, hSetBuffering, BufferMode(NoBuffering) )
+import           Uci                       (uciLoop)
+import           Xboard                    (xboardLoop)
 
 
 help_str = unlines [

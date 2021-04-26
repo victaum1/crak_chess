@@ -17,7 +17,7 @@ Escaques a entero-100
 Sus inversas.
 
 Punto de entrada:
-Ciclo del programa principal llama a protocolos xboard y uci (no
+Ciclo del programa principal llama a protocolos xboard y uci (parcialmente
 desarrollados).
 
 A desarrollar
