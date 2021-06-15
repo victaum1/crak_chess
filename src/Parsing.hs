@@ -121,3 +121,9 @@ integer = token int
 
 symbol :: String -> Parser String
 symbol xs = token (string xs)
+
+oneOf :: String -> Parser Char
+oneOf str = P(\case
+             [] -> []
+             (c:cs) | elem c str -> [(c,cs)]
+                    | otherwise -> [])

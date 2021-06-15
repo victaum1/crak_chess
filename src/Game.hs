@@ -51,7 +51,7 @@ pCastle = do
             return 0
           <|>
           do
-            x <- many letter
+            x <- many (oneOf castle_chars)
             return (fromJust $ packCastle x 0 "")
 
 pPlys :: Parser Int
@@ -61,11 +61,7 @@ pNMoves :: Parser Int
 pNMoves = natural
 
 pNoSq :: Parser Char
-pNoSq = P(\case
-  [] -> []
-  (r:cs) | r == '-' -> [('-',cs)]
-         | otherwise -> []
-  )
+pNoSq = char '-'
 
 pEpSq :: Parser (Maybe Square)
 pEpSq = do
@@ -112,4 +108,3 @@ game2FEN g = unwords [board2FEN getBoard,getTurn,getCf,getSq,getPlys,getMoves]
                   getCf = showCflags $ castleFlag g
                   getSq = maybe "-" show $ epSquare g
                   getMoves = show $ nMoves g
-
