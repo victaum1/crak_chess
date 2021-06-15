@@ -42,7 +42,7 @@ branchPiece :: Piece -> CBranch
 branchPiece p = fromMaybe [] (lookup p piece_map)
 
 
-squaresForSide:: Game -> [Square]
+squaresForSide :: Game -> [Square]
 squaresForSide g = []
 
 makeMove :: Square -> Square -> Move

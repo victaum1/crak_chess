@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Squares (File, Rank,SquareTuple, Square(..), showFile, showRank
   , pSquare, readRank, readCFile, readSquare, files, ranks, tuple2Square
-  , square2Tuple, intToSquare, chr_file_ls,chr_rank_ls)
+  , square2Tuple, intToSquare, file_ls, rank_ls)
   where
 
 import           Data.Char  (chr, ord, toLower)
@@ -9,8 +9,8 @@ import           Data.Maybe
 import           Parsing
 
 -- vars
-chr_file_ls = ['a' .. 'h']
-chr_rank_ls = ['1' .. '8']
+file_ls = ['a' .. 'h']
+rank_ls = ['1' .. '8']
 files = [0..7]::[Int]
 ranks = files
 
@@ -40,9 +40,7 @@ showRank :: Rank -> Char
 showRank r | (r<0) || (r>7) = error "showRank: Out of bounds"
            | otherwise = chr $ 49 + r
 
-
 toInt = ord
-
 
 -- Reading Data Structures / Parsing
 readCFile :: Char -> Maybe File
@@ -85,7 +83,6 @@ pSquare :: Parser Square
 pSquare = do
             f <- pFile
             Square f <$> pRank
-
 
 -- Integer tuple encoding
 tuple2Square :: SquareTuple -> Square

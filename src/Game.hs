@@ -2,7 +2,6 @@
 module Game (Game, GameState(..), fen2Game, game2FEN, init_game
             , init_fen, pGame) where
 
-
 import           Board
 import           Data.Maybe
 import           Parsing
@@ -37,8 +36,6 @@ pTurn = P(\case
          | c == 'b' -> [(Black, cs)]
          | otherwise -> [])
 
-
-
 packCastle :: String -> Int -> String -> Maybe Int
 packCastle [] n _ = Just n
 packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
@@ -51,7 +48,7 @@ packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
 pCastle :: Parser Int
 pCastle = do
             char '-'
-            return (0)
+            return 0
           <|>
           do
             x <- many letter
@@ -91,7 +88,6 @@ fen2Game :: String -> Maybe Game
 fen2Game str | null pG = Nothing
              | otherwise = Just $ fst $ head pG
   where pG = parse pGame str
-
 
 showCflags :: Int -> String
 showCflags n | isInTable = [findChar]

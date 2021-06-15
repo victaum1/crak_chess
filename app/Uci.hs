@@ -67,7 +67,8 @@ setUpos (s:ss) = do
   let input = unwords (s:ss)
   let pinp0 = parse (symbol "startpos" >> symbol "moves" ) input
   let pinp1 = parse pGame input
-  if null pinp0 && null pinp1 then mio $ errorCmd ["unknown command", input]
+  if null pinp0 && null pinp1 then mio $ errorCmd ["unknown command",
+    input]
   else if null pinp0 then do
          let g = fst $ head pinp1
          let ns = snd $ head pinp1
@@ -115,4 +116,3 @@ uciLoop = do
              putStrLn "id author V. Manotas"
              putStrLn "uciok"
              evalStateT uiLoop init_args
-

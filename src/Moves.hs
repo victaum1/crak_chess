@@ -3,8 +3,8 @@ module Moves where
 
 import Squares ( Square, pSquare )
 import Parsing
-    ( Alternative((<|>), many), Parser, parse, sat, space )
-import Pieces ( PieceType , pPieceType)
+  (Alternative((<|>), many), Parser, parse, sat, space )
+import Pieces ( PieceType , pPieceType, piece_chars)
 import Data.Maybe (isNothing)
 
 -- adts
@@ -31,7 +31,6 @@ pLf = do
   _ <- many (sat (== '\n'))
   return ()
 
-
 pMoveCoord :: Parser Move
 pMoveCoord = do
           space <|> pLf
@@ -39,8 +38,7 @@ pMoveCoord = do
           sqf <- pSquare
           Move sqi sqf <$> pPieceType
 
-
 readMove :: String -> Maybe Move
 readMove str = if null $ parse pMoveCoord str then Nothing
-                 else Just $ fst $ head $ parse pMoveCoord str
+               else Just $ fst $ head $ parse pMoveCoord str
 

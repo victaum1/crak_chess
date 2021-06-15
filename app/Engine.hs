@@ -1,7 +1,8 @@
 module Engine where
 
 import Data.Maybe (fromJust, isNothing, isJust)
-import qualified Data.Set as Set
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 import Control.Monad.Trans.State
 import Moves
 import Game
@@ -78,16 +79,16 @@ makeMove m g = do
 
 mkMoveBoard :: Move -> Board -> Maybe Board
 mkMoveBoard m b = do
-  let initsq = getInitSq m
-  let desq   = getDestSq m
+  let initsq    = getInitSq m
+  let desq      = getDestSq m
   initpiece <- checkSquare initsq b
-  let o_pos = (desq,initpiece)
-  let i_pos = (initsq,initpiece)
-  let a_bd = Set.delete i_pos b
+  let a_bd      = Map.delete initsq b
   let destpiece = checkSquare desq b
-  if isNothing destpiece then return (Set.insert o_pos a_bd)
-  else if (pieceSide <$> destpiece) == Just (pieceSide initpiece) then Nothing
-    else return (Set.insert o_pos a_bd)
+  if isNothing destpiece then return
+    (Map.insert desq initpiece a_bd)
+  else if (pieceSide <$> destpiece) == (pieceSide <$>
+    Just(initpiece)) then Nothing
+  else return (Map.insert desq (fromJust destpiece) a_bd)
 
 
 think :: Game -> Maybe Move

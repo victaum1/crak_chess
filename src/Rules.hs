@@ -3,11 +3,11 @@ import Data.Maybe ( fromMaybe, isNothing )
 import Pieces
     ( PieceType(Knight), Piece(Piece, pieceSide), Side(Black, White) )
 import Board ( checkSquare, Board )
-import qualified Data.Set as Set
+-- import qualified Data.Set as Set
 import Squares ( Square, square2Tuple )
 
 
-data MoveLike = Slider | Jumper | KinG | PawN deriving (Eq,Show)
+data MoveLike = Slider | Jumper | OneStep deriving (Eq,Show)
 data Dir = North | South | East | West deriving (Eq,Show)
 type CPath = [Dir]
 type CBranch = [[Dir]]
@@ -40,7 +40,7 @@ sameSide :: Piece -> Piece -> Bool
 sameSide p1 p2 = pieceSide p1 == pieceSide p2 
 
 isEmpty :: Square -> Board -> Bool
-isEmpty sq bd = isNothing (lookup sq (Set.toList bd))
+isEmpty sq bd = isNothing (checkSquare sq bd)
 
 isFriendly :: Square -> Board -> Square -> Bool
 isFriendly isq bd fsq = isEmpty fsq bd && not (fromMaybe False (sameSide <$> checkSquare isq bd <*> checkSquare fsq bd))
