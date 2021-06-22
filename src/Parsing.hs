@@ -8,7 +8,6 @@ import           Control.Applicative
 import           Data.Char
 
 -- Basic definitions
-
 newtype Parser a = P (String -> [(a,String)])
 
 parse :: Parser a -> String -> [(a,String)]
@@ -20,7 +19,6 @@ item = P (\case
              (x:xs) -> [(x,xs)])
 
 -- Sequencing parsers
-
 instance Functor Parser where
    -- fmap :: (a -> b) -> Parser a -> Parser b
    fmap g p = P (\inp -> case parse p inp of
@@ -43,7 +41,6 @@ instance Monad Parser where
                            [(v,out)] -> parse (f v) out)
 
 -- Making choices
-
 instance Alternative Parser where
    -- empty :: Parser a
    empty = P (const [])
@@ -54,7 +51,6 @@ instance Alternative Parser where
                            [(v,out)] -> [(v,out)])
 
 -- Derived primitives
-
 sat :: (Char -> Bool) -> Parser Char
 sat p = do x <- item
            if p x then return x else empty
@@ -99,7 +95,6 @@ int = do char '-'
        <|> nat
 
 -- Handling spacing
-
 space :: Parser ()
 space = do many (sat isSpace)
            return ()

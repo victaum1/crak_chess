@@ -7,6 +7,7 @@ import Parsing
 import Pieces ( PieceType , pPieceType, piece_chars)
 import Data.Maybe (isNothing)
 
+
 -- adts
 -- type Move = (InitSquare,EndSquare)
 data Move = Move {
@@ -15,20 +16,19 @@ data Move = Move {
   , getCrown  :: Maybe PieceType
                  } deriving (Eq)
 
-
 instance Show Move where
   show (Move a b c) | isNothing c = show a ++ show b
                     | otherwise = show a ++ show b ++ show c
-
 
 instance Show (Maybe PieceType) where
   show Nothing = " "
   show (Just a) = show a
 
+
 -- funcs
 pLf :: Parser ()
 pLf = do
-  _ <- many (sat (== '\n'))
+  many (sat (== '\n'))
   return ()
 
 pMoveCoord :: Parser Move

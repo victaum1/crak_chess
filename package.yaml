@@ -26,6 +26,7 @@ library:
       - Game
       - Parsing
       - Defs
+      - Generator
     dependencies:
       - containers
       - transformers

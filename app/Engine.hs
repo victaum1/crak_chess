@@ -9,7 +9,6 @@ import Game
 import Board
 import Pieces
 
-
 -- vars / cons
 dft_time = 5000 :: Int
 dft_depth = 10 :: Int
@@ -23,7 +22,8 @@ move_w = fromJust $ readMove dft_str_move_w
 move_b = fromJust $ readMove dft_str_move_b
 game_st1 = fromJust $ fen2Game game_fen1
 game_st2 = fromJust $ fen2Game game_fen2
-init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game [] dft_post_flag
+init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game []
+  dft_post_flag
 
 
 -- adts
@@ -87,7 +87,7 @@ mkMoveBoard m b = do
   if isNothing destpiece then return
     (Map.insert desq initpiece a_bd)
   else if (pieceSide <$> destpiece) == (pieceSide <$>
-    Just(initpiece)) then Nothing
+    Just initpiece) then Nothing
   else return (Map.insert desq (fromJust destpiece) a_bd)
 
 

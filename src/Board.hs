@@ -3,7 +3,7 @@ module Board (Board, Pos, init_board_str, init_board_fen, init_board,
 
 import Data.Char
 import Data.Maybe
--- import Prelude hiding (lookup)
+import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Parsing

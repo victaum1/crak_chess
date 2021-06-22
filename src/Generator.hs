@@ -1,11 +1,15 @@
 module Generator where
 import Game ( Game, GameState(board) )
-import Pieces ( Piece )
-import Rules ( isFriendly, onBoard', piece_map, CBranch, Dir(..) )
+import Pieces ( Piece, PieceType )
+import Rules ( knight_branches, isFriendly, onBoard', CBranch,
+               Dir(..) )
 import Squares ( Square, square2Tuple, tuple2Square )
-import Board ( checkSquare )
+import Board (checkSquare, Board(..))
 import Data.Maybe ( fromMaybe )
-import Moves ( Move(Move) )
+import Prelude hiding (lookup)
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
+import Moves (Move(..))
 
 
 squareAttack :: Square -> Game -> Bool
@@ -38,18 +42,21 @@ orthoMove d (f,r) | d == North = (f,r+1)
              | d == East  = (f+1,r)
              | d == West  = (f-1,r)
 
-branchPiece :: Piece -> CBranch
-branchPiece p = fromMaybe [] (lookup p piece_map)
-
 
 squaresForSide :: Game -> [Square]
 squaresForSide g = []
 
+
 makeMove :: Square -> Square -> Move
 makeMove is fs = Move is fs Nothing
 
-squareMoveGen :: Square -> Game -> [Move]
-squareMoveGen s g = map (makeMove s) (filter (isFriendly s
-  (board g)) (map tuple2Square (filter onBoard' (makeSquares'
-  (square2Tuple s) (maybe [] branchPiece (checkSquare s
-  (board g)))))))
+makeCrownPawnMove :: Square -> Square -> PieceType -> Move
+makeCrownPawnMove is fs pt = Move is fs (Just pt)
+
+genKnightMoves :: Square -> Board -> [Move]
+genKnightMoves s b = genMoveFromBranches s b knight_branches 
+
+genMoveFromBranches :: Square -> Board -> CBranch -> [Move]
+genMoveFromBranches s b c = map (makeMove s) (filter (isFriendly s
+  b) (map tuple2Square (filter onBoard' (makeSquares'
+  (square2Tuple s) c))))

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f12f216e58582654c121e43fb0d6000deee8220ff2e377850ca779a30bd43a80
+-- hash: 210291a121f66a44c3c2eba34939201d9dd2323e581624f0e340163013981f9e
 
 name:           crak-chess
 version:        0.0.13.8
@@ -30,9 +30,9 @@ library
       Game
       Parsing
       Defs
+      Generator
   other-modules:
       Evaluate
-      Generator
       Rules
       Search
       Valid
