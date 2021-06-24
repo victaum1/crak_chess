@@ -1,8 +1,8 @@
 module Generator where
 import Game ( Game, GameState(board) )
 import Pieces ( Piece, PieceType )
-import Rules ( knight_branches, isFriendly, onBoard', CBranch,
-               Dir(..) )
+import Rules ( knight_branches, isAStep, onBoard', onBoard, CBranch,
+               Dir(..), mini_rook_branches )
 import Squares ( Square, square2Tuple, tuple2Square )
 import Board (checkSquare, Board(..))
 import Data.Maybe ( fromMaybe )
@@ -57,6 +57,24 @@ genKnightMoves :: Square -> Board -> [Move]
 genKnightMoves s b = genMoveFromBranches s b knight_branches 
 
 genMoveFromBranches :: Square -> Board -> CBranch -> [Move]
-genMoveFromBranches s b c = map (makeMove s) (filter (isFriendly s
+genMoveFromBranches s b c = map (makeMove s) (filter (isAStep s
   b) (map tuple2Square (filter onBoard' (makeSquares'
   (square2Tuple s) c))))
+
+genRookMoves :: Square -> Board -> [Move]
+genRookMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b mini_rook_branches
+
+mkRaysFromBranches :: Square -> Board -> CBranch -> [[Square]]
+mkRaysFromBranches sq bd cb = map (mkRay sq bd) (concat cb)
+
+mkRay :: Square -> Board -> Dir -> [Square]
+mkRay sq bd di = map tuple2Square (mkRayIter sq bd di 7 [])
+
+mkRayIter :: Square -> Board -> Dir -> Int -> [(Int,Int)] -> [(Int,Int)]
+mkRayIter _ _ _ 0 isq = isq
+mkRayIter sq bd dr n [] = mkRayIter sq bd dr (n - 1)
+  (makeSquares' (square2Tuple sq) [[dr]])
+mkRayIter sq bd dr n isq | onBoard' (head isq) && isAStep sq bd
+  (head (map tuple2Square isq)) = mkRayIter sq bd dr (n - 1)
+                               (makeSquares' (head isq) [[dr]]) ++ isq
+                         | otherwise = tail isq

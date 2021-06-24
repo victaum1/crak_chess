@@ -18,10 +18,12 @@ knight_branches = [[North,North,East],[North,North,West]
                   ,[East,East,North],[East,East,South]
                   ,[West,West,North],[West,West,South]]
 
-white_pawn_normal_b = [[North]]
+white_pawn_normal_step = [[North]]
+white_pawn_captures = [[North,East],[North,West]]
 white_pawn_double_step =[[North,North]] 
-black_pawn_normal_b = [[South]]
+black_pawn_normal_step = [[South]]
 black_pawn_double_step = [[South,South]]
+black_pawn_captures = [[South,East],[South,West]]
 mini_rook_branches = [[North],[South],[East],[West]]
 mini_bishop_branches = [[North,East],[South,East],[South,West]
   ,[North,West]]
@@ -44,5 +46,5 @@ sameSide p1 p2 = pieceSide p1 == pieceSide p2
 isEmpty :: Square -> Board -> Bool
 isEmpty sq bd = isNothing (checkSquare sq bd)
 
-isFriendly :: Square -> Board -> Square ->  Bool
-isFriendly isq bd fsq = isEmpty fsq bd && not (fromMaybe False (sameSide <$> checkSquare isq bd <*> checkSquare fsq bd))
+isAStep :: Square -> Board -> Square ->  Bool
+isAStep isq bd fsq = isEmpty fsq bd && not (fromMaybe False (sameSide <$> checkSquare isq bd <*> checkSquare fsq bd))
