@@ -11,7 +11,7 @@ import Squares ( Square, square2Tuple )
 -- data MoveLike = Slider | Jumper | OneStep deriving (Eq,Show)
 data Dir = North | South | East | West deriving (Eq,Show)
 type CPath = [Dir]
-type CBranch = [[Dir]]
+type CBranch = [CPath]
 
 knight_branches = [[North,North,East],[North,North,West]
                   ,[South,South,East],[South,South,West]
@@ -47,4 +47,7 @@ isEmpty :: Square -> Board -> Bool
 isEmpty sq bd = isNothing (checkSquare sq bd)
 
 isAStep :: Square -> Board -> Square ->  Bool
-isAStep isq bd fsq = isEmpty fsq bd && not (fromMaybe False (sameSide <$> checkSquare isq bd <*> checkSquare fsq bd))
+isAStep isq bd fsq = isEmpty fsq bd || not (sameSideStep isq bd fsq)
+
+sameSideStep :: Square -> Board -> Square -> Bool
+sameSideStep isq bd fsq = fromMaybe False (sameSide <$> checkSquare isq bd <*> checkSquare fsq bd)

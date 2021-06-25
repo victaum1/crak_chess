@@ -1,16 +1,14 @@
 module Generator where
-import Game ( Game, GameState(board) )
-import Pieces ( Piece, PieceType )
-import Rules ( knight_branches, isAStep, onBoard', onBoard, CBranch,
-               Dir(..), mini_rook_branches )
-import Squares ( Square, square2Tuple, tuple2Square )
-import Board (checkSquare, Board(..))
-import Data.Maybe ( fromMaybe )
+import Game
+import Pieces
+import Rules
+import Squares
+import Board
+import Data.Maybe ( Maybe(Just, Nothing) )
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Moves (Move(..))
-
+import Moves
 
 squareAttack :: Square -> Game -> Bool
 squareAttack _ _ = False
@@ -20,11 +18,11 @@ moveGenerator :: Game -> [Move]
 moveGenerator _ = []
 
 
-makeSquares' :: (Int,Int) -> [[Dir]] -> [(Int,Int)]
+makeSquares' :: (Int,Int) -> [CPath] -> [(Int,Int)]
 makeSquares' sq = map $ compose sq
 
 
-makeSquares :: Square -> [[Dir]] -> [Square]
+makeSquares :: Square -> [CPath] -> [Square]
 makeSquares sq ds = map tuple2Square (makeSquares' (square2Tuple sq) ds)
 
 
@@ -43,8 +41,8 @@ orthoMove d (f,r) | d == North = (f,r+1)
              | d == West  = (f-1,r)
 
 
-squaresForSide :: Game -> [Square]
-squaresForSide g = []
+-- squaresForSide :: Game -> [Square]
+-- squaresForSide g = []
 
 
 makeMove :: Square -> Square -> Move
@@ -62,19 +60,26 @@ genMoveFromBranches s b c = map (makeMove s) (filter (isAStep s
   (square2Tuple s) c))))
 
 genRookMoves :: Square -> Board -> [Move]
-genRookMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b mini_rook_branches
+genRookMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b
+  mini_rook_branches
+
+genBishopMoves :: Square -> Board -> [Move]
+genBishopMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b
+  mini_bishop_branches 
 
 mkRaysFromBranches :: Square -> Board -> CBranch -> [[Square]]
-mkRaysFromBranches sq bd cb = map (mkRay sq bd) (concat cb)
+mkRaysFromBranches sq bd = map (mkRay sq bd)
 
-mkRay :: Square -> Board -> Dir -> [Square]
+mkRay :: Square -> Board -> CPath -> [Square]
 mkRay sq bd di = map tuple2Square (mkRayIter sq bd di 7 [])
 
-mkRayIter :: Square -> Board -> Dir -> Int -> [(Int,Int)] -> [(Int,Int)]
+mkRayIter :: Square -> Board -> CPath -> Int -> [(Int,Int)] -> [(Int,Int)]
 mkRayIter _ _ _ 0 isq = isq
 mkRayIter sq bd dr n [] = mkRayIter sq bd dr (n - 1)
-  (makeSquares' (square2Tuple sq) [[dr]])
-mkRayIter sq bd dr n isq | onBoard' (head isq) && isAStep sq bd
-  (head (map tuple2Square isq)) = mkRayIter sq bd dr (n - 1)
-                               (makeSquares' (head isq) [[dr]]) ++ isq
+  (makeSquares' (square2Tuple sq) [dr])
+mkRayIter sq bd dr n isq | onBoard' (head isq) && isEmpty (tuple2Square $
+  head isq) bd = mkRayIter sq bd dr (n - 1) (makeSquares' (head isq) [dr])
+                 ++ isq
+                         | onBoard' (head isq) && not (sameSideStep sq bd
+  (head (map tuple2Square isq))) = isq
                          | otherwise = tail isq
