@@ -13,7 +13,6 @@ import Moves
 squareAttack :: Square -> Game -> Bool
 squareAttack _ _ = False
 
-
 moveGenerator :: Game -> [Move]
 moveGenerator _ = []
 
@@ -40,32 +39,13 @@ orthoMove d (f,r) | d == North = (f,r+1)
              | d == East  = (f+1,r)
              | d == West  = (f-1,r)
 
-
--- squaresForSide :: Game -> [Square]
--- squaresForSide g = []
-
-
-makeMove :: Square -> Square -> Move
-makeMove is fs = Move is fs Nothing
-
-makeCrownPawnMove :: Square -> Square -> PieceType -> Move
-makeCrownPawnMove is fs pt = Move is fs (Just pt)
-
-genKnightMoves :: Square -> Board -> [Move]
-genKnightMoves s b = genMoveFromBranches s b knight_branches 
+-- 
+-- 
 
 genMoveFromBranches :: Square -> Board -> CBranch -> [Move]
 genMoveFromBranches s b c = map (makeMove s) (filter (isAStep s
   b) (map tuple2Square (filter onBoard' (makeSquares'
   (square2Tuple s) c))))
-
-genRookMoves :: Square -> Board -> [Move]
-genRookMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b
-  mini_rook_branches
-
-genBishopMoves :: Square -> Board -> [Move]
-genBishopMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b
-  mini_bishop_branches 
 
 mkRaysFromBranches :: Square -> Board -> CBranch -> [[Square]]
 mkRaysFromBranches sq bd = map (mkRay sq bd)
@@ -83,3 +63,24 @@ mkRayIter sq bd dr n isq | onBoard' (head isq) && isEmpty (tuple2Square $
                          | onBoard' (head isq) && not (sameSideStep sq bd
   (head (map tuple2Square isq))) = isq
                          | otherwise = tail isq
+
+makeMove :: Square -> Square -> Move
+makeMove is fs = Move is fs Nothing
+
+makeCrownPawnMove :: Square -> Square -> PieceType -> Move
+makeCrownPawnMove is fs pt = Move is fs (Just pt)
+
+genKnightMoves :: Square -> Board -> [Move]
+genKnightMoves s b = genMoveFromBranches s b knight_branches 
+
+
+genRookMoves :: Square -> Board -> [Move]
+genRookMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b
+  mini_rook_branches
+
+genBishopMoves :: Square -> Board -> [Move]
+genBishopMoves s b = map (makeMove s) $ concat $ mkRaysFromBranches s b
+  mini_bishop_branches 
+
+genQueenMoves :: Square -> Board -> [Move]
+genQueenMoves sq bd = genRookMoves sq bd ++ genBishopMoves sq bd
