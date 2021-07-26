@@ -73,7 +73,6 @@ tests:
     dependencies:
       - crak-chess
       - HUnit
-      - transformers
       - containers
 
   q-board:
@@ -88,7 +87,6 @@ tests:
     dependencies:
       - crak-chess
       - QuickCheck
-      - transformers
       - containers
 
   q-squares:
@@ -103,8 +101,6 @@ tests:
     dependencies:
       - crak-chess
       - QuickCheck
-      - transformers
-      - containers
 
   u-squares:
     main: u-squares.hs
@@ -118,8 +114,6 @@ tests:
     dependencies:
       - crak-chess
       - HUnit
-      - transformers
-      - containers
 
   u-pieces:
     main: u-pieces.hs
@@ -133,11 +127,23 @@ tests:
     dependencies:
       - crak-chess
       # - hspec
-      # - QuickCheck
       # - mockery
       #- template-haskell
       - HUnit
       # - build-tools: hspec-discover
+ 
+  u-generator:
+    main: u-generator.hs
+    source-dirs:
+      - tests
+      - src
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+      #- template-haskell
+      - HUnit
       - transformers
       - containers
-

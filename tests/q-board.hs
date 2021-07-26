@@ -4,11 +4,11 @@ import Test.QuickCheck
 import qualified System.Exit as Exit
 import Control.Monad(unless)
 import Parsing
-import qualified Data.Set as Set
+import Data.Map.Strict as Map hiding (null)
 
 
 -- failing on readBoard
-prop_read_board_fail str = readBoard str == Set.empty ==> (null . parse pBoard) str
+prop_read_board_fail str = readBoard str == Map.empty ==> (null . parse pBoard) str
 
 
 -- readBoard and showBoard are reverse

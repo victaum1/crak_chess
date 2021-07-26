@@ -7,7 +7,7 @@ import Data.Maybe(fromJust)
 import Control.Monad(when)
 
 -- showPiece and readCPiece are reverses
-valid_chars = (map toLower piece_char_list) ++ piece_char_list
+valid_chars = (map toLower piece_chars) ++ piece_chars
 
 assertEq = assertEqual "Falla: " :: Char -> Char -> Assertion
 
