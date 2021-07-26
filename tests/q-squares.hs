@@ -10,11 +10,11 @@ import Control.Monad(unless)
 
 prop_failureReadRank :: Char -> Property
 prop_failureReadRank c = isNothing (readRank c)
-  ==> notElem (toLower c) chr_rank_ls
+  ==> notElem (toLower c) rank_chrs
 
 prop_failureReadFile :: Char -> Property
 prop_failureReadFile c = isNothing (readCFile c)
-  ==> notElem (toLower c) chr_file_ls
+  ==> notElem (toLower c) file_chrs
 
 
 return []

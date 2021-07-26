@@ -128,7 +128,6 @@ tests:
       - crak-chess
       # - hspec
       # - mockery
-      #- template-haskell
       - HUnit
       # - build-tools: hspec-discover
  

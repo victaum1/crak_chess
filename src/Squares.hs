@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Squares (File, Rank,SquareTuple, Square(..), showFile, showRank
   , pSquare, readRank, readCFile, readSquare, files, ranks, tuple2Square
-  , square2Tuple, intToSquare, file_ls, rank_ls)
+  , square2Tuple, intToSquare, file_chrs, rank_chrs)
   where
 
 import           Data.Char  (chr, ord, toLower)
@@ -9,8 +9,8 @@ import           Data.Maybe
 import           Parsing
 
 -- vars
-file_ls = ['a' .. 'h']
-rank_ls = ['1' .. '8']
+file_chrs = ['a' .. 'h']
+rank_chrs = ['1' .. '8']
 files = [0..7]::[Int]
 ranks = files
 
