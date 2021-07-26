@@ -6,7 +6,7 @@ import Data.Maybe(fromJust)
 import Control.Monad(when)
 
 -- showSquare and readSquare are reverses
-valid_square_list = [a:b:[] | a <- chr_file_ls, b <- chr_rank_ls]
+valid_square_list = [a:b:[] | a <- file_chrs, b <- rank_chrs]
 
 assertEq = assertEqual "Falla: " :: String -> String -> Assertion
 
