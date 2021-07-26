@@ -17,12 +17,11 @@ data Move = Move {
                  } deriving (Eq)
 
 instance {-# OVERLAPS #-} Show Move where
-  show (Move a b c) | isNothing c = show a ++ show b
-                    | otherwise = show a ++ show b ++ show c
+  show (Move a b c) = show a ++ show b ++ show c
 
 instance {-# OVERLAPS #-} Show (Maybe PieceType) where
   show Nothing = " "
-  show (Just a) = show a
+  show (Just a) = show a ++ " "
 
 
 -- funcs
