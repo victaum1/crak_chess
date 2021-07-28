@@ -15,13 +15,15 @@ squareAttack :: Square -> Game -> Bool
 squareAttack sq ge = squareAttackOnBoard inv sq aBoard
   where aSide = turn ge
         aBoard = board ge
-        inv = if aSide == White then Black else White
+        inv | aSide == White = Black
+            | otherwise = White
 
 squareAttackOnBoard :: Side -> Square -> Board -> Bool
 squareAttackOnBoard si sq bd = squareAttackByKnight sq si bd ||
   squareAttackByBishop sq si bd || squareAttackByRook sq si bd ||
   squareAttackByQueen sq si bd  || squareAttackByPawn sq si bd
-  
+
+
 squareAttackByKnight :: Square -> Side -> Board -> Bool
 squareAttackByKnight sq si bd =  any (isSideKnight si)
   (mapMaybe (`checkSquare` bd) (genKnightSquares sq Map.empty))
@@ -31,21 +33,21 @@ isSideKnight s p = Piece s Knight == p
 
 squareAttackByQueen :: Square -> Side -> Board -> Bool
 squareAttackByQueen sq si bd =  any (isSideQueen si)
-  (mapMaybe (`checkSquare` bd) (genQueenSquares sq Map.empty))
+  (mapMaybe (`checkSquare` bd) (genQueenSquares sq bd))
 
 isSideQueen :: Side -> Piece -> Bool
 isSideQueen s p = Piece s Queen == p
 
 squareAttackByBishop :: Square -> Side -> Board -> Bool
 squareAttackByBishop sq si bd =  any (isSideBishop si)
-  (mapMaybe (`checkSquare` bd) (genBishopSquares sq Map.empty))
+  (mapMaybe (`checkSquare` bd) (genBishopSquares sq bd))
 
 isSideBishop :: Side -> Piece -> Bool
 isSideBishop s p = Piece s Bishop == p
 
 squareAttackByRook :: Square -> Side -> Board -> Bool
 squareAttackByRook  sq si bd =  any (isSideRook si)
-  (mapMaybe (`checkSquare` bd) (genRookSquares sq Map.empty))
+  (mapMaybe (`checkSquare` bd) (genRookSquares sq bd))
 
 isSideRook :: Side -> Piece -> Bool
 isSideRook s p = Piece s Rook == p
@@ -61,7 +63,7 @@ isSidePawn s p = Piece s Pawn == p
 
 genSidePawnSquares :: Side -> Square -> Board -> [Square]
 genSidePawnSquares si sq bd | si == White = genSquaresFromBranches sq bd
-  white_pawn_captures 
+  white_pawn_captures
                             | otherwise = genSquaresFromBranches sq bd
   black_pawn_captures
 
@@ -115,8 +117,8 @@ mkRayIter sq bd dr n [] = mkRayIter sq bd dr (n - 1)
 mkRayIter sq bd dr n isq | onBoard' (head isq) && isEmpty (tuple2Square $
   head isq) bd = mkRayIter sq bd dr (n - 1) (makeSquares' (head isq) [dr])
                  ++ isq
-                         | onBoard' (head isq) && not (sameSideStep sq bd
-  (head (map tuple2Square isq))) = isq
+                         | onBoard' (head isq) && not (isEmpty
+  (tuple2Square $ head isq) bd) = isq
                          | otherwise = tail isq
 
 makeSimpleMove :: Square -> Square -> Move
@@ -132,14 +134,16 @@ genKnightSquares :: Square -> Board -> [Square]
 genKnightSquares s b = genSquaresFromBranches s b knight_branches
 
 genRookMoves :: Square -> Board -> [Move]
-genRookMoves s b = map (makeSimpleMove s) $ genRookSquares s b
+genRookMoves s b = map (makeSimpleMove s) $ filter
+  (sameSideStep s b) (genRookSquares s b)
 
 genRookSquares :: Square -> Board -> [Square]
 genRookSquares s b = concat $ mkRaysFromBranches s b
   mini_rook_branches
 
 genBishopMoves :: Square -> Board -> [Move]
-genBishopMoves s b = map (makeSimpleMove s) $ genBishopSquares s b
+genBishopMoves s b = map (makeSimpleMove s) $ filter
+  (sameSideStep s b) (genBishopSquares s b)
 
 genBishopSquares :: Square -> Board -> [Square]
 genBishopSquares s b = concat $ mkRaysFromBranches s b
@@ -152,4 +156,5 @@ genQueenSquares :: Square -> Board -> [Square]
 genQueenSquares sq bd = genRookSquares sq bd ++ genBishopSquares sq bd
 
 genKingSimpleSquares :: Square -> Board -> [Square]
-genKingSimpleSquares s b = genSquaresFromBranches s b mini_rook_branches
+genKingSimpleSquares s b = genSquaresFromBranches s b (mini_rook_branches ++
+  mini_bishop_branches)

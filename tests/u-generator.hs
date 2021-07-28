@@ -40,14 +40,14 @@ fENs = [
   ]
 
 test_sqs = [
-  "E6","A7","D6","A5","E2","E8","B8","C8","F6","B2", "C7", "C6", "B5", "F8"
-  ,"C1","G6","C3","D1","G3","F7","B1","F4","B3","F5","G5", "F3", "E1","E3"
-  ,"H7","H4"
+    "E6", "A7", "D6", "A5", "E2", "E8", "B8", "C8", "F6", "B2", "C7", "C6", "B5", "F8"
+  , "C1", "G6", "C3", "D1", "G3", "F7", "B1", "F4", "B3", "F5", "G5", "F3", "E1", "E3"
+  , "H7", "H4"
   ]
 
 spec_bools = [
-  True, False, True, False, True, True, True, True, False, True, False
-  , False, False, False, True, True, True, True, False, False, False, True
+    True, False, True, False, False, True, True, True, False, True, False
+  , False, False, False, True, True, True, True, False, True, True, True
   , False, True, True, False, False, False, False, True
   ]
 
