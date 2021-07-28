@@ -32,8 +32,8 @@ type Game = GameState
 pTurn :: Parser Side
 pTurn = P(\case
   [] -> []
-  (c:cs) | c == 'w' -> [(White, cs)]
-         | c == 'b' -> [(Black, cs)]
+  (c:cs) | c == 'w' -> [(True, cs)]
+         | c == 'b' -> [(False, cs)]
          | otherwise -> [])
 
 packCastle :: String -> Int -> String -> Maybe Int
@@ -103,7 +103,7 @@ showCflags n | isInTable = [findChar]
 game2FEN :: Game -> String
 game2FEN g = unwords [board2FEN getBoard,getTurn,getCf,getSq,getPlys,getMoves]
             where getBoard = board g
-                  getTurn = if turn g == White then "w" else "b"
+                  getTurn = if turn g then "w" else "b"
                   getPlys = show $ nPlys g
                   getCf = showCflags $ castleFlag g
                   getSq = maybe "-" show $ epSquare g

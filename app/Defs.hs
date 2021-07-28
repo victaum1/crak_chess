@@ -15,5 +15,6 @@ mio = lift
 errorCmd :: [String] -> IO ()
 errorCmd [] = putStrLn "Error (Incomplete)"
 errorCmd [_] = putStrLn "Error (Incomplete)"
-errorCmd  [a_type, a_msg] = putStrLn $ "Error (" ++ a_type ++  "): " ++ a_msg
+errorCmd  [a_type, a_msg] = putStrLn $ "Error (" ++ a_type ++  "): "
+   ++ a_msg
 errorCmd (r:cs) = errorCmd [r,head cs]

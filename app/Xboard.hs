@@ -161,7 +161,7 @@ force' = do
 
 printPost = do
           args <- get
-          if turn (getGame args) == White then
+          if turn (getGame args) then
               mio $ putStrLn "1 0 1 1 e2e4"
           else mio $ putStrLn "1 0 1 1 e7e5"
 
@@ -169,7 +169,7 @@ printPost = do
 hint :: StateT PlayArgs IO ()
 hint = do
           args <- get
-          if turn (getGame args) == White then mio $ putStrLn "Hint: e2e4"
+          if turn (getGame args) then mio $ putStrLn "Hint: e2e4"
             else mio $ putStrLn "Hint: e7e5"
           xbLoop
 

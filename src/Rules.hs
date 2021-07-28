@@ -1,7 +1,7 @@
 module Rules where
 import Data.Maybe ( fromMaybe, isNothing )
 import Pieces
-    ( PieceType(Knight), Piece(Piece, pieceSide), Side(Black, White) )
+    (PieceType(Knight), Piece(Piece, pieceSide), Side)
 import Board ( Board, checkSquare)
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)

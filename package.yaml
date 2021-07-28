@@ -25,11 +25,9 @@ library:
       - Squares
       - Game
       - Parsing
-      - Defs
       - Generator
     dependencies:
       - containers
-      - transformers
 
 executables:
   crakchess-exe:
@@ -50,7 +48,6 @@ tests:
     main: u-moves.hs
     source-dirs:
       - tests
-      - src
     ghc-options:
       - -threaded 
       - -rtsopts
@@ -58,14 +55,12 @@ tests:
     dependencies:
       - crak-chess
       - HUnit
-      - transformers
-      - containers
+        # - containers
 
   u-game:
     main: u-game.hs
     source-dirs:
       - tests
-      - src
     ghc-options:
       - -threaded 
       - -rtsopts 
@@ -79,7 +74,6 @@ tests:
     main: q-board.hs
     source-dirs:
       - tests
-      - src
     ghc-options:
       - -threaded 
       - -rtsopts 
@@ -93,7 +87,6 @@ tests:
     main: q-squares.hs
     source-dirs:
       - tests
-      - src
     ghc-options:
       - -threaded 
       - -rtsopts 
@@ -106,7 +99,6 @@ tests:
     main: u-squares.hs
     source-dirs:
       - tests
-      - src
     ghc-options:
       - -threaded 
       - -rtsopts 
@@ -119,7 +111,6 @@ tests:
     main: u-pieces.hs
     source-dirs:
       - tests
-      - src
     ghc-options:
       - -threaded 
       - -rtsopts 
@@ -135,7 +126,6 @@ tests:
     main: u-generator.hs
     source-dirs:
       - tests
-      - src
     ghc-options:
       - -threaded 
       - -rtsopts 
@@ -144,5 +134,4 @@ tests:
       - crak-chess
       #- template-haskell
       - HUnit
-      - transformers
       - containers

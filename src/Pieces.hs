@@ -20,12 +20,10 @@ instance Show PieceType where
          | a == Queen  = "Q"
          | a == King   = "K"
 
-data Side =  White | Black
-             deriving (Eq,Ord)
+-- data Side =  White | Black
+--             deriving (Eq,Ord)
 
-instance Show Side where
-  show s | s == White = "W" -- First Team
-         | otherwise  = "B" -- The other Team
+type Side = Bool
 
 data Piece = Piece {
                       pieceSide :: Side
@@ -33,7 +31,7 @@ data Piece = Piece {
                     } deriving (Eq,Ord)
 
 instance Show Piece where
-  show (Piece s p) = show s ++ show p
+  show (Piece s p) = if s then "W" else "B" ++ show p
 
 -- vars / const
 piece_types = [Pawn .. ]
@@ -50,15 +48,15 @@ readPieceType :: Char -> Maybe PieceType
 readPieceType c = lookup c type_map
 
 readCPiece :: Char -> Maybe Piece
-readCPiece c | toUpper c `elem` piece_chars = Just(Piece (toSide c)
+readCPiece c | toUpper c `elem` piece_chars = Just(Piece (isUpper c)
                (toPt c))
              | otherwise = Nothing
            where
              toPt x = fromJust $ readPieceType (toUpper c)
-             toSide x = if isUpper x then White else Black
+             -- toSide x = if isUpper x then White else Black
 
 showPiece :: Piece -> Char
-showPiece p = if pieceSide p == White then p2char p else
+showPiece p = if pieceSide p then p2char p else
   (toLower . p2char) p
   where p2char x = fromJust $ lookup (pieceType x) type_map'
 

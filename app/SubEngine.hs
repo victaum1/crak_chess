@@ -21,7 +21,7 @@ mAdjudicate = do
   let a_game = getGame args
   let a_side = turn a_game
   if isInCheck a_side a_game then do
-    if a_side == White then do
+    if a_side then do
       mio $ putStrLn "result 1-0 {White mates}"
     else do
       mio $ putStrLn "result 0-1 {Black mates}"

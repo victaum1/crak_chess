@@ -12,11 +12,9 @@ import Moves
 
 
 squareAttack :: Square -> Game -> Bool
-squareAttack sq ge = squareAttackOnBoard inv sq aBoard
+squareAttack sq ge = squareAttackOnBoard (not aSide) sq aBoard
   where aSide = turn ge
         aBoard = board ge
-        inv | aSide == White = Black
-            | otherwise = White
 
 squareAttackOnBoard :: Side -> Square -> Board -> Bool
 squareAttackOnBoard si sq bd = squareAttackByKnight sq si bd ||
@@ -54,15 +52,13 @@ isSideRook s p = Piece s Rook == p
 
 squareAttackByPawn :: Square -> Side -> Board -> Bool
 squareAttackByPawn sq si bd = any (isSidePawn si)
-  (mapMaybe (`checkSquare` bd) (genSidePawnSquares inv sq Map.empty))
-  where inv | si == White = Black
-            | otherwise = White
+  (mapMaybe (`checkSquare` bd) (genSidePawnSquares (not si) sq Map.empty))
 
 isSidePawn :: Side -> Piece -> Bool
 isSidePawn s p = Piece s Pawn == p
 
 genSidePawnSquares :: Side -> Square -> Board -> [Square]
-genSidePawnSquares si sq bd | si == White = genSquaresFromBranches sq bd
+genSidePawnSquares si sq bd | si = genSquaresFromBranches sq bd
   white_pawn_captures
                             | otherwise = genSquaresFromBranches sq bd
   black_pawn_captures

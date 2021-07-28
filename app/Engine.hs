@@ -17,7 +17,7 @@ dft_str_move_w = "e2e4"
 dft_str_move_b = "e7e5"
 game_fen1 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
 game_fen2 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
-dft_cp_flag = Black
+dft_cp_flag = False -- Black
 move_w = fromJust $ readMove dft_str_move_w
 move_b = fromJust $ readMove dft_str_move_b
 game_st1 = fromJust $ fen2Game game_fen1
@@ -68,11 +68,11 @@ makeMove m g = do
   let i_nplys = nPlys g
   let i_nMoves = nMoves g
   let o_nplys = if isPawn || isCapture then 0 else i_nplys + 1
-  let o_nMoves = if i_side == Black then i_nMoves + 1 else i_nMoves
+  let o_nMoves = if i_side == False then i_nMoves + 1 else i_nMoves
   o_bd <- mkMoveBoard m i_bd
   return (g{board=o_bd, turn = revertSide i_side, nPlys = o_nplys
            , nMoves = o_nMoves})
-  where revertSide s = if s == White then Black else White
+  where revertSide s = not s
         isPawn = Just Pawn == (pieceType <$> checkSquare (getInitSq m) i_bd)
         i_bd = board g
         isCapture = isJust $ checkSquare (getDestSq m) i_bd
