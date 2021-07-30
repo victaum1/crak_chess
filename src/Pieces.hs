@@ -31,7 +31,7 @@ data Piece = Piece {
                     } deriving (Eq,Ord)
 
 instance Show Piece where
-  show (Piece s p) = if s then "W" else "B" ++ show p
+  show (Piece s p) = (if s then "W" else "B") ++ show p
 
 -- vars / const
 piece_types = [Pawn .. ]

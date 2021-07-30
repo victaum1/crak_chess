@@ -52,16 +52,53 @@ isSideRook s p = Piece s Rook == p
 
 squareAttackByPawn :: Square -> Side -> Board -> Bool
 squareAttackByPawn sq si bd = any (isSidePawn si)
-  (mapMaybe (`checkSquare` bd) (genSidePawnSquares (not si) sq Map.empty))
+  (mapMaybe (`checkSquare` bd) (genPawnCaptureSquares (not si) sq Map.empty))
 
 isSidePawn :: Side -> Piece -> Bool
 isSidePawn s p = Piece s Pawn == p
 
-genSidePawnSquares :: Side -> Square -> Board -> [Square]
-genSidePawnSquares si sq bd | si = genSquaresFromBranches sq bd
+genPawnMoves :: Side -> Square -> Board -> [Move]
+genPawnMoves si sq bd = genPawnCaptures si sq bd ++
+  genPawnStepMoves si sq bd
+
+genPawnCaptures :: Side -> Square -> Board -> [Move]
+genPawnCaptures si sq bd = map (makeSimpleMove sq) $ filter
+  (not . (`isEmpty` bd)) $ filter (not . sameSideStep sq bd)
+  $ genPawnCaptureSquares si sq bd
+
+
+genPawnCaptureSquares :: Side -> Square -> Board -> [Square]
+genPawnCaptureSquares si sq bd | si = genSquaresFromBranches sq bd
   white_pawn_captures
-                            | otherwise = genSquaresFromBranches sq bd
+                               | otherwise = genSquaresFromBranches sq bd
   black_pawn_captures
+
+
+genPawnStepMoves :: Side -> Square -> Board -> [Move]
+genPawnStepMoves si sq bd = map (makeSimpleMove sq) (filter (`isEmpty` bd)
+  (genPawnStepSquares si sq bd))
+
+
+isFirstRank :: Side -> Square  -> Bool
+isFirstRank si sq | si = 1 == squareRank sq
+                  | otherwise = 6 == squareRank sq 
+
+
+genPawnStepSquares :: Side -> Square -> Board -> [Square]
+genPawnStepSquares si sq bd | si = if isFirstRank si sq then
+                                     genSquaresFromBranches sq bd
+                                       (white_pawn_step ++
+                                         white_pawn_double_step)
+                                   else
+                                     genSquaresFromBranches sq bd
+                                       white_pawn_step
+                            | otherwise = if isFirstRank si sq then
+                                     genSquaresFromBranches sq bd
+                                       (black_pawn_step ++
+                                         black_pawn_double_step)
+                                   else
+                                     genSquaresFromBranches sq bd
+                                       black_pawn_step
 
 
 moveGenerator :: Game -> [Move]
@@ -106,8 +143,9 @@ mkRaysFromBranches sq bd = map (mkRay sq bd)
 mkRay :: Square -> Board -> CPath -> [Square]
 mkRay sq bd di = map tuple2Square (mkRayIter sq bd di 7 [])
 
+
 mkRayIter :: Square -> Board -> CPath -> Int -> [(Int,Int)] -> [(Int,Int)]
-mkRayIter _ _ _ 0 isq = isq
+mkRayIter _ _ _ 0 isq = filter onBoard' isq
 mkRayIter sq bd dr n [] = mkRayIter sq bd dr (n - 1)
   (makeSquares' (square2Tuple sq) [dr])
 mkRayIter sq bd dr n isq | onBoard' (head isq) && isEmpty (tuple2Square $
@@ -116,6 +154,7 @@ mkRayIter sq bd dr n isq | onBoard' (head isq) && isEmpty (tuple2Square $
                          | onBoard' (head isq) && not (isEmpty
   (tuple2Square $ head isq) bd) = isq
                          | otherwise = tail isq
+
 
 makeSimpleMove :: Square -> Square -> Move
 makeSimpleMove is fs = Move is fs Nothing
@@ -152,5 +191,5 @@ genQueenSquares :: Square -> Board -> [Square]
 genQueenSquares sq bd = genRookSquares sq bd ++ genBishopSquares sq bd
 
 genKingSimpleSquares :: Square -> Board -> [Square]
-genKingSimpleSquares s b = genSquaresFromBranches s b (mini_rook_branches ++
-  mini_bishop_branches)
+genKingSimpleSquares s b = genSquaresFromBranches s b (mini_rook_branches
+  ++ mini_bishop_branches)

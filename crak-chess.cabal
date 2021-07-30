@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8cf2e10fa985b9d97b1c1f19e1483e180b9ad2b028ea4bf35ea1bf92487dd92b
+-- hash: 4e959ed74019d99ca82f858170e313977a18d11e52bf6a97c2e271a5cbee7964
 
 name:           crak-chess
 version:        0.0.13.8
@@ -106,9 +106,9 @@ test-suite u-game
     , crak-chess
   default-language: Haskell2010
 
-test-suite u-generator
+test-suite u-gen-sq-attack
   type: exitcode-stdio-1.0
-  main-is: u-generator.hs
+  main-is: u-gen-square_attack.hs
   other-modules:
       Paths_crak_chess
   hs-source-dirs:

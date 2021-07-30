@@ -122,8 +122,8 @@ tests:
       - HUnit
       # - build-tools: hspec-discover
  
-  u-generator:
-    main: u-generator.hs
+  u-gen-sq-attack:
+    main: u-gen-square_attack.hs
     source-dirs:
       - tests
     ghc-options:
