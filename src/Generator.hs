@@ -4,7 +4,7 @@ import Pieces
 import Rules
 import Squares
 import Board
-import Data.Maybe (Maybe(Just, Nothing), mapMaybe)
+import Data.Maybe (Maybe(Just, Nothing), mapMaybe, isNothing, fromJust)
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
@@ -94,6 +94,39 @@ genPawnStepSquares si sq bd | si = if is1Rank then
                 | otherwise = 6 == squareRank
                   sq
 
+
+genAllPawnMoves :: Square -> Game -> [Move]
+genAllPawnMoves sq gm = genEnPassant sq gm ++ crowns ++ ncm
+  where gpm = genPawnMoves si sq bd
+        si  = turn gm
+        bd  = board gm
+        ncm = filter (not . (`isMoveCrown` bd)) gpm
+        cm  = filter (`isMoveCrown` bd) gpm
+        crowns = concatMap (`genCrown` bd) cm
+
+genEnPassant :: Square -> Game -> [Move]
+genEnPassant sq gm | notEp = []
+                   | otherwise = map (makeSimpleMove sq) genSq
+  where notEp = isNothing $ epSquare gm
+        ep = fromJust $ epSquare gm
+        si = turn gm
+        bd = board gm
+        genSq = filter (==ep) $ genPawnCaptureSquares si sq bd
+
+genCrown :: Move -> Board -> [Move]
+genCrown m bd = map (makeCrownMove isq fsq) pTs
+  where pTs = [Queen,Rook,Knight,Bishop]
+        isq = getInitSq m
+        fsq = getDestSq m
+
+isMoveCrown :: Move -> Board -> Bool
+isMoveCrown (Move isq fsq _) bd | isPawn && si = squareRank isq == 6 &&
+                                  squareRank fsq == 7
+                                | isPawn && not si = squareRank isq == 1 &&
+                                  squareRank fsq == 0
+                                | otherwise = False
+  where isPawn = Pawn == maybe King pieceType (checkSquare isq bd)
+        si = maybe False pieceSide (checkSquare isq bd)
 
 moveGenerator :: Game -> [Move]
 moveGenerator _ = []
