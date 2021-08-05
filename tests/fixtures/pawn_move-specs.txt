@@ -11,5 +11,5 @@ b7b6 b7b5
 c4b3 c4c3 c4d3 
 d7d6 d7d5 
 e5e4 
-f7f5 
-h7h6 h7h5
+f7f6 
+h7h6 h7h5 

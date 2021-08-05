@@ -2,12 +2,13 @@ module Main (main) where
 
 import Control.Monad (when)
 import Data.Maybe (fromJust)
+import qualified System.Exit as Exit
+import Test.HUnit
+import Data.List (sort)
 import Game
 import Moves (Move, readMove, pMoveCoord)
 import Generator
 import Squares
-import qualified System.Exit as Exit
-import Test.HUnit
 import Parsing
 
 manyPMove = parse (many pMoveCoord)
@@ -19,6 +20,8 @@ genGames = map (fromJust . fen2Game)
 genTestSqs = map (fromJust . readSquare)
 
 genMoves = flip genAllPawnMoves
+
+genSpecMoves = map ((fst . head) . manyPMove) . lines
 
 
 main :: IO ()
@@ -32,14 +35,14 @@ main = do
   let sqs_test_w = genTestSqs (take 8 test_sqs)
   let sqs_test_b = genTestSqs (drop 8 test_sqs)
   move_file <- readFile "tests/fixtures/pawn_move-specs.txt"
-  let move_specs = map ((fst . head) . manyPMove) (lines move_file)
-  let w_move_specs =  take 8 move_specs
-  let b_move_specs = drop 8 move_specs
-  let w_gen_moves = map (genMoves wgame) sqs_test_w
-  let b_gen_moves = map (genMoves bgame) sqs_test_b
-  let ws = zipWith assertEq (concat w_move_specs) (concat w_gen_moves)
-  let bs = zipWith assertEq (concat b_move_specs) (concat b_gen_moves)
-  let as = ws ++ bs
+  let move_specs = genSpecMoves move_file
+  let w_move_specs =  map sort $ take 8 move_specs
+  let b_move_specs =  map sort $ drop 8 move_specs
+  let w_gen_moves  =  map (sort . genMoves wgame) sqs_test_w
+  let b_gen_moves  =  map (sort . genMoves bgame) sqs_test_b
+  let ws = (zipWith . zipWith) assertEq w_move_specs w_gen_moves
+  let bs = (zipWith . zipWith) assertEq b_move_specs b_gen_moves
+  let as = concat (ws ++ bs)
   let tests = TestList $ map TestCase as
   count <- runTestTT tests
   when (failures count > 0) Exit.exitFailure 

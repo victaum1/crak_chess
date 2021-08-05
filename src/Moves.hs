@@ -14,7 +14,7 @@ data Move = Move {
     getInitSq :: Square
   , getDestSq :: Square
   , getCrown  :: Maybe PieceType
-                 } deriving (Eq)
+                 } deriving (Eq,Ord)
 
 instance {-# OVERLAPS #-} Show Move where
   show (Move a b c) = show a ++ show b ++ show c
