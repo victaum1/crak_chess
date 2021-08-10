@@ -81,6 +81,7 @@ pRank = P(\case
 
 pSquare :: Parser Square
 pSquare = do
+            space
             f <- pFile
             Square f <$> pRank
 

@@ -12,10 +12,16 @@ import Moves
 import Data.Bifunctor (bimap)
 
 
+
+moveGenerator :: Game -> [Move]
+moveGenerator _ = []
+
+
 squareAttack :: Square -> Game -> Bool
 squareAttack sq ge = squareAttackOnBoard (not aSide) sq aBoard
   where aSide = turn ge
         aBoard = board ge
+
 
 squareAttackOnBoard :: Side -> Square -> Board -> Bool
 squareAttackOnBoard si sq bd = squareAttackByKnight sq si bd ||
@@ -128,8 +134,6 @@ isMoveCrown (Move isq fsq _) bd | isPawn && si = squareRank isq == 6 &&
   where isPawn = Pawn == maybe King pieceType (checkSquare isq bd)
         si = maybe False pieceSide (checkSquare isq bd)
 
-moveGenerator :: Game -> [Move]
-moveGenerator _ = []
 
 
 makeSquares' :: (Int,Int) -> [CPath] -> [(Int,Int)]
