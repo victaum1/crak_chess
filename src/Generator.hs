@@ -202,14 +202,15 @@ genRookSquares s b = concat $ mkRaysFromBranches s b
 
 genBishopMoves :: Square -> Board -> [Move]
 genBishopMoves s b = map (makeSimpleMove s) $ filter
-  (sameSideStep s b) (genBishopSquares s b)
+  (not . sameSideStep s b) (genBishopSquares s b)
 
 genBishopSquares :: Square -> Board -> [Square]
 genBishopSquares s b = concat $ mkRaysFromBranches s b
   mini_bishop_branches
 
 genQueenMoves :: Square -> Board -> [Move]
-genQueenMoves sq bd = map (makeSimpleMove sq) $ genQueenSquares sq bd
+genQueenMoves sq bd = map (makeSimpleMove sq) $ filter
+  (not . sameSideStep sq bd) $ genQueenSquares sq bd
 
 genQueenSquares :: Square -> Board -> [Square]
 genQueenSquares sq bd = genRookSquares sq bd ++ genBishopSquares sq bd

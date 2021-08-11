@@ -12,8 +12,8 @@ import Squares
 import Parsing
 import Board
 
-gen_funcs = [
-    genKnightMoves, genRookMoves, genBishopMoves, genQueenMoves
+gen_funcs = concat $ map (replicate 3) [
+    genKnightMoves, genBishopMoves, genRookMoves, genQueenMoves
   ]
 
 manyPMove = parse (many pMoveCoord)
@@ -26,8 +26,7 @@ genBoards = map ((fst . head) . manyPBoard)
 
 genTestSqs = map ((fst.head).manyPSquare)
 
-genMoves :: [Square] -> [Board]
-  -> [[Move]]
+genMoves :: [Square] -> [Board] -> [[Move]]
 genMoves = zipWith id . zipWith id gen_funcs
 
 genSpecMoves = map ((fst . head) . manyPMove)
