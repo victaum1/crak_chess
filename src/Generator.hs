@@ -12,7 +12,6 @@ import Moves
 import Data.Bifunctor (bimap)
 
 
-
 moveGenerator :: Game -> [Move]
 moveGenerator _ = []
 
@@ -218,3 +217,13 @@ genQueenSquares sq bd = genRookSquares sq bd ++ genBishopSquares sq bd
 genKingSimpleSquares :: Square -> Board -> [Square]
 genKingSimpleSquares s b = genSquaresFromBranches s b (mini_rook_branches
   ++ mini_bishop_branches)
+
+genCastleSquares :: Side -> [Square]
+genCastleSquares s | s = [Square 0 0, Square 0 7]
+                   | otherwise = [Square 7 0, Square 7 7]
+
+genKingMoves :: Game -> [Move]
+genKingMoves g = []
+  where bd = board g
+        sd = turn g
+        kSq = undefined

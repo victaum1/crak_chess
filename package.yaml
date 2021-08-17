@@ -135,3 +135,46 @@ tests:
       #- template-haskell
       - HUnit
       - containers
+
+  u-gen-pawn-move:
+    main: u-gen-pawn_moves.hs
+    source-dirs:
+      - tests
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+      #- template-haskell
+      - HUnit
+      - containers
+  
+  u-gen-qrbn-move:
+    main: u-gen-qrbn_moves.hs
+    source-dirs:
+      - tests
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+      #- template-haskell
+      - HUnit
+      - containers
+
+  u-gen-king-move:
+    main: u-gen-king_moves.hs
+    source-dirs:
+      - tests
+    ghc-options:
+      - -threaded 
+      - -rtsopts 
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+      #- template-haskell
+      - HUnit
+      - containers
+
