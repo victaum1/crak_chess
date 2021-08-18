@@ -18,11 +18,10 @@ specs = "king_move_specs.txt"
 noHeadLines = drop 2 . lines
 
 manyPMove = parse (many pMoveCoord)
-manyPGame = parse (many pGame)
 
 assertEq = assertEqual "falla: " :: [Move] -> [Move] -> Assertion
 
-genGames = head . map ((fst . head) . manyPGame)
+genGames = map ((fst . head) . parse pGame)
 genSpecMoves = map ((fst . head) . manyPMove)
 
 genMoves :: [Game] -> [[Move]]
@@ -31,12 +30,13 @@ genMoves = map genKingMoves
 genTest = zipWith assertEq
 
 main:: IO ()
-main = do
+main = -- undefined
+  do
   move_specs_file <- readFile (fixtures ++ specs)
   move_inputs_file <- readFile (fixtures ++ inputs)
   let games = genGames $ noHeadLines move_inputs_file
   let gen_moves = (map sort . genMoves) games
-  let move_specs = map sort $ genSpecMoves $ noHeadLines move_specs_file
+  let move_specs = (map sort . genSpecMoves . noHeadLines) move_specs_file
   let pre_tests = genTest move_specs gen_moves
   let tests = TestList $ map TestCase pre_tests
   count <- runTestTT tests
