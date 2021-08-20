@@ -1,15 +1,46 @@
+-- module Generator where
+-- import Game
+-- import Board
+-- import Pieces
+-- import Rules
+-- import Squares
+-- import Data.Maybe
+-- import Prelude hiding (lookup)
+-- import Data.Map.Strict (Map)
+-- import qualified Data.Map.Strict as Map
+-- import Moves
+-- import Data.Bifunctor
+-- import Data.Bits
 module Generator where
-import Game
+import Game ( GameState(castleFlag, epSquare, board, turn), Game )
+import Board ( checkSquare, whereIsPiece, Board )
 import Pieces
+    ( Side, PieceType(..), Piece(Piece, pieceSide, pieceType) )
 import Rules
+    ( isEmpty,
+      sameSideStep,
+      white_pawn_captures,
+      black_pawn_captures,
+      white_pawn_step,
+      black_pawn_step,
+      isAStep,
+      onBoard',
+      knight_branches,
+      mini_rook_branches,
+      mini_bishop_branches,
+      Dir(..),
+      CPath,
+      CBranch )
 import Squares
-import Board
-import Data.Maybe (Maybe(Just, Nothing), mapMaybe, isNothing, fromJust)
+    ( tuple2Square, square2Tuple, Square(Square, squareRank) )
+import Data.Maybe
+    ( Maybe(Just, Nothing), mapMaybe, isNothing, fromJust, maybe )
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Moves
-import Data.Bifunctor (bimap)
+import Moves ( Move(Move, getDestSq, getInitSq) )
+import Data.Bifunctor ( Bifunctor(bimap) )
+import Data.Bits ( Bits((.&.)) )
 
 
 moveGenerator :: Game -> [Move]
@@ -39,6 +70,7 @@ squareAttackByQueen sq si bd =  any isQueen
   (mapMaybe (`checkSquare` bd) (genQueenSquares sq bd))
   where isQueen p = Piece si Queen == p
 
+
 squareAttackByBishop :: Square -> Side -> Board -> Bool
 squareAttackByBishop sq si bd =  any isBishop
   (mapMaybe (`checkSquare` bd) (genBishopSquares sq bd))
@@ -67,18 +99,15 @@ genPawnCaptures si sq bd = map (makeSimpleMove sq) $ filter
   (not . (`isEmpty` bd)) $ filter (not . sameSideStep sq bd)
   $ genPawnCaptureSquares si sq bd
 
-
 genPawnCaptureSquares :: Side -> Square -> Board -> [Square]
 genPawnCaptureSquares si sq bd | si = genSquaresFromBranches sq bd
   white_pawn_captures
                                | otherwise = genSquaresFromBranches sq bd
   black_pawn_captures
 
-
 genPawnStepMoves :: Side -> Square -> Board -> [Move]
 genPawnStepMoves si sq bd = map (makeSimpleMove sq) (filter (`isEmpty` bd)
   (genPawnStepSquares si sq bd))
-
 
 genPawnStepSquares :: Side -> Square -> Board -> [Square]
 genPawnStepSquares si sq bd | si = if is1Rank then
@@ -98,7 +127,6 @@ genPawnStepSquares si sq bd | si = if is1Rank then
   where is1Rank | si = 1 == squareRank sq
                 | otherwise = 6 == squareRank
                   sq
-
 
 genAllPawnMoves :: Square -> Game -> [Move]
 genAllPawnMoves sq gm = genEnPassant sq gm ++ crowns ++ ncm
@@ -134,14 +162,11 @@ isMoveCrown (Move isq fsq _) bd | isPawn && si = squareRank isq == 6 &&
         si = maybe False pieceSide (checkSquare isq bd)
 
 
-
 makeSquares' :: (Int,Int) -> [CPath] -> [(Int,Int)]
-makeSquares' sq = map $ compose sq
-
+makeSquares' tsq = map $ compose tsq
 
 makeSquares :: Square -> [CPath] -> [Square]
 makeSquares sq ds = map tuple2Square (makeSquares' (square2Tuple sq) ds)
-
 
 compose :: (Int,Int) -> [Dir] -> (Int,Int)
 compose inp ds = addTuple (foldr orthoMove (0,0) ds)
@@ -151,10 +176,10 @@ compose inp ds = addTuple (foldr orthoMove (0,0) ds)
              | d == East  = (f+1,r)
              | d == West  = (f-1,r)
 
-
 genMoveFromBranches :: Square -> Board -> CBranch -> [Move]
 genMoveFromBranches s b c = map (makeSimpleMove s)  $
   genSquaresFromBranches s b c
+
 
 genSquaresFromBranches :: Square -> Board -> CBranch -> [Square]
 genSquaresFromBranches s b c = filter (isAStep s
@@ -180,16 +205,19 @@ mkRayIter sq bd dr n isq | onBoard' (head isq) && isEmpty (tuple2Square $
 
 
 makeSimpleMove :: Square -> Square -> Move
-makeSimpleMove is fs = Move is fs Nothing
+makeSimpleMove i f = Move i f Nothing
+
 
 makeCrownMove :: Square -> Square -> PieceType -> Move
-makeCrownMove is fs pt = Move is fs (Just pt)
+makeCrownMove i f p = Move i f (Just p)
+
 
 genKnightMoves :: Square -> Board -> [Move]
 genKnightMoves s b = genMoveFromBranches s b knight_branches
 
 genKnightSquares :: Square -> Board -> [Square]
 genKnightSquares s b = genSquaresFromBranches s b knight_branches
+
 
 genRookMoves :: Square -> Board -> [Move]
 genRookMoves s b = map (makeSimpleMove s) $ filter
@@ -207,23 +235,65 @@ genBishopSquares :: Square -> Board -> [Square]
 genBishopSquares s b = concat $ mkRaysFromBranches s b
   mini_bishop_branches
 
+
 genQueenMoves :: Square -> Board -> [Move]
-genQueenMoves sq bd = map (makeSimpleMove sq) $ filter
-  (not . sameSideStep sq bd) $ genQueenSquares sq bd
+genQueenMoves s b = map (makeSimpleMove s) $ filter
+  (not . sameSideStep s b) $ genQueenSquares s b
 
 genQueenSquares :: Square -> Board -> [Square]
-genQueenSquares sq bd = genRookSquares sq bd ++ genBishopSquares sq bd
+genQueenSquares s b = genRookSquares s b ++ genBishopSquares s b
+
 
 genKingSimpleSquares :: Square -> Board -> [Square]
 genKingSimpleSquares s b = genSquaresFromBranches s b (mini_rook_branches
   ++ mini_bishop_branches)
 
-genCastleSquares :: Side -> [Square]
-genCastleSquares s | s = [Square 0 0, Square 0 7]
-                   | otherwise = [Square 7 0, Square 7 7]
+genCastleSquare :: Side -> Bool -> Square
+genCastleSquare s b | s && b = Square 6 0
+                    | s && not b = Square 2 0
+                    | not s && b = Square 6 7
+                    | otherwise = Square 2 7
+
+genCastleSquares :: Game -> [Square]
+genCastleSquares g | isInCheck g = []
+                   | otherwise = map (genCastleSquare s) $ filter
+                      (checkCastleSquares g) $ filter (isFlagCastle g) sd
+  where s = turn g
+        sd = [True,False] -- King , Queen side...
 
 genKingMoves :: Game -> [Move]
-genKingMoves g = []
-  where bd = board g
-        sd = turn g
-        kSq = undefined
+genKingMoves g =  map (makeSimpleMove kSq)
+  (filter (not . (`squareAttack` g)) (genKingSimpleSquares kSq b))
+  ++ map (makeSimpleMove  kSq) (genCastleSquares g)
+  where b = board g
+        s = turn g
+        kSq = head $ whereIsPiece (Piece s King) b
+
+isFlagCastle :: Game -> Bool -> Bool
+isFlagCastle g b | s =  if b then (1 .&. c) > 0 else (2 .&. c) > 0
+                 | otherwise = if b then (4 .&. c) > 0 else (8 .&. c) > 0
+  where s = turn g
+        c = castleFlag g
+
+
+checkCastleSquares :: Game -> Bool -> Bool
+checkCastleSquares g b | s && b     = filterBoth   whiteKingSide
+                       | s && not b = filterBoth whiteQueenSide
+                       | not s && b = filterBoth blackKingSide
+                       | otherwise  = filterBoth blackQueenSide
+  where
+       whiteKingSide  = [Square 5 0, Square 6 0]
+       whiteQueenSide = [Square 3 0, Square 2 0]
+       blackKingSide  = [Square 5 7, Square 6 7]
+       blackQueenSide = [Square 3 7, Square 2 7]
+       s = turn g
+       bd = board g
+       filterBoth = ((==2) . length) . filter (not .
+          (`squareAttack` g)) . filter (`isEmpty` bd)
+
+
+isInCheck :: Game -> Bool
+isInCheck g = squareAttack kSq g
+  where b = board g
+        s = turn g
+        kSq = head $ whereIsPiece (Piece s King) b

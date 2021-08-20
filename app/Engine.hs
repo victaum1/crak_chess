@@ -58,10 +58,6 @@ setPost a_post args = args{getPost=a_post}
 
 
 -- main funcs
-isInCheck :: Side -> Game -> Bool
-isInCheck _ _ = False
-
-
 makeMove :: Move -> Game -> Maybe Game
 makeMove m g = do
   let i_side = turn g

@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Pieces (piece_types, piece_chars, Side(..), Piece(..)
   , showPiece, readCPiece, PieceType(..), board_piece_chars, pPiece
-  , pPieceType, all_piece_chars)
+  , pPieceType, all_piece_chars, all_pieces)
   where
 
 import Parsing
@@ -35,6 +35,9 @@ instance Show Piece where
 
 -- vars / const
 piece_types = [Pawn .. ]
+all_pieces = zipWith Piece (replicate 6 True ++ replicate 6 False) (concat
+  $ replicate 2 piece_types)
+  
 piece_chars = "PNBRQK"
 l_piece_chars = map toLower piece_chars
 all_piece_chars = piece_chars ++ l_piece_chars

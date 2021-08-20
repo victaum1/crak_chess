@@ -1,5 +1,5 @@
 module Board (Board, Pos, init_board_str, init_board_fen, init_board,
-  fen2Board, pFenBoard,board2FEN, pBoard, showBoard, readBoard, checkSquare) where
+  fen2Board, pFenBoard,board2FEN, pBoard, showBoard, readBoard, checkSquare, whereIsPiece, makePieceList) where
 
 import Data.Char
 import Data.Maybe
@@ -24,6 +24,7 @@ init_board = fen2Board init_board_fen
 -- adts
 type Pos = (Square,Piece)
 type Board = Map Square Piece
+type PieceList = Map Piece [Square]
 type PosList = [Pos]
 
 -- funcs
@@ -77,6 +78,17 @@ showBoardList ps = (map.map) showP $ reverse $ splitb lps
 
 checkSquare :: Square -> Board -> Maybe Piece
 checkSquare = Map.lookup
+
+checkPiece :: Piece -> PieceList -> Maybe [Square]
+checkPiece = Map.lookup
+
+whereIsPiece :: Piece -> Board -> [Square]
+whereIsPiece p b = map fst $ Map.toList $ Map.filter (p ==) b
+
+
+makePieceList :: Board -> PieceList
+makePieceList bd = Map.fromList $ zip all_pieces $ map (`whereIsPiece` bd)
+  all_pieces
 
 
 subs :: Char -> Char -> String -> String
