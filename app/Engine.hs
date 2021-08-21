@@ -1,5 +1,4 @@
 module Engine where
-
 import Data.Maybe (fromJust, isNothing, isJust)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
@@ -58,40 +57,10 @@ setPost a_post args = args{getPost=a_post}
 
 
 -- main funcs
-makeMove :: Move -> Game -> Maybe Game
-makeMove m g = do
-  let i_side = turn g
-  let i_nplys = nPlys g
-  let i_nMoves = nMoves g
-  let o_nplys = if isPawn || isCapture then 0 else i_nplys + 1
-  let o_nMoves = if i_side == False then i_nMoves + 1 else i_nMoves
-  o_bd <- mkMoveBoard m i_bd
-  return (g{board=o_bd, turn = revertSide i_side, nPlys = o_nplys
-           , nMoves = o_nMoves})
-  where revertSide s = not s
-        isPawn = Just Pawn == (pieceType <$> checkSquare (getInitSq m) i_bd)
-        i_bd = board g
-        isCapture = isJust $ checkSquare (getDestSq m) i_bd
-
-mkMoveBoard :: Move -> Board -> Maybe Board
-mkMoveBoard m b = do
-  let initsq    = getInitSq m
-  let desq      = getDestSq m
-  initpiece <- checkSquare initsq b
-  let a_bd      = Map.delete initsq b
-  let destpiece = checkSquare desq b
-  if isNothing destpiece then return
-    (Map.insert desq initpiece a_bd)
-  else if (pieceSide <$> destpiece) == (pieceSide <$>
-    Just initpiece) then Nothing
-  else return (Map.insert desq (fromJust destpiece) a_bd)
-
-
 think :: Game -> Maybe Move
 think g | g == init_game = Just move_w
         | g == game_st1 = Just move_b
         | otherwise = Nothing
-
 
 takeBack :: PlayArgs -> PlayArgs
 takeBack iargs = setGame a_game args_
