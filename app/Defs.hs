@@ -2,8 +2,11 @@ module Defs where
 
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
+import System.Random
 
 version = "0.0.13.8"
+
+randomChoice l g = l !! fst (randomR (0, length l - 1) g)
 
 -- IO
 quit :: IO ()

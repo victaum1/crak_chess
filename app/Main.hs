@@ -2,7 +2,7 @@ module Main where
 
 import Control.Monad.Trans.State ( evalStateT, get, StateT )
 import Defs ( version, quit, errorCmd, mio )
-import Engine ( init_args, PlayArgs(getHist) )
+import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
 import SubEngine
@@ -16,6 +16,8 @@ import SubEngine
 import System.IO ( stdout, hSetBuffering, BufferMode(NoBuffering) )
 import           Uci                       (uciLoop)
 import           Xboard                    (xboardLoop)
+import Data.Maybe
+import Game
 
 
 help_str = unlines [
@@ -63,17 +65,35 @@ playLoop = do
     let a_move = parse pMoveCoord cmd
     if null a_move then do
         let res = lookup cmd play_map
-        maybe (mio (errorCmd ["unknown command", unwords input]) >> playLoop)
+        maybe (mio (errorCmd ["unknown command", unwords input]) >>
+          playLoop)
           (\a -> a args) res
     else do
-      mMakeMove $ fst $ head a_move
-      playLoop
+      let m = fst $ head a_move
+      mMakeMove m
+      pargs <-get
+      let cpf = getCpFlag pargs
+      let s = turn $ getGame pargs
+      if s == cpf then do
+         mThinkMove
+         playLoop
+      else
+        playLoop
+
 
 setPos :: String -> StateT PlayArgs IO ()
 setPos strs = mSetPosition strs >> playLoop
 
 
-playGo = mThinkMove >> playLoop
+playGo = do
+  args <- get
+  let g = getGame args
+  let s = turn g
+  let arg_ = args{getCpFlag=s}
+  mThinkMove
+  playLoop
+
+
 stop = playLoop
 
 
@@ -130,8 +150,8 @@ mainLoop = do
   if null res then mainLoop
   else do
     let mbAction = lookup res main_map
-    maybe (putStrLn "" >> mainLoop)
-          id mbAction
+    fromMaybe (putStrLn "" >> mainLoop)
+          mbAction
 
 main :: IO ()
 main = do
@@ -141,4 +161,3 @@ main = do
   putStrLn "'help' show usage."
   putStrLn ""
   mainLoop
-

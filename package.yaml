@@ -26,6 +26,7 @@ library:
       - Game
       - Parsing
       - Generator
+      - Valid
     dependencies:
       - containers
 
@@ -42,6 +43,7 @@ executables:
       # - readline >= 1.0.3.0 && < 2
       - transformers
       - containers
+      - random
 
 tests:
   u-moves:

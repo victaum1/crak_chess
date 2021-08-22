@@ -20,10 +20,9 @@ makeMove m g = do
   let o_nplys = if isPawn || isCapture then 0 else i_nplys + 1
   let o_nMoves = if not i_side then i_nMoves + 1 else i_nMoves
   o_bd <- mkMoveBoard m i_bd
-  return (g{board=o_bd, turn = revertSide i_side, nPlys = o_nplys
+  return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
            , nMoves = o_nMoves})
-  where revertSide s = not s
-        isPawn = Just Pawn == (pieceType <$> checkSquare (getInitSq m) i_bd)
+  where isPawn = Just Pawn == (pieceType <$> checkSquare (getInitSq m) i_bd)
         i_bd = board g
         isCapture = isJust $ checkSquare (getDestSq m) i_bd
 
@@ -66,7 +65,7 @@ moveGenBySide g | s         = concat $ map (`genAllPawnMoves` g) wps ++
         wrs = whereIsPiece (Piece True Rook) b
         brs = whereIsPiece (Piece False Rook) b
         wqs = whereIsPiece (Piece True Queen) b
-        bqs = whereIsPiece (Piece True Queen) b
+        bqs = whereIsPiece (Piece False Queen) b
 
 squareAttack :: Square -> Game -> Bool
 squareAttack sq ge = squareAttackOnBoard (not aSide) sq aBoard

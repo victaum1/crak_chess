@@ -1,13 +1,12 @@
 module Uci where
-
+import Control.Monad.Trans.State
+import System.Random
 import Defs
 import Parsing
 import Moves
 import Game
 import SubEngine
 import Engine
--- import System.Console.Readline
-import Control.Monad.Trans.State
 
 -- var
 ui_map :: [(String, [String] -> StateT PlayArgs IO())]
@@ -48,9 +47,10 @@ infoPost = do
   mio $ putStrLn "info depth 1 score cp 0 time 1 pv 0000"
 
 uThink = do
+  g <- newStdGen
   args <- get
   let a_game = getGame args
-  let a_move = think a_game
+  let a_move = think a_game g
   maybe (mio $ putStrLn "bestmove 0000") (
     \m -> do
       mio $ putStrLn $ "bestmove " ++ show m

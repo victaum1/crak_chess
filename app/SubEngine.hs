@@ -1,6 +1,7 @@
 module SubEngine where
 
 import Control.Monad.Trans.State
+import System.Random
 import Engine
 import Moves
 import Defs
@@ -32,9 +33,10 @@ mAdjudicate = do
 
 mThinkMove :: StateT PlayArgs IO ()
 mThinkMove = do
+  gen  <- newStdGen 
   args <- get
   let a_game = getGame args
-  let a_move = think a_game
+  let a_move = think a_game gen
   maybe mAdjudicate (
     \m -> do
       mMakeMove m

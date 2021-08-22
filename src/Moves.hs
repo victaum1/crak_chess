@@ -30,12 +30,24 @@ pLf = do
   many (sat (== '\n'))
   return ()
 
-pMoveCoord :: Parser Move
-pMoveCoord = do
-          space <|> pLf
+pMoveCoordSimple :: Parser Move
+pMoveCoordSimple = do
+          sqi <- pSquare
+          sqf <- pSquare
+          return (Move sqi sqf Nothing)
+
+
+pMoveCoordCrown :: Parser Move
+pMoveCoordCrown = do
           sqi <- pSquare
           sqf <- pSquare
           Move sqi sqf <$> pPieceType
+
+
+pMoveCoord :: Parser Move
+pMoveCoord = do
+          space <|> pLf
+          pMoveCoordCrown <|> pMoveCoordSimple
 
 readMove :: String -> Maybe Move
 readMove str = if null $ parse pMoveCoord str then Nothing

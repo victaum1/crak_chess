@@ -3,10 +3,13 @@ import Data.Maybe (fromJust, isNothing, isJust)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Control.Monad.Trans.State
+import System.Random
 import Moves
 import Game
 import Board
 import Pieces
+import Valid
+import Defs
 
 -- vars / cons
 dft_time = 5000 :: Int
@@ -57,10 +60,11 @@ setPost a_post args = args{getPost=a_post}
 
 
 -- main funcs
-think :: Game -> Maybe Move
-think g | g == init_game = Just move_w
-        | g == game_st1 = Just move_b
-        | otherwise = Nothing
+think :: Game -> StdGen -> Maybe Move
+think gm sg | not (null ms) = Just $ randomChoice ms sg
+            | otherwise = Nothing
+  where ms = genValidMoves gm
+
 
 takeBack :: PlayArgs -> PlayArgs
 takeBack iargs = setGame a_game args_
