@@ -1,43 +1,48 @@
 module Generator where
+-- import Game
+-- import Board
+-- import Pieces
+-- import Rules
+-- import Squares
+-- import Data.Maybe
+-- import Prelude hiding (lookup)
+-- import Data.Map.Strict (Map)
+-- import qualified Data.Map.Strict as Map
+-- import Moves
+-- import Data.Bifunctor
+-- import Data.Bits
+
 import Game
-import Board
+    ( Game,
+      GameState(castleFlag, epSquare, nMoves, nPlys, turn, board) )
+import Board ( whereIsPiece, checkSquare, Board )
 import Pieces
+    ( Piece(Piece, pieceSide, pieceType), PieceType(..), Side )
 import Rules
+    ( mini_bishop_branches,
+      mini_rook_branches,
+      knight_branches,
+      onBoard',
+      isAStep,
+      black_pawn_step,
+      white_pawn_step,
+      black_pawn_captures,
+      white_pawn_captures,
+      sameSideStep,
+      isEmpty,
+      Dir(..),
+      CPath,
+      CBranch )
 import Squares
+    ( square2Tuple, tuple2Square, Square(Square, squareRank) )
 import Data.Maybe
+    ( Maybe(..), maybe, mapMaybe, fromJust, isNothing, isJust )
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Moves
-import Data.Bifunctor
-import Data.Bits
-
-makeMove :: Move -> Game -> Maybe Game
-makeMove m g = do
-  let i_side = turn g
-  let i_nplys = nPlys g
-  let i_nMoves = nMoves g
-  let o_nplys = if isPawn || isCapture then 0 else i_nplys + 1
-  let o_nMoves = if not i_side then i_nMoves + 1 else i_nMoves
-  o_bd <- mkMoveBoard m i_bd
-  return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves})
-  where isPawn = Just Pawn == (pieceType <$> checkSquare (getInitSq m) i_bd)
-        i_bd = board g
-        isCapture = isJust $ checkSquare (getDestSq m) i_bd
-
-mkMoveBoard :: Move -> Board -> Maybe Board
-mkMoveBoard m b = do
-  let initsq    = getInitSq m
-  let desq      = getDestSq m
-  initpiece <- checkSquare initsq b
-  let a_bd      = Map.delete initsq b
-  let destpiece = checkSquare desq b
-  if isNothing destpiece then return
-    (Map.insert desq initpiece a_bd)
-  else if (pieceSide <$> destpiece) == (pieceSide <$>
-    Just initpiece) then Nothing
-  else return (Map.insert desq (fromJust destpiece) a_bd)
+import Moves ( Move(Move, getDestSq, getInitSq) )
+import Data.Bifunctor ( Bifunctor(bimap) )
+import Data.Bits ( Bits((.&.)) )
 
 
 moveGenerator :: Game -> [Move]
@@ -297,7 +302,7 @@ isFlagCastle g b | s =  if b then (1 .&. c) > 0 else (2 .&. c) > 0
 
 
 checkCastleSquares :: Game -> Bool -> Bool
-checkCastleSquares g b | s && b     = filterBoth   whiteKingSide
+checkCastleSquares g b | s && b     = filterBoth whiteKingSide
                        | s && not b = filterBoth whiteQueenSide
                        | not s && b = filterBoth blackKingSide
                        | otherwise  = filterBoth blackQueenSide

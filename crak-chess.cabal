@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2d881db7117618f15d0d99749ee6bf736f57e50ea5520fab0094c215b5246385
+-- hash: 2cd98e43700cfaf80bb88aac2dc097e253cb0b59e602b21f26f953994604e58c
 
 name:           crak-chess
 version:        0.0.13.8
@@ -31,6 +31,7 @@ library
       Parsing
       Generator
       Valid
+      Play
   other-modules:
       Evaluate
       Rules
@@ -189,6 +190,19 @@ test-suite u-pieces
   hs-source-dirs:
       tests
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HUnit
+    , base >=4.6 && <5
+    , crak-chess
+  default-language: Haskell2010
+
+test-suite u-play
+  type: exitcode-stdio-1.0
+  main-is: u-play.hs
+  other-modules:
+      Paths_crak_chess
+  hs-source-dirs:
+      tests
   build-depends:
       HUnit
     , base >=4.6 && <5

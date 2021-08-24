@@ -27,6 +27,7 @@ library:
       - Parsing
       - Generator
       - Valid
+      - Play
     dependencies:
       - containers
 
@@ -179,4 +180,13 @@ tests:
       #- template-haskell
       - HUnit
       - containers
+
+  u-play:
+    main: u-play.hs
+    source-dirs:
+      - tests
+    dependencies:
+      - crak-chess
+      - HUnit
+        # - containers
 

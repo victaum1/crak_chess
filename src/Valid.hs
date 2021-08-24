@@ -1,5 +1,6 @@
 module Valid where
 import Generator
+import Play
 import Board
 import Game
 import Moves

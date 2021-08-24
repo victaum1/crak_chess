@@ -7,6 +7,8 @@ import Moves
 import Defs
 import Game
 import Pieces
+import Valid
+import Play
 import Generator
 
 
