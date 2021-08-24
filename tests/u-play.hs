@@ -45,8 +45,6 @@ noHeadLines = drop 2 . lines
 
 genOutGames = zipWith makeMove
 
--- genSpecOut  =  
-
 assertEq    = assertEqual "falla: " :: Maybe Game -> Maybe
   Game -> Assertion
 
