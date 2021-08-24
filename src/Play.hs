@@ -13,6 +13,7 @@ import Pieces
 import Data.Maybe
 import qualified Data.Map.Strict as Map
 import Moves
+import Rules
 
 
 makeMove :: Move -> Game -> Maybe Game
@@ -36,8 +37,8 @@ mkMoveBoard m b = do
   initpiece <- checkSquare initsq b
   let a_bd      = Map.delete initsq b
   let destpiece = checkSquare desq b
-  if isNothing destpiece then return
-    (Map.insert desq initpiece a_bd)
-  else if (pieceSide <$> destpiece) == (pieceSide <$>
-    Just initpiece) then Nothing
-  else return (Map.insert desq (fromJust destpiece) a_bd)
+  if isNothing destpiece then
+    return (Map.insert desq initpiece a_bd)
+    else
+      if fromJust (sameSide <$> destpiece <*> Just initpiece)
+        then Nothing else return (Map.insert desq initpiece a_bd)
