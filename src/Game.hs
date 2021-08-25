@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 module Game (Game, GameState(..), fen2Game, game2FEN, init_game
-            , init_fen, pGame) where
+            , init_fen, pGame, castle_codes) where
 
 import           Board
 import           Data.Maybe
