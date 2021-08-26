@@ -74,6 +74,7 @@ r4r1k/4n1p1/2nbB2p/4p3/3pR1NP/p2P2P1/P2B1P2/1R4K1 b - - 1 31
 1r5k/4n1p1/3b4/4p2p/1B1p3P/pB1P2P1/Pr3P1N/1R1R2K1 b - - 0 36
 1r5k/4n1p1/8/4p2p/1b1p3P/pB1P2P1/Pr3P1N/1R1R2K1 w - - 0 37
 1r5k/4n1p1/8/4p2p/1b1p3P/pB1P1NP1/Pr3P2/1R1R2K1 b - - 1 37
+1r5k/4n1p1/3b4/4p2p/3p3P/pB1P1NP1/Pr3P2/1R1R2K1 w - - 2 38
 1r5k/4n1p1/3b4/4p2p/3p3P/pB1P1NP1/PR3P2/3R2K1 b - - 0 38
 1r5k/4n1p1/3b4/4p2p/3p3P/1B1P1NP1/Pp3P2/3R2K1 w - - 0 39
 1r5k/4n1p1/3b4/4p2p/3p3P/1B1P1NP1/Pp3P2/1R4K1 b - - 1 39
@@ -202,7 +203,7 @@ b3e6
 a4a3
 c3b4
 c5b4
-b3a3
+b2a3
 b4a3
 e1b1
 a8b8
@@ -236,7 +237,7 @@ g1f1
 d7c5
 e4g6
 c5a4
-c1e1
+b1e1
 h8g8
 e1e8
 a3f8
@@ -285,4 +286,5 @@ f6e7
 h7h8Q
 e7d6
 g8d5
+d6c7
 h8d8

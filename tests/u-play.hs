@@ -1,24 +1,12 @@
 module Main (main) where
 
--- import Control.Monad
--- import Data.Maybe
--- import qualified System.Exit as Exit
--- import Test.HUnit
--- import Data.List
--- import Game
--- import Moves
--- import Play
--- import Parsing
-
-
-import Control.Monad
+import Control.Monad (when)
 import qualified System.Exit as Exit
-import Test.HUnit
-import Data.List
-import Game
-import Moves
-import Play
-import Parsing
+import Test.HUnit (Assertion, Test(TestList, TestCase), runTestTT, assertEqual, failures)
+import Game ( Game, pGame )
+import Moves ( pMoveCoord )
+import Play ( makeMove )
+import Parsing ( parse )
 
 fixtures = "tests/fixtures/"
 inputs = "make_move_inputs.txt"
@@ -54,8 +42,8 @@ main =
   do
   inputs_ <- readFile(fixtures ++ inputs)
   let slines = noHeadLines inputs_
-  let inp_games = map genGames $ take 143 slines
-  let moves = map genMoves $ drop 144 slines
+  let inp_games = map genGames $ take 144 slines
+  let moves = map genMoves $ drop 145 slines
   let spec_games = map Just $ tail inp_games
   let out_games = genOutGames moves $ init inp_games
   let pre_tests = genTest spec_games out_games
