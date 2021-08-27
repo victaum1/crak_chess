@@ -287,19 +287,24 @@ genCastleSquares g | isInCheck g = []
         sd = [True,False] -- King , Queen side...
 
 genKingMoves :: Game -> [Move]
-genKingMoves g =  map (makeSimpleMove kSq)
-  (filter (not . (`squareAttack` g)) (genKingSimpleSquares kSq b))
-  ++ map (makeSimpleMove  kSq) (genCastleSquares g)
+genKingMoves g =  map (makeSimpleMove kSq) (
+  filter (not . squareAttackedByKing (not s) b)
+  (filter (not . (`squareAttack` g)) (genKingSimpleSquares kSq b))) ++ map (makeSimpleMove  kSq) (genCastleSquares g)
   where b = board g
         s = turn g
         kSq = head $ whereIsPiece (Piece s King) b
 
 isFlagCastle :: Game -> Bool -> Bool
-isFlagCastle g b | s =  if b then (1 .&. c) > 0 else (2 .&. c) > 0
-                 | otherwise = if b then (4 .&. c) > 0 else (8 .&. c) > 0
+isFlagCastle g b | s =  if b then 1 .&. c > 0 else 2 .&. c > 0
+                 | otherwise = if b then 4 .&. c > 0 else 8 .&. c > 0
   where s = turn g
         c = castleFlag g
 
+
+squareAttackedByKing :: Side -> Board -> Square -> Bool
+squareAttackedByKing si bd sq = sq `elem`
+  genKingSimpleSquares ksq bd
+  where ksq = whereIsKing si bd
 
 checkCastleSquares :: Game -> Bool -> Bool
 checkCastleSquares g b | s && b     = filterBoth whiteKingSide
@@ -323,6 +328,10 @@ isInCheck g = isBoardInCheck s b
         s = turn g
 
 isBoardInCheck :: Side -> Board -> Bool
-isBoardInCheck s b = squareAttackOnBoard ns kSq b
-  where kSq = head $ whereIsPiece (Piece s King) b
-        ns = not s
+isBoardInCheck s b = squareAttackOnBoard ns (whereIsKing s b)
+  b
+  where ns = not s
+
+whereIsKing :: Side -> Board -> Square
+whereIsKing s b = head $ whereIsPiece (Piece s King) b
+

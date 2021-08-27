@@ -9,6 +9,8 @@ import SubEngine
 import Engine
 
 -- var
+uci_info = unlines ["id name " ++ name ++ " " ++ version,"id author " ++ author, "uciok"]
+
 ui_map :: [(String, [String] -> StateT PlayArgs IO())]
 ui_map = [
    ("quit", const $ mio quit)
@@ -20,8 +22,13 @@ ui_map = [
   ,("dumpfen", const (mDumpFEN >> uiLoop))
   ,("dumpplay", const (mDumpPlay >> uiLoop))
   ,("go", const uGo)
+  ,("uci", const uciInfo)
          ]
-
+         
+uciInfo :: StateT PlayArgs IO ()
+uciInfo = do
+        mio (putStrLn uci_info)
+        uiLoop
 
 uiLoop :: StateT PlayArgs IO ()
 uiLoop = do
@@ -112,7 +119,4 @@ setListMoves (m:ms) = do
 
 uciLoop :: IO ()
 uciLoop = do
-             putStrLn $ "id name Craken " ++ version
-             putStrLn "id author V. Manotas"
-             putStrLn "uciok"
-             evalStateT uiLoop init_args
+             evalStateT uciInfo init_args

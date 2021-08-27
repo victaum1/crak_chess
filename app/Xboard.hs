@@ -62,7 +62,6 @@ xbLoop = do
 
 
 xGo = do
-        force'
         xThink
 
 xThink :: StateT PlayArgs IO ()
@@ -76,7 +75,8 @@ xThink = do
 
 
 setXpos :: [String] -> StateT PlayArgs IO ()
-setXpos args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
+setXpos args | null args = mio (errorCmd ["incomplete", unwords args]) >>
+               xbLoop
              | otherwise = do
                 mSetPosition $ unwords args
                 xbLoop
@@ -89,7 +89,8 @@ ping :: [String] -> StateT PlayArgs IO ()
 ping args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
           | otherwise = do
               let n = parse nat $ head $ take 1 args
-              if null n then mio (errorCmd ["not a number", unwords args]) >>
+              if null n then mio (errorCmd ["not a number", unwords args])
+                >>
                 xbLoop
               else do
                 mio $ putStrLn $ "pong " ++ show (fst $ head n)
@@ -151,12 +152,7 @@ force = do
 
 force' :: StateT PlayArgs IO ()
 force' = do
-          args <- get
-          let a_side = turn $ getGame args
-          let args_ = setCpFlag a_side args
-          put args_
-
-
+  return ()
 
 
 printPost = do

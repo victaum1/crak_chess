@@ -5,6 +5,8 @@ import Control.Monad.Trans.State
 import System.Random
 
 version = "0.0.13.8"
+author = "V. Manotas"
+name ="Craken"
 
 randomChoice l g = l !! fst (randomR (0, length l - 1) g)
 
