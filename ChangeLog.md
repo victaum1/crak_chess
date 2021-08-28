@@ -1,4 +1,10 @@
 # Revision history for crak-chess
+## 0.0.36.2 -- 2021-08-27 
+
+* Creating a PerfTest
+----------------------------------
+
+
 ## 0.0.13.8 -- 2020-06-09 
 
 * A better main loop (a basic api)
