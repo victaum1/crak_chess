@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2cd98e43700cfaf80bb88aac2dc097e253cb0b59e602b21f26f953994604e58c
+-- hash: 7b1e195a07712bae229e55368da6f50fb73005fd299875a7ff6539fde0ca0ee9
 
 name:           crak-chess
 version:        0.0.13.8
@@ -68,6 +68,7 @@ test-suite q-board
   type: exitcode-stdio-1.0
   main-is: q-board.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -83,6 +84,7 @@ test-suite q-squares
   type: exitcode-stdio-1.0
   main-is: q-squares.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -97,6 +99,7 @@ test-suite u-game
   type: exitcode-stdio-1.0
   main-is: u-game.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -112,6 +115,7 @@ test-suite u-gen-king-move
   type: exitcode-stdio-1.0
   main-is: u-gen-king_moves.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -127,6 +131,7 @@ test-suite u-gen-pawn-move
   type: exitcode-stdio-1.0
   main-is: u-gen-pawn_moves.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -142,6 +147,7 @@ test-suite u-gen-qrbn-move
   type: exitcode-stdio-1.0
   main-is: u-gen-qrbn_moves.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -157,6 +163,7 @@ test-suite u-gen-sq-attack
   type: exitcode-stdio-1.0
   main-is: u-gen-square_attack.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -172,6 +179,7 @@ test-suite u-moves
   type: exitcode-stdio-1.0
   main-is: u-moves.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -186,6 +194,7 @@ test-suite u-pieces
   type: exitcode-stdio-1.0
   main-is: u-pieces.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -200,6 +209,7 @@ test-suite u-play
   type: exitcode-stdio-1.0
   main-is: u-play.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
@@ -213,6 +223,7 @@ test-suite u-squares
   type: exitcode-stdio-1.0
   main-is: u-squares.hs
   other-modules:
+      Perft
       Paths_crak_chess
   hs-source-dirs:
       tests
