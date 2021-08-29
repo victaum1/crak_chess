@@ -83,7 +83,7 @@ makeMove m g = do
 
 mkEp :: Side -> File -> Maybe Square
 mkEp si fi | si = Just (Square fi 2)
-           | otherwise = Just (Square fi 2)
+           | otherwise = Just (Square fi 5)
 
 isEpTrigged :: Side -> Move -> Board -> Bool
 isEpTrigged si mv bd | isDoublePushPawn mv si bd = Piece (not si) Pawn
@@ -96,17 +96,19 @@ isPawn :: Square -> Board -> Bool
 isPawn sq bd = Just Pawn == (pieceType <$> checkSquare sq bd)
 
 isDoublePushPawn :: Move -> Side -> Board -> Bool
-isDoublePushPawn m s b | isPawn initSq b = if s then fRank - iRank > 1
-                           else fRank - iRank < -1
+isDoublePushPawn m s b | isPawn initSq b = if s then delta > 1
+                           else delta < -1
                        | otherwise = False
   where initSq = getInitSq m
+        destSq = getDestSq m
         iRank  = squareRank initSq
-        fRank  = squareRank initSq
+        fRank  = squareRank destSq
+        delta  = fRank - iRank
 
 adjSquares :: Side -> Square -> [Square]
-adjSquares si (Square f r) | si = [Square (f+1) (r+1), Square (f-1) (r+1)]
+adjSquares si (Square f r) | si = [Square (f+1) (r+2), Square (f-1) (r+2)]
                            | otherwise =
-                             [Square (f+1) (r-1), Square (f-1) (r-1)]
+                             [Square (f+1) (r-2), Square (f-1) (r-2)]
 
 mkMoveBoard :: Move -> Board -> Maybe Board
 mkMoveBoard m b = do
