@@ -1,6 +1,5 @@
 module Play where
 
-
 -- import Game
 -- import Board
 -- import Pieces
@@ -11,18 +10,18 @@ module Play where
 -- import Rules
 
 import Game
-    ( GameState(castleFlag, nMoves, nPlys, turn, board), Game )
+    ( GameState(castleFlag, nMoves, nPlys, turn, board, epSquare), Game, game2FEN )
 import Board ( checkSquare, Board )
-import Pieces ( Piece(Piece, pieceType), PieceType(Rook, Pawn) )
-import Data.Maybe ( isJust, fromJust, isNothing )
+import Pieces ( Piece(Piece, pieceType), PieceType(Rook, Pawn), Side )
+import Data.Maybe ( isJust, fromJust, isNothing, mapMaybe)
 import qualified Data.Map.Strict as Map
 import Moves ( readMove, Move(getCrown, getDestSq, getInitSq) )
-import Squares ( readSquare )
+import Squares ( Square(..), File, readSquare )
 import Rules ( sameSide )
 
 
 castle_moves = map (fromJust.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
-castle_rook_moves = map (fromJust.readMove) ["h1f1","a1d1","h8f8", "a8d8"] 
+castle_rook_moves = map (fromJust.readMove) ["h1f1","a1d1","h8f8", "a8d8"]
 
 flag_masks  = [-3,-3,-12,-12]
 rook_flags  = [-1,-2,-4,-8]
@@ -44,7 +43,8 @@ makeMove m g = do
   let i_nplys = nPlys g
   let i_nMoves = nMoves g
   let i_castle = castleFlag g
-  let o_nplys = if isPawn || isCapture || isCrown then 0 else i_nplys + 1
+  let o_nplys = if isPawn initSq i_bd || isCapture || isCrown then 0 else
+        i_nplys + 1
   let o_nMoves = if not i_side then i_nMoves + 1 else i_nMoves
   if isCastle then do
     mask <- Map.lookup m castle_flags_map
@@ -63,11 +63,10 @@ makeMove m g = do
            , nMoves = o_nMoves, castleFlag=o_castle})
         else do
         o_bd <- mkMoveBoard m i_bd
+        let epSq = if isEpTrigged si m i_bd then mkEp si iFile else Nothing
         return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves})
-  where isPawn = Just Pawn == (pieceType <$> checkSquare initSq
-          i_bd)
-        i_bd = if not isCrown then board g
+           , nMoves = o_nMoves, epSquare = epSq})
+  where i_bd = if not isCrown then board g
           else Map.insert initSq (Piece (turn g) (fromJust crown_p))
             (board g)
         initSq = getInitSq m
@@ -76,9 +75,38 @@ makeMove m g = do
         isCastle = m `elem` castle_moves
         isCastleSq = getInitSq m `elem` rook_castle_sqs
         isRookMove = Just Rook ==
-          (pieceType <$> checkSquare initSq i_bd)
+         (pieceType <$> checkSquare initSq i_bd)
         crown_p = getCrown m
         isCrown = isJust crown_p
+        iFile = squareFile initSq
+        si = turn g
+
+mkEp :: Side -> File -> Maybe Square
+mkEp si fi | si = Just (Square fi 2)
+           | otherwise = Just (Square fi 2)
+
+isEpTrigged :: Side -> Move -> Board -> Bool
+isEpTrigged si mv bd | isDoublePushPawn mv si bd = Piece (not si) Pawn
+                       `elem` mapMaybe (`checkSquare` bd)
+                       (adjSquares si initSq)
+                     | otherwise = False
+  where initSq = getInitSq mv
+
+isPawn :: Square -> Board -> Bool
+isPawn sq bd = Just Pawn == (pieceType <$> checkSquare sq bd)
+
+isDoublePushPawn :: Move -> Side -> Board -> Bool
+isDoublePushPawn m s b | isPawn initSq b = if s then fRank - iRank > 1
+                           else fRank - iRank < -1
+                       | otherwise = False
+  where initSq = getInitSq m
+        iRank  = squareRank initSq
+        fRank  = squareRank initSq
+
+adjSquares :: Side -> Square -> [Square]
+adjSquares si (Square f r) | si = [Square (f+1) (r+1), Square (f-1) (r+1)]
+                           | otherwise =
+                             [Square (f+1) (r-1), Square (f-1) (r-1)]
 
 mkMoveBoard :: Move -> Board -> Maybe Board
 mkMoveBoard m b = do

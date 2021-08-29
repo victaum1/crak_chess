@@ -1,11 +1,19 @@
 module Perft where
 
-import Game
-import Valid
-import Play
-import Data.Maybe
-import Moves
-import Parsing
+-- import Game
+-- import Valid
+-- import Play
+-- import Data.Maybe
+-- import Moves
+-- import Parsing
+
+
+import Game ( Game, pGame )
+import Valid ( genValidMoves )
+import Play ( makeMove )
+import Data.Maybe ( mapMaybe, fromJust, isNothing )
+import Moves ( Move )
+import Parsing ( parse )
 
 perft :: Game -> Int -> Int
 perft p d | d == 0 = 1
@@ -44,10 +52,10 @@ perfTest p str | n == 0 = do
 showBranches :: [Move] -> [Game] -> Int -> IO ()
 showBranches ms gs n = do
   mapM_ putStrLn sss
-  putStrLn $ "Total Nodes: " ++ show total
+  putStrLn $ "Total: " ++ show total
   where spb = map show npb
         npb = map (`perft` n) gs
-        sms = map (++ ": ") $ map show ms
+        sms = map ((++ ": "). show) ms
         sss = zipWith (++) sms spb
         total = sum npb
 
@@ -57,12 +65,8 @@ mainLoop p = do
   if null res then mainLoop p
   else do
     let cmd = words res
-    let mbAction = lookup (cmd!!0) main_map
+    let mbAction = lookup (head cmd) main_map
     if isNothing mbAction then mainLoop p
       else do
            let mba = fromJust mbAction
-           mba p (cmd!!1)
-      
-
-main :: IO ()
-main = mainLoop init_game
+           mba p (unwords $ drop 1 cmd)

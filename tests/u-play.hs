@@ -7,28 +7,16 @@ import Game ( Game, pGame )
 import Moves ( pMoveCoord )
 import Play ( makeMove )
 import Parsing ( parse )
+import Utils (splitOn)
 
 fixtures = "tests/fixtures/"
-inputs = "make_move_inputs.txt"
+inputs = "make_move_input.csv"
 
 genGames = fst . head . parse pGame
 
--- pNoGame :: Parser (Maybe Game)
--- pNoGame = do
---   space
---   symbol "//"
---   return Nothing
-
--- pMaybeGame :: Parser (Maybe Game)
--- pMaybeGame = do
---   space
---   Just <$> pGame <|> pNoGame
-
--- manyMayBeGames = parse (many pMaybeGame)
-
 genMoves = fst. head . parse pMoveCoord
 
-noHeadLines = drop 2 . lines
+noHeadLines = drop 1 . lines
 
 genOutGames = zipWith makeMove
 
@@ -42,10 +30,11 @@ main =
   do
   inputs_ <- readFile(fixtures ++ inputs)
   let slines = noHeadLines inputs_
-  let inp_games = map genGames $ take 144 slines
-  let moves = map genMoves $ drop 145 slines
-  let spec_games = map Just $ tail inp_games
-  let out_games = genOutGames moves $ init inp_games
+  let triples = map (splitOn ';') slines
+  let moves = map genMoves $ map head triples
+  let inp_games = map genGames $ map (!!1) triples
+  let spec_games = map Just $ map genGames $ map (!!2) triples
+  let out_games = genOutGames moves inp_games
   let pre_tests = genTest spec_games out_games
   let tests = TestList $ map TestCase pre_tests
   count <- runTestTT tests
