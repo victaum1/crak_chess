@@ -53,14 +53,14 @@ makeMove m g = do
     fun <- Map.lookup m castle_rook_map
     o_bd <- fun o_bd
     return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves, castleFlag=o_castle})
+           , nMoves = o_nMoves, castleFlag=o_castle, epSquare=Nothing})
     else do
       if isCastleSq && isRookMove && i_castle /= 0 then do
         mask <- Map.lookup initSq rook_move_map
         let o_castle = i_castle + mask
         o_bd <- mkMoveBoard m i_bd
         return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves, castleFlag=o_castle})
+           , nMoves = o_nMoves, castleFlag=o_castle, epSquare=Nothing})
         else do
         let o_bd = if isEpCapture m g then Map.delete (epSqDel (not si)
                                                          dFile) i_bd
