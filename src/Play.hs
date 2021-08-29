@@ -62,8 +62,12 @@ makeMove m g = do
         return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
            , nMoves = o_nMoves, castleFlag=o_castle})
         else do
-        o_bd <- mkMoveBoard m i_bd
-        let epSq = if isEpTrigged si m i_bd then mkEp si iFile else Nothing
+        let o_bd = if isEpCapture m g then Map.delete (epSqDel (not si)
+                                                         dFile) i_bd
+                     else i_bd
+        o_bd <- mkMoveBoard m o_bd
+        let epSq = if isEpTrigged si m i_bd then mkEp si iFile
+              else Nothing
         return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
            , nMoves = o_nMoves, epSquare = epSq})
   where i_bd = if not isCrown then board g
@@ -79,11 +83,25 @@ makeMove m g = do
         crown_p = getCrown m
         isCrown = isJust crown_p
         iFile = squareFile initSq
+        dFile = squareFile destSq
         si = turn g
+
+isEpCapture :: Move -> Game -> Bool
+isEpCapture m g = isSidePawn && (Just destSq==epSq)
+  where initSq = getInitSq m
+        destSq = getDestSq m
+        bd = board g
+        si = turn g
+        epSq = epSquare g
+        isSidePawn = Just (Piece si Pawn) == checkSquare initSq bd
 
 mkEp :: Side -> File -> Maybe Square
 mkEp si fi | si = Just (Square fi 2)
            | otherwise = Just (Square fi 5)
+
+epSqDel :: Side -> File -> Square
+epSqDel si fi | si = Square fi 3
+              | otherwise = Square fi 4
 
 isEpTrigged :: Side -> Move -> Board -> Bool
 isEpTrigged si mv bd | isDoublePushPawn mv si bd = Piece (not si) Pawn
