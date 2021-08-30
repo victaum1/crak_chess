@@ -29,6 +29,7 @@ library:
       - Valid
       - Play
       - Utils
+      - Perft
     dependencies:
       - containers
 
@@ -48,6 +49,19 @@ executables:
       - random
 
 tests:
+  u-perft:
+    main: u-perft.hs
+    source-dirs:
+      - tests
+    ghc-options:
+      - -threaded 
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - crak-chess
+      - HUnit
+        # - containers
+
   u-moves:
     main: u-moves.hs
     source-dirs:

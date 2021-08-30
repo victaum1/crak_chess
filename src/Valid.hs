@@ -7,11 +7,13 @@ import Moves
 import Pieces(Side)
 import Data.Maybe
 
-isMoveValid :: Board -> Side -> Move -> Bool
-isMoveValid b s m = maybe False (not . isBoardInCheck s) nb
- where nb = mkMoveBoard m b
+isMoveValid :: Game -> Move -> Bool
+isMoveValid g m = maybe False (not . isBoardInCheck s) nb
+ where ng = makeMove m g
+       nb = board <$> ng
+       s = turn g
 
 genValidMoves :: Game -> [Move]
-genValidMoves g = filter (isMoveValid b s) $ moveGenerator g
+genValidMoves g = filter (isMoveValid g) $ moveGenerator g
   where b = board g
         s = turn g
