@@ -1,5 +1,6 @@
 module Play where
 
+
 -- import Game
 -- import Board
 -- import Pieces
@@ -10,13 +11,15 @@ module Play where
 -- import Rules
 
 import Game
-    ( GameState(castleFlag, nMoves, nPlys, turn, board, epSquare), Game, game2FEN )
+    ( GameState(epSquare, castleFlag, nMoves, nPlys, board, turn),
+      Game )
 import Board ( checkSquare, Board )
-import Pieces ( Piece(Piece, pieceType), PieceType(Rook, Pawn), Side )
-import Data.Maybe ( isJust, fromJust, isNothing, mapMaybe)
+import Pieces
+    ( PieceType(Pawn, King, Rook), Piece(Piece, pieceType), Side )
+import Data.Maybe ( mapMaybe, isNothing, fromJust, isJust )
 import qualified Data.Map.Strict as Map
 import Moves ( readMove, Move(getCrown, getDestSq, getInitSq) )
-import Squares ( Square(..), File, readSquare )
+import Squares ( readSquare, File, Square(..) )
 import Rules ( sameSide )
 
 
@@ -43,48 +46,52 @@ makeMove m g = do
   let i_nplys = nPlys g
   let i_nMoves = nMoves g
   let i_castle = castleFlag g
+  let i_bd = if not isCrown then board g
+          else Map.insert initSq (Piece (turn g) (fromJust crown_p))
+            (board g)
+  let o_side = not i_side
+  let o_castle
+        | isCastle = maybe i_castle (i_castle +) (Map.lookup m
+                                                  castle_flags_map)
+        | isCastleSq && isRookMove && i_castle /= 0 = maybe i_castle
+          (i_castle +)
+          (Map.lookup initSq rook_move_map)
+        | isKingMoved m g && i_castle /=0 = if i_side then i_castle - 3
+          else i_castle -12
+        | otherwise = i_castle
   let o_nplys = if isPawn initSq i_bd || isCapture || isCrown then 0 else
         i_nplys + 1
   let o_nMoves = if not i_side then i_nMoves + 1 else i_nMoves
-  if isCastle then do
-    mask <- Map.lookup m castle_flags_map
-    let o_castle = i_castle + mask
-    o_bd <- mkMoveBoard m i_bd
-    fun <- Map.lookup m castle_rook_map
-    o_bd <- fun o_bd
-    return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves, castleFlag=o_castle, epSquare=Nothing})
-    else do
-      if isCastleSq && isRookMove && i_castle /= 0 then do
-        mask <- Map.lookup initSq rook_move_map
-        let o_castle = i_castle + mask
-        o_bd <- mkMoveBoard m i_bd
-        return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves, castleFlag=o_castle, epSquare=Nothing})
-        else do
-        let o_bd = if isEpCapture m g then Map.delete (epSqDel (not si)
-                                                         dFile) i_bd
-                     else i_bd
-        o_bd <- mkMoveBoard m o_bd
-        let epSq = if isEpTrigged si m i_bd then mkEp si iFile
-              else Nothing
-        return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves, epSquare = epSq})
-  where i_bd = if not isCrown then board g
-          else Map.insert initSq (Piece (turn g) (fromJust crown_p))
-            (board g)
-        initSq = getInitSq m
+  let epSq =
+        if isEpTrigged si m i_bd then mkEp si iFile else Nothing
+  o_bd <-
+    if isCastle then do
+      fun <- Map.lookup m castle_rook_map
+      i_bd_ <- mkMoveBoard m i_bd
+      fun i_bd_
+    else if isEpCapture m g then
+           mkMoveBoard m (Map.delete (epSqDel (not si) dFile) i_bd)
+           else mkMoveBoard m i_bd
+  return g{board=o_bd,turn=o_side,castleFlag=o_castle,epSquare=epSq,
+           nPlys=o_nplys,nMoves=o_nMoves}
+  where initSq = getInitSq m
         destSq = getDestSq m
-        isCapture = isJust $ checkSquare destSq i_bd
+        isCapture = isJust $ checkSquare destSq bd
         isCastle = m `elem` castle_moves
         isCastleSq = getInitSq m `elem` rook_castle_sqs
         isRookMove = Just Rook ==
-         (pieceType <$> checkSquare initSq i_bd)
+         (pieceType <$> checkSquare initSq bd)
         crown_p = getCrown m
         isCrown = isJust crown_p
         iFile = squareFile initSq
         dFile = squareFile destSq
         si = turn g
+        bd = board g
+
+isKingMoved :: Move -> Game -> Bool
+isKingMoved m g = Just King == (pieceType <$> checkSquare sq bd)
+  where sq = getInitSq m
+        bd = board g
 
 isEpCapture :: Move -> Game -> Bool
 isEpCapture m g = isSidePawn && (Just destSq==epSq)
