@@ -1,6 +1,5 @@
 module Play where
 
-
 -- import Game
 -- import Board
 -- import Pieces
@@ -9,6 +8,7 @@ module Play where
 -- import Moves
 -- import Squares
 -- import Rules
+-- import Data.Bits
 
 import Game
     ( GameState(epSquare, castleFlag, nMoves, nPlys, board, turn),
@@ -21,6 +21,7 @@ import qualified Data.Map.Strict as Map
 import Moves ( readMove, Move(getCrown, getDestSq, getInitSq) )
 import Squares ( readSquare, File, Square(..) )
 import Rules ( sameSide )
+import Data.Bits ( Bits((.&.)) )
 
 
 castle_moves = map (fromJust.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
@@ -57,8 +58,8 @@ makeMove m g = do
           isKingOutOfInitSq = maybe i_castle (i_castle +)
           (Map.lookup initSq rook_move_map)
         | isKingMoved m g && i_castle /=0 && not isKingOutOfInitSq =
-          if i_side then i_castle - 3
-          else i_castle -12
+          if i_side then i_castle .&. 12
+          else i_castle .&. 3
         | isRookCaptureInCastleSq && i_castle /=0 && not
           isKingOutOfInitSq = if si && destSq == Square 7 7 then
             i_castle - 4
