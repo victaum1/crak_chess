@@ -13,7 +13,7 @@ module Play where
 import Game
     ( GameState(epSquare, castleFlag, nMoves, nPlys, board, turn),
       Game )
-import Board ( checkSquare, Board )
+import Board ( checkSquare, Board, whereIsPiece)
 import Pieces
     ( PieceType(Pawn, King, Rook), Piece(Piece, pieceType), Side )
 import Data.Maybe ( mapMaybe, isNothing, fromJust, isJust )
@@ -56,7 +56,8 @@ makeMove m g = do
         | isCastleSq && isRookMove && i_castle /= 0 = maybe i_castle
           (i_castle +)
           (Map.lookup initSq rook_move_map)
-        | isKingMoved m g && i_castle /=0 = if i_side then i_castle - 3
+        | isKingMoved m g && i_castle /=0 && not isKingOutOfCastle =
+          if i_side then i_castle - 3
           else i_castle -12
         | otherwise = i_castle
   let o_nplys = if isPawn initSq i_bd || isCapture || isCrown then 0 else
@@ -87,6 +88,9 @@ makeMove m g = do
         dFile = squareFile destSq
         si = turn g
         bd = board g
+        isKingOutOfCastle = if si then whereIsKing /= [Square 4 0] else
+          whereIsKing /= [Square 4 7]
+        whereIsKing = whereIsPiece (Piece si King) bd
 
 isKingMoved :: Move -> Game -> Bool
 isKingMoved m g = Just King == (pieceType <$> checkSquare sq bd)
