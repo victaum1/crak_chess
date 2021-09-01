@@ -1,14 +1,27 @@
 module Play where
 
+-- import Game
+-- import Board
+-- import Pieces
+-- import Data.Maybe
+-- import qualified Data.Map.Strict as Map
+-- import Moves
+-- import Squares
+-- import Rules
+-- import Data.Bits
+
 import Game
-import Board
+    ( Game,
+      GameState(epSquare, castleFlag, nMoves, nPlys, board, turn) )
+import Board ( checkSquare, whereIsPiece, Board )
 import Pieces
-import Data.Maybe
+    ( Piece(Piece, pieceType), PieceType(Pawn, King, Rook), Side )
+import Data.Maybe ( fromJust, isJust, isNothing, mapMaybe )
 import qualified Data.Map.Strict as Map
-import Moves
-import Squares
-import Rules
-import Data.Bits
+import Moves ( readMove, Move(getCrown, getDestSq, getInitSq) )
+import Squares ( readSquare, File, Square(..) )
+import Rules ( sameSide )
+import Data.Bits ( Bits(clearBit, complement, (.&.)) )
 
 
 castle_moves = map (fromJust.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
