@@ -1,34 +1,21 @@
 module Play where
 
--- import Game
--- import Board
--- import Pieces
--- import Data.Maybe
--- import qualified Data.Map.Strict as Map
--- import Moves
--- import Squares
--- import Rules
--- import Data.Bits
-
 import Game
-    ( GameState(epSquare, castleFlag, nMoves, nPlys, board, turn),
-      Game )
-import Board ( checkSquare, Board, whereIsPiece)
+import Board
 import Pieces
-    ( PieceType(Pawn, King, Rook), Piece(Piece, pieceType), Side )
-import Data.Maybe ( mapMaybe, isNothing, fromJust, isJust )
+import Data.Maybe
 import qualified Data.Map.Strict as Map
-import Moves ( readMove, Move(getCrown, getDestSq, getInitSq) )
-import Squares ( readSquare, File, Square(..) )
-import Rules ( sameSide )
-import Data.Bits ( Bits((.&.)) )
+import Moves
+import Squares
+import Rules
+import Data.Bits
 
 
 castle_moves = map (fromJust.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
 castle_rook_moves = map (fromJust.readMove) ["h1f1","a1d1","h8f8", "a8d8"]
 
-flag_masks  = [-3,-3,-12,-12]
-rook_flags  = [-1,-2,-4,-8]
+flag_masks  = [3,3,12,12]
+rook_flags  = [1,2,4,8]
 
 castle_flags_map = Map.fromList $ zip castle_moves flag_masks
 
@@ -52,24 +39,24 @@ makeMove m g = do
             (board g)
   let o_side = not i_side
   let o_castle
-        | isCastle = maybe i_castle (i_castle +) (Map.lookup m
-                                                  castle_flags_map)
+        | isCastle = maybe i_castle ((.&.) i_castle . complement)
+          (Map.lookup m castle_flags_map)
         | isRookMovedFromCastleSq && isRookMove && i_castle /= 0 && not
-          isKingOutOfInitSq = maybe i_castle (i_castle +)
+          isKingOutOfInitSq = maybe i_castle ((.&.) i_castle . complement)
           (Map.lookup initSq rook_move_map)
         | isKingMoved m g && i_castle /=0 && not isKingOutOfInitSq =
           if i_side then i_castle .&. 12
           else i_castle .&. 3
         | isRookCaptureInCastleSq && i_castle /=0 && not
           isKingOutOfInitSq = if si && destSq == Square 7 7 then
-            i_castle - 4
-          else if si && destSq == Square 0 7 then
-            i_castle - 8
-          else if not si && destSq == Square 7 0 then
-            i_castle - 1
-          else if not si && destSq == Square 0 0 then
-            i_castle - 2
-          else i_castle
+              i_castle `clearBit` 2
+            else if si && destSq == Square 0 7 then 
+              i_castle `clearBit` 3 else
+            if not si && destSq == Square 7 0 then
+              i_castle `clearBit` 0 else
+               if not si && destSq == Square 0 0 then
+                 i_castle `clearBit` 1
+                            else i_castle
         | otherwise = i_castle
   let o_nplys = if isPawn initSq i_bd || isCapture || isCrown then 0 else
         i_nplys + 1
