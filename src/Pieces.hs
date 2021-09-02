@@ -48,7 +48,7 @@ type_map' = zip piece_types piece_chars
 
 -- funcs
 readPieceType :: Char -> Maybe PieceType
-readPieceType c = lookup c type_map
+readPieceType c = lookup (toUpper c) type_map
 
 readCPiece :: Char -> Maybe Piece
 readCPiece c | toUpper c `elem` piece_chars = Just(Piece (isUpper c)

@@ -56,7 +56,7 @@ play_map = [
 
 
 playLoop = do
-  line <- mio $ getPlay "play"
+  line <- mio $ getPlay "play> "
   if null line then playLoop
   else do
     let input = words line
@@ -139,14 +139,14 @@ mainPlay = evalStateT playLoop init_args
 
 
 getPlay caller = do
-  putStr $ caller ++ "> "
+  putStr $ caller
   getLine
 
 
 
 mainLoop :: IO ()
 mainLoop = do
-  res <- getPlay "Craken"
+  res <- getPlay ""
   if null res then mainLoop
   else do
     let mbAction = lookup res main_map
@@ -159,5 +159,4 @@ main = do
   putStrLn $ "Craken " ++ version ++ " by V. Manotas."
   putStrLn "x/x/2020."
   putStrLn "'help' show usage."
-  putStrLn ""
   mainLoop
