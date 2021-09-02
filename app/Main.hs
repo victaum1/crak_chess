@@ -1,24 +1,37 @@
 module Main where
 
-import Control.Monad.Trans.State ( evalStateT, get, StateT )
-import Defs ( version, quit, errorCmd, mio )
+-- import Control.Monad.Trans.State
+-- import Defs
+-- import Engine
+-- import Moves
+-- import Parsing
+-- import SubEngine
+-- import System.IO
+-- import System.Enviroment
+-- import Uci
+-- import Xboard
+-- import Data.Maybe
+-- import Game
+
+import Control.Monad.Trans.State ( StateT, evalStateT, get )
+import Defs ( errorCmd, mio, quit, version )
 import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
 import SubEngine
     ( mDump,
-      mTakeBack,
-      mThinkMove,
-      mSetPosition,
-      mMakeMove,
+      mDumpFEN,
       mDumpPlay,
-      mDumpFEN )
-import System.IO ( stdout, hSetBuffering, BufferMode(NoBuffering) )
-import           Uci                       (uciLoop)
-import           Xboard                    (xboardLoop)
-import Data.Maybe
-import Game
-
+      mMakeMove,
+      mSetPosition,
+      mTakeBack,
+      mThinkMove )
+import System.IO ( hSetBuffering, BufferMode(NoBuffering), stdout )
+import System.Environment ( getArgs )
+import Uci ( uciLoop )
+import Xboard ( xboardLoop )
+import Data.Maybe ( fromMaybe )
+import Game ( GameState(turn) )
 
 help_str = unlines [
   "quit - Exits the engine."
@@ -159,4 +172,8 @@ main = do
   putStrLn $ "Craken " ++ version ++ " by V. Manotas."
   putStrLn "x/x/2020."
   putStrLn "'help' show usage."
-  mainLoop
+  args <- getArgs
+  if null args then mainLoop else
+    if head args == "-x" then xboardLoop
+    else if head args == "-u" then uciLoop
+    else mainLoop

@@ -12,37 +12,35 @@ module Generator where
 -- import Data.Bifunctor
 -- import Data.Bits
 
-import Game
-    ( Game,
-      GameState(castleFlag, epSquare, nMoves, nPlys, turn, board) )
-import Board ( whereIsPiece, checkSquare, Board )
+import Game ( Game, GameState(castleFlag, epSquare, board, turn) )
+import Board ( checkSquare, whereIsPiece, Board )
 import Pieces
     ( Piece(Piece, pieceSide, pieceType), PieceType(..), Side )
 import Rules
-    ( mini_bishop_branches,
-      mini_rook_branches,
-      knight_branches,
-      onBoard',
-      isAStep,
+    ( black_pawn_captures,
       black_pawn_step,
-      white_pawn_step,
-      black_pawn_captures,
-      white_pawn_captures,
-      sameSideStep,
+      isAStep,
       isEmpty,
-      Dir(..),
+      knight_branches,
+      mini_bishop_branches,
+      mini_rook_branches,
+      onBoard',
+      sameSideStep,
+      white_pawn_captures,
+      white_pawn_step,
+      CBranch,
       CPath,
-      CBranch )
+      Dir(..) )
 import Squares
     ( square2Tuple, tuple2Square, Square(Square, squareRank) )
 import Data.Maybe
-    ( Maybe(..), maybe, mapMaybe, fromJust, isNothing, isJust )
+    ( Maybe(Just, Nothing), maybe, fromJust, isNothing, mapMaybe )
+import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Moves ( Move(Move, getDestSq, getInitSq) )
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Data.Bits ( Bits((.&.)) )
-
 
 moveGenerator :: Game -> [Move]
 moveGenerator g = genKingMoves g ++ moveGenBySide g
@@ -85,7 +83,7 @@ squareAttackOnBoard si sq bd = squareAttackByKnight sq si bd ||
 
 squareAttackByKnight :: Square -> Side -> Board -> Bool
 squareAttackByKnight sq si bd =  any isKnight
-  (mapMaybe (`checkSquare` bd) (genKnightSquares sq Map.empty))
+  (mapMaybe (`checkSquare` bd) (genKnightSquares' sq bd))
   where isKnight p = Piece si Knight == p
 
 
@@ -249,6 +247,8 @@ genKnightMoves s b = genMoveFromBranches s b knight_branches
 genKnightSquares :: Square -> Board -> [Square]
 genKnightSquares s b = genSquaresFromBranches s b knight_branches
 
+genKnightSquares' :: Square -> Board -> [Square]
+genKnightSquares' s b = genSquaresFromBranches' s b knight_branches
 
 genRookMoves :: Square -> Board -> [Move]
 genRookMoves s b = map (makeSimpleMove s) $ filter
