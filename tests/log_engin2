@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "" > input.log > output.log
+tee -a input.log | crakchess -x | tee -a output.log

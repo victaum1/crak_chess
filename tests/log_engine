@@ -1,0 +1,58 @@
+#!/bin/bash
+
+## wrap in/out of process and log to files
+
+export PID0=$$
+i_pipe="ipipe"
+o_pipe="opipe"
+
+if [[ ! -p $i_pipe ]]; then
+ mkfifo $i_pipe 
+fi
+
+if [[ ! -p $o_pipe ]]; then
+ mkfifo $o_pipe 
+fi
+
+trap "rm -f $i_pipe $o_pipe" EXIT
+
+exec 3<>$i_pipe 4<>$o_pipe
+
+stockfish <&3  >&4 &
+
+PID1=$!
+
+echo "" > input.log > output.log
+
+
+{
+while true
+do
+  if read line <&4; then
+    echo $line >> output.log
+    echo $line > /proc/$PID0/fd/1
+  fi
+done
+} &
+
+PID2=$!
+
+while true
+do
+   if read line; then
+     if [[ $line == "quit" ]]; then
+       kill $PID2
+       kill $PID1
+       break
+     fi
+     echo $line >> input.log
+     echo $line >&3
+   fi
+done
+
+wait
+
+exec 4>&-
+exec 4<&-
+exec 3>&-
+exec 3<&-

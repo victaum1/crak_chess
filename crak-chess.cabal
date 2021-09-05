@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e499cb50040188c9dd5f63a4c536bdb61ec30d6741f8a164d222072e090c0c97
+-- hash: d9ecf13f2a4c38c006270fdf876125493589e1e893ada7836b0db2a52983a776
 
 name:           crak-chess
-version:        0.0.13.8
+version:        0.1.0.0
 synopsis:       A simple chess engine in haskell by Victaum
 description:    See README at <https://gitlab.com/victaum/vichess#readme>
 category:       Games

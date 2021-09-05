@@ -4,9 +4,10 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import System.Random
 
-version = "0.0.38.2"
-author = "V. Manotas"
-name ="Craken"
+version = "0.1.0.0"
+author  = "V. Manotas"
+name    = "Craken"
+date    = "04/08/2021"
 
 randomChoice l g = l !! fst (randomR (0, length l - 1) g)
 

@@ -1,15 +1,36 @@
 module Xboard where
 
-import Defs
-import Parsing
-import Pieces
-import Moves
-import Game
-import SubEngine
-import Engine
--- import System.Console.Readline
-import Control.Monad.Trans.State
+-- import Control.Monad.Trans.State
+-- import Data.Maybe
+-- import Defs
+-- import Parsing
+-- import Pieces
+-- import Moves
+-- import Game
+-- import SubEngine
+-- import Engine
 
+
+import Control.Monad.Trans.State ( evalStateT, put, get, StateT )
+import Data.Maybe ( isNothing )
+import Defs ( errorCmd, quit, mio, version, name )
+import Parsing ( nat, parse )
+import Pieces ()
+import Moves ( pMoveCoord )
+import Game ( GameState(turn) )
+import SubEngine
+    ( mTakeBack,
+      mMakeMove,
+      mSetPosition,
+      mThinkMove,
+      mDumpPlay,
+      mDumpFEN,
+      mDump )
+import Engine
+    ( init_args,
+      setPost,
+      PlayArgs(getGame, getHist, getPost, getCpFlag) )
+-- import System.Console.Readline
 
 -- vars
 features_str = unwords [
@@ -37,17 +58,33 @@ xb_map = [
            ,("ping" , ping)
            ,("protover", protover)
            ,("usermove", userMove)
+           ,("move", userMove)
            ,("accepted", const accepted)
            ,("rejected", const rejected)
            ,("setboard", setXpos)
            ,("dump", const (mDump >> xbLoop))
            ,("dumpfen", const (mDumpFEN >> xbLoop))
            ,("dumpplay", const (mDumpPlay >> xbLoop))
+           ,("random", const xbLoop)
+           ,("level", const xbLoop)
+           ,("hard", const xbLoop)
+           ,("easy", const xbLoop)
+           ,("computer", const xbLoop)
+           ,("white", const $ xTurn True)
+           ,("black", const $ xTurn False)
          ]
 
 
 -- funcs
 -- inner xboard loop
+xTurn :: Bool -> StateT PlayArgs IO ()
+xTurn f = do
+          args <- get
+          let arg_ = args{getCpFlag= Just f}
+          put arg_
+          xbLoop
+
+
 xbLoop :: StateT PlayArgs IO ()
 xbLoop = do
   line <- mio getLine
@@ -57,12 +94,16 @@ xbLoop = do
       let cmd = head input
       let args = tail input
       let res = lookup cmd xb_map
-      maybe (mio (errorCmd ["unknown command", unwords input]) >> xbLoop)
-        (\a -> a args) res
+      let pm = parse pMoveCoord cmd
+      if null pm then maybe (mio (errorCmd ["unknown command",
+                                            unwords input]) >>
+                              xbLoop)
+        (\a -> a args) res else userMove [cmd]
 
 
-xGo = do
+xGo =
         xThink
+
 
 xThink :: StateT PlayArgs IO ()
 xThink = do
@@ -111,6 +152,7 @@ protover strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
                xbLoop
              else xbLoop
 
+
 userMove :: [String] -> StateT PlayArgs IO ()
 userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
               | otherwise =  do
@@ -121,8 +163,10 @@ userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
   else do
          let m = fst $ head res_m
          mMakeMove m
-         xGo
-
+         args <- get
+         if getCpFlag args == Just (turn (getGame args)) then
+           xGo
+         else xbLoop
 
 undo = do
          args <- get
@@ -148,11 +192,11 @@ force = do
           xbLoop
 
 
-
-
 force' :: StateT PlayArgs IO ()
 force' = do
-  return ()
+         args <- get
+         let arg_ = args{getCpFlag=Nothing}
+         put arg_
 
 
 printPost = do
@@ -190,4 +234,4 @@ xboardLoop :: IO ()
 xboardLoop = do
   putStrLn ""
   evalStateT xbLoop init_args
-
+  

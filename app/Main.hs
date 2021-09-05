@@ -1,20 +1,7 @@
 module Main where
 
--- import Control.Monad.Trans.State
--- import Defs
--- import Engine
--- import Moves
--- import Parsing
--- import SubEngine
--- import System.IO
--- import System.Enviroment
--- import Uci
--- import Xboard
--- import Data.Maybe
--- import Game
-
 import Control.Monad.Trans.State ( StateT, evalStateT, get )
-import Defs ( errorCmd, mio, quit, version )
+import Defs ( author, date, errorCmd, mio, quit, version )
 import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
@@ -87,7 +74,7 @@ playLoop = do
       pargs <-get
       let cpf = getCpFlag pargs
       let s = turn $ getGame pargs
-      if s == cpf then do
+      if Just s == cpf then do
          mThinkMove
          playLoop
       else
@@ -102,7 +89,7 @@ playGo = do
   args <- get
   let g = getGame args
   let s = turn g
-  let arg_ = args{getCpFlag=s}
+  let arg_ = args{getCpFlag=Just s}
   mThinkMove
   playLoop
 
@@ -169,8 +156,8 @@ mainLoop = do
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
-  putStrLn $ "Craken " ++ version ++ " by V. Manotas."
-  putStrLn "x/x/2020."
+  putStrLn $ "Craken " ++ version ++ " " ++ author
+  putStrLn $ date ++ "."
   putStrLn "'help' show usage."
   args <- getArgs
   if null args then mainLoop else
