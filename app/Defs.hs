@@ -9,6 +9,8 @@ author  = "V. Manotas"
 name    = "Craken"
 date    = "04/08/2021"
 
+
+randomChoice :: [a] -> StdGen -> a
 randomChoice l g = l !! fst (randomR (0, length l - 1) g)
 
 -- IO

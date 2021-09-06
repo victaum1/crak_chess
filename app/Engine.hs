@@ -1,15 +1,30 @@
+
 module Engine where
+
+-- import Data.Maybe (fromJust, isNothing, isJust)
+-- import Data.Map.Strict (Map)
+-- import qualified Data.Map.Strict as Map
+-- import Control.Monad.Trans.State
+-- import System.Random
+-- import Moves
+-- import Game
+-- import Board
+-- import Pieces
+-- import Valid
+-- import Defs
+
 import Data.Maybe (fromJust, isNothing, isJust)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Control.Monad.Trans.State
-import System.Random
-import Moves
+import Control.Monad.Trans.State ()
+import System.Random ( StdGen )
+import Moves ( readMove, Move )
 import Game
-import Board
-import Pieces
-import Valid
-import Defs
+    ( fen2Game, game2FEN, init_game, Game, GameState(board) )
+import Board ( showBoard )
+import Pieces ( Side )
+import Valid ( genValidMoves )
+import Defs ( randomChoice )
 
 -- vars / cons
 dft_time = 5000 :: Int
@@ -19,13 +34,14 @@ dft_str_move_w = "e2e4"
 dft_str_move_b = "e7e5"
 game_fen1 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
 game_fen2 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
-dft_cp_flag = Nothing -- Human vs Human 
+dft_cp_flag = Just False -- Black
+dft_seed = Nothing -- Auto gen random number
 move_w = fromJust $ readMove dft_str_move_w
 move_b = fromJust $ readMove dft_str_move_b
 game_st1 = fromJust $ fen2Game game_fen1
 game_st2 = fromJust $ fen2Game game_fen2
 init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game []
-  dft_post_flag
+  dft_post_flag dft_seed
 
 
 -- adts
@@ -36,6 +52,7 @@ data PlayArgs = PlayArgs {
   ,getGame   :: Game
   ,getHist   :: [Game]
   ,getPost   :: Bool
+  ,getSeed   :: Maybe Int
   } deriving (Eq,Show)
 
 

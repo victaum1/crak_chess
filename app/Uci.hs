@@ -1,12 +1,14 @@
 module Uci where
-import Control.Monad.Trans.State
-import System.Random
-import Defs
-import Parsing
-import Moves
-import Game
+import Control.Monad.Trans.State ( evalStateT, get, put, StateT )
+import System.Random (StdGen, newStdGen, mkStdGen )
+import Data.Maybe (isNothing,fromJust)
+import Defs ( version, author, name, quit, mio, errorCmd )
+import Parsing ( parse, symbol )
+import Moves ( readMove, Move )
+import Game ( game2FEN, init_fen, init_game, pGame, Game )
 import SubEngine
-import Engine
+    ( mMakeMove, mSetPosition, mDump, mDumpFEN, mDumpPlay )
+import Engine ( think, setGame, init_args, PlayArgs(getGame,getSeed) )
 
 -- var
 uci_info = unlines ["id name " ++ name ++ " " ++ version,"id author " ++ author, "uciok"]
@@ -15,7 +17,7 @@ ui_map :: [(String, [String] -> StateT PlayArgs IO())]
 ui_map = [
    ("quit", const $ mio quit)
   ,("isready", const $ mio (putStrLn "readyok")>>uiLoop)
-  ,("ucinewgame", const $ mio $ evalStateT uiLoop init_args)
+  ,("ucinewgame", const $ uNew)
   ,("stop", const $ mio (putStrLn "bestmove 0000")>>uiLoop)
   ,("position", \ss -> setUpos ss >> uiLoop)
   ,("dump", const (mDump >> uiLoop))
@@ -25,6 +27,12 @@ ui_map = [
   ,("uci", const uciInfo)
          ]
          
+uNew = do
+       args <- get
+       let arg_ = init_args{getSeed=getSeed args}
+       put arg_
+       uiLoop
+
 uciInfo :: StateT PlayArgs IO ()
 uciInfo = do
         mio (putStrLn uci_info)
@@ -54,15 +62,15 @@ infoPost = do
   mio $ putStrLn "info depth 1 score cp 0 time 1 pv 0000"
 
 uThink = do
-  g <- newStdGen
   args <- get
+  g <- newStdGen
+  let g_ = maybe g mkStdGen (getSeed args)
   let a_game = getGame args
-  let a_move = think a_game g
+  let a_move = think a_game g_
   maybe (mio $ putStrLn "bestmove 0000") (
     \m -> do
       mio $ putStrLn $ "bestmove " ++ show m
     ) a_move
-
 
 setUpos :: [String] -> StateT PlayArgs IO ()
 setUpos [] = mio $ errorCmd ["incomplete", []]
@@ -117,6 +125,6 @@ setListMoves (m:ms) = do
   setListMoves ms
 
 
-uciLoop :: IO ()
-uciLoop = do
-             evalStateT uciInfo init_args
+uciLoop :: PlayArgs -> IO ()
+uciLoop pa = do
+             evalStateT uiLoop pa

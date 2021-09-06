@@ -1,8 +1,8 @@
 module Main where
 
-import Control.Monad.Trans.State ( StateT, evalStateT, get )
+import Control.Monad.Trans.State ( StateT, evalStateT, get, put )
 import Defs ( author, date, errorCmd, mio, quit, version )
-import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag) )
+import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag, getSeed) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
 import SubEngine
@@ -41,18 +41,24 @@ play_map :: [(String, String -> StateT PlayArgs IO ())]
 play_map = [
   ("play", const playGo)
   ,("stop", const stop)
-  ,("new", const $ mio mainPlay)
+  ,("new", const $ mNew)
   ,("undo", const playUndo)
   ,("dump", const mainDump)
   ,("help", const helpPlay)
   ,("quit", const quitPlay)
-  ,("xboard", const $ mio xboardLoop)
-  ,("uci", const $ mio uciLoop)
+  ,("xboard", const $ mio $ xboardLoop init_args)
+  ,("uci", const $ mio $ uciLoop init_args)
   ,("setposition", setPos)
   ,("sp", setPos)
   ,("dumpfen", const (mDumpFEN >> playLoop))
   ,("dumpplay", const (mDumpPlay >> playLoop))
   ]
+
+mNew = do
+       args <- get
+       let arg_ = init_args{getSeed=getSeed args}
+       put arg_
+       playLoop
 
 
 playLoop = do
@@ -120,9 +126,9 @@ helpPlay = do
 quitPlay = mio quit
 
 
-main_map :: [(String, IO ())]
+main_map :: [(String, PlayArgs -> IO ())]
 main_map = [
-  ("quit", quit)
+  ("quit", const quit)
   ,("help", mainHelp)
   ,("xboard", xboardLoop)
   ,("uci", uciLoop)
@@ -130,28 +136,50 @@ main_map = [
   ]
 
 
-mainHelp = do
+mainHelp pa = do
   putStr help_str
-  mainLoop
+  mainLoop pa
 
 
-mainPlay = evalStateT playLoop init_args
+mainPlay = evalStateT playLoop
 
 
 getPlay caller = do
-  putStr $ caller
+  putStr caller
   getLine
 
 
-
-mainLoop :: IO ()
-mainLoop = do
+mainLoop :: PlayArgs -> IO ()
+mainLoop pa = do
   res <- getPlay ""
-  if null res then mainLoop
+  if null res then mainLoop pa
   else do
     let mbAction = lookup res main_map
-    fromMaybe (putStrLn "" >> mainLoop)
-          mbAction
+    fromMaybe (putStrLn "" >> mainLoop pa)
+          (mbAction <*> Just pa)
+
+help_cmd_args = unlines [
+    "-s <n> [<playFlag>]"
+  , "Sets Radom Number Seed."
+  , "-x"
+  , "playFlag for Xboard."
+  , "-u"
+  , "playFlag for UCI."
+                        ]
+
+setSeed :: Int -> PlayArgs
+setSeed n = init_args{getSeed=Just n}
+
+parseArgs :: [String] -> IO()
+parseArgs ["-s", n, "-x"] = xboardLoop (setSeed (read n))
+parseArgs ["-s", n, "-u"] = uciLoop (setSeed (read n))
+parseArgs ["-s", n] = mainLoop (setSeed (read n))
+parseArgs ["-x"] = xboardLoop init_args
+parseArgs ["-u"] = uciLoop init_args
+parseArgs ["-h"] = putStr help_cmd_args
+parseArgs [] = mainLoop init_args
+parseArgs ss = putStr "Invalid args: see '-h'."
+
 
 main :: IO ()
 main = do
@@ -160,7 +188,4 @@ main = do
   putStrLn $ date ++ "."
   putStrLn "'help' show usage."
   args <- getArgs
-  if null args then mainLoop else
-    if head args == "-x" then xboardLoop
-    else if head args == "-u" then uciLoop
-    else mainLoop
+  parseArgs args

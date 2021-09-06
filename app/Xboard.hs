@@ -29,6 +29,7 @@ import SubEngine
 import Engine
     ( init_args,
       setPost,
+      getSeed,
       PlayArgs(getGame, getHist, getPost, getCpFlag) )
 -- import System.Console.Readline
 
@@ -36,8 +37,8 @@ import Engine
 features_str = unwords [
   "feature"
   ,"usermove=1"
-  ,"myname=" ++ name ++ " " ++ version
-  ,"colors=0"
+  ,"myname=" ++ name ++ version
+  ,"colors=1"
   ,"ping=1"
   ,"setboard=1"
                        ]
@@ -47,7 +48,7 @@ xb_map = [
            ("xboard"   , const xbLoop)
            ,("otim"    , const xbLoop)
            ,("quit"    , const $ mio quit)
-           ,("new"     , const $ mio xboardLoop)
+           ,("new"     , const new)
            ,("force"   , const force)
            ,("go"      , const xGo)
            ,("hint"    , const hint)
@@ -76,6 +77,13 @@ xb_map = [
 
 
 -- funcs
+new = do
+      args <- get
+      let args_ = init_args{getSeed=getSeed args}
+      put args_
+      xbLoop
+
+
 -- inner xboard loop
 xTurn :: Bool -> StateT PlayArgs IO ()
 xTurn f = do
@@ -101,18 +109,14 @@ xbLoop = do
         (\a -> a args) res else userMove [cmd]
 
 
-xGo =
-        xThink
+xGo = xThink >> xbLoop
 
 
 xThink :: StateT PlayArgs IO ()
 xThink = do
           args <- get
-          if getPost args then do
-            printPost
-            mThinkMove
-            xbLoop
-          else mThinkMove >> xbLoop
+          if getPost args then printPost >> mThinkMove
+          else mThinkMove
 
 
 setXpos :: [String] -> StateT PlayArgs IO ()
@@ -199,6 +203,7 @@ force' = do
          put arg_
 
 
+printPost :: StateT PlayArgs IO ()
 printPost = do
           args <- get
           if turn (getGame args) then
@@ -228,10 +233,9 @@ noPost = do
           xbLoop
 
 
-
 -- main loop
-xboardLoop :: IO ()
-xboardLoop = do
+xboardLoop :: PlayArgs -> IO ()
+xboardLoop pa = do
   putStrLn ""
-  evalStateT xbLoop init_args
+  evalStateT xbLoop pa
   
