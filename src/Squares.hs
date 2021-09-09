@@ -69,15 +69,17 @@ readSquare str = if length str < 2  then Nothing else readSquare'
 
 pFile :: Parser File
 pFile = P(\case
-    [] -> []
-    (f:cs) -> [(fromJust (readCFile f), cs
-         ) | isJust $ readCFile f])
+    [] -> Nothing
+    (f:cs) -> (\f -> Just (f,cs)) =<< readCFile f
+         )
 
 pRank :: Parser Rank
 pRank = P(\case
-             [] -> []
-             (r:cs) -> [(fromJust (readRank r), cs
-               )| isJust $ readRank r ]
+             [] -> Nothing
+             (r:cs) ->
+               -- (\r -> Just(r,cs)) =<< readRank r
+               do ra <- readRank r
+                  return (ra,cs)
          )
 
 pSquare :: Parser Square

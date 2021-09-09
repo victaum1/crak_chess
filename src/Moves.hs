@@ -50,6 +50,6 @@ pMoveCoord = do
           pMoveCoordCrown <|> pMoveCoordSimple
 
 readMove :: String -> Maybe Move
-readMove str = if null $ parse pMoveCoord str then Nothing
-               else Just $ fst $ head $ parse pMoveCoord str
-
+readMove str = do
+  let m = parse pMoveCoord str
+  fst <$> m

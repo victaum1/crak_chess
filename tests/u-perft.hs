@@ -2,6 +2,7 @@ module Main(main) where
 
 import qualified System.Exit as Exit
 import Control.Monad (when)
+import Data.Maybe(mapMaybe)
 import Test.HUnit
 import Perft
 import Game
@@ -11,7 +12,7 @@ import Utils(splitOn)
 fixtures = "tests/fixtures/"
 inputs = "perft_data.csv"
 
-genGame     = fst . head . parse pGame
+genGame     = (fst <$>) . parse pGame
 
 noHeadLine = drop 1 . lines
 
@@ -26,7 +27,7 @@ main =
     inputs_ <- readFile(fixtures++inputs)
     let slines = noHeadLine inputs_
     let triples = map (splitOn ';') slines
-    let in_pos = map (genGame . head) triples
+    let in_pos = mapMaybe (genGame . head) triples
     let in_deps = map (read . (!!1)) triples
     let spec_nodes = map (read . (!!2)) triples
     let out_nodes = genOutNodes in_pos in_deps

@@ -17,7 +17,7 @@ import System.IO ( hSetBuffering, BufferMode(NoBuffering), stdout )
 import System.Environment ( getArgs )
 import Uci ( uciLoop )
 import Xboard ( xboardLoop )
-import Data.Maybe ( fromMaybe )
+import Data.Maybe ( fromMaybe, isNothing, fromJust )
 import Game ( GameState(turn) )
 
 help_str = unlines [
@@ -69,13 +69,13 @@ playLoop = do
     let cmd = head input
     let args = unwords $ tail input
     let a_move = parse pMoveCoord cmd
-    if null a_move then do
+    if isNothing a_move then do
         let res = lookup cmd play_map
         maybe (mio (errorCmd ["unknown command", unwords input]) >>
           playLoop)
           (\a -> a args) res
     else do
-      let m = fst $ head a_move
+      let m = fromJust $ fst <$> a_move
       mMakeMove m
       pargs <-get
       let cpf = getCpFlag pargs

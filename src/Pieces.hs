@@ -37,7 +37,7 @@ instance Show Piece where
 piece_types = [Pawn .. ]
 all_pieces = zipWith Piece (replicate 6 True ++ replicate 6 False) (concat
   $ replicate 2 piece_types)
-  
+
 piece_chars = "PNBRQK"
 l_piece_chars = map toLower piece_chars
 all_piece_chars = piece_chars ++ l_piece_chars
@@ -66,12 +66,12 @@ showPiece p = if pieceSide p then p2char p else
 
 pPiece :: Parser Piece
 pPiece = P(\case
-  [] -> []
-  (r:cs) -> [(fromJust (readCPiece r),cs)|isJust $ readCPiece r]
+  [] -> Nothing
+  (r:cs) -> (\p -> Just (p,cs)) =<< readCPiece r
           )
 
 pPieceType :: Parser (Maybe PieceType)
 pPieceType = P(\case
-  [] -> []
-  (r:cs) -> [(readPieceType r, cs)])
- 
+  [] -> Nothing
+  (r:cs) -> Just (readPieceType r, cs))
+
