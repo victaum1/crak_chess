@@ -16,13 +16,8 @@ data Move = Move {
   , getCrown  :: Maybe PieceType
                  } deriving (Eq,Ord)
 
-instance {-# OVERLAPS #-} Show Move where
+instance Show Move where
   show (Move a b c) = show a ++ show b ++ show c
-
-instance {-# OVERLAPS #-} Show (Maybe PieceType) where
-  show Nothing = " "
-  show (Just a) = show a ++ " "
-
 
 -- funcs
 pLf :: Parser ()

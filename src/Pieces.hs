@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, FlexibleInstances #-}
 module Pieces (piece_types, piece_chars, Side(..), Piece(..)
   , showPiece, readCPiece, PieceType(..), board_piece_chars, pPiece
   , pPieceType, all_piece_chars, all_pieces)
@@ -29,9 +29,13 @@ data Piece = Piece {
                       pieceSide :: Side
                     , pieceType :: PieceType
                     } deriving (Eq,Ord)
-
+ 
 instance Show Piece where
   show (Piece s p) = (if s then "W" else "B") ++ show p
+
+instance {-# OVERLAPS #-} Show (Maybe PieceType) where
+  show Nothing = ""
+  show (Just a) = show a
 
 -- vars / const
 piece_types = [Pawn .. ]
