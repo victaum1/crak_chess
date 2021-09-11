@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase, FlexibleInstances #-}
 module Pieces (piece_types, piece_chars, Side(..), Piece(..)
   , showPiece, readCPiece, PieceType(..), board_piece_chars, pPiece
-  , pPieceType, all_piece_chars, all_pieces)
+  , pPieceType, all_piece_chars, all_pieces, all_white_pieces, all_black_pieces)
   where
 
 import Parsing
@@ -49,6 +49,9 @@ board_piece_chars = "." ++ all_piece_chars
 
 type_map = zip piece_chars piece_types
 type_map' = zip piece_types piece_chars
+
+all_black_pieces = map (Piece False) piece_types
+all_white_pieces = map (Piece True) piece_types
 
 -- funcs
 readPieceType :: Char -> Maybe PieceType
