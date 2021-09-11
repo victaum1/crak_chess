@@ -18,15 +18,20 @@ inf_score = max_material_score + 100
 null_move = Move (Square 0 0) (Square 0 0) Nothing
 
 
-negaMaxIter :: Score -> Depth -> Game -> Score
-negaMaxIter r d g | d == 0 = evalPos g
-                  | otherwise = if score > r then score else r
-  where moves = genValidMoves g
-        sucPos = mapMaybe (`makeMove` g) moves
-        rsu = map (negaMaxIter r (d - 1)) sucPos
-        rs = sort rsu
-        mScore = head rs
-        score = negate mScore
+alphaBeta :: Score  -> Score -> Score -> Depth -> Game -> Score
+alphaBeta a b r d g | d <= 0 = evalPos g
+                    | otherwise = score
+  where  pickScore si r = if si > r then si else r
+         pickAlpha si a = if si > a then si else a
+         moves = genValidMoves g
+         sucPos = mapMaybe (`makeMove` g) moves
+         scoreIt ai bi si di = negate . alphaBeta (negate bi) (negate ai)
+                 si (di-1)
+         rsu = [pickScore si r | gi <- sucPos
+                 , let si = scoreIt (pickAlpha r a) b r d gi
+                 , si < b]
+         rs = sort rsu
+         score = last rs
 
 
 search :: Depth -> Game -> MoveScore
@@ -34,10 +39,10 @@ search d g | d <= 0 = (null_move,evalPos g)
            | otherwise = (move,score)
  where moves = genValidMoves g
        sucPos = mapMaybe (`makeMove` g) moves
-       rsu = map (negaMaxIter (negate inf_score) (d - 1)) sucPos
+       rsu = map (negate . alphaBeta (negate inf_score) inf_score
+                  (negate inf_score) (d - 1)) sucPos
        mScore = zip moves rsu
        mso = sortOn snd mScore
-       mtp = head mso
+       mtp = last mso
        move = fst mtp
        score = negate (snd mtp)
-
