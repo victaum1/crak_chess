@@ -1,19 +1,28 @@
 module Search where
 
-import Data.Maybe
-import Data.List
-import Moves
-import Evaluate
-import Game
-import Squares
-import Valid
-import Play
+-- import Data.Maybe
+-- import Data.List
+-- import Moves
+-- import Evaluate
+-- import Game
+-- import Squares
+-- import Valid
+-- import Play
+
+import Data.Maybe ( mapMaybe )
+import Data.List ( sortOn, sort )
+import Moves ( Move(Move) )
+import Evaluate ( evalPos, max_material_score, Score )
+import Game ( Game )
+import Squares ( Square(Square) )
+import Valid ( genValidMoves )
+import Play ( makeMove )
 
 type Depth = Int
 
 type MoveScore = (Move,Score)
 
-inf_score = max_material_score + 100
+inf_score = max_material_score + 101
 
 null_move = Move (Square 0 0) (Square 0 0) Nothing
 
@@ -31,7 +40,7 @@ alphaBeta a b r d g | d <= 0 = evalPos g
                  , let si = scoreIt (pickAlpha r a) b r d gi
                  , si < b]
          rs = sort rsu
-         score = last rs
+         score = if null rs then b else last rs
 
 
 search :: Depth -> Game -> MoveScore

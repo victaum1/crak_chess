@@ -30,6 +30,8 @@ library:
       - Play
       - Utils
       - Perft
+      - Evaluate
+      - Search
     dependencies:
       - containers
 

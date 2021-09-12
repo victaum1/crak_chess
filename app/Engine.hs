@@ -1,4 +1,3 @@
-
 module Engine where
 
 -- import Data.Maybe (fromJust, isNothing, isJust)
@@ -12,6 +11,7 @@ module Engine where
 -- import Pieces
 -- import Valid
 -- import Defs
+-- import Search
 
 import Data.Maybe (fromJust, isNothing, isJust)
 import Data.Map.Strict (Map)
@@ -25,6 +25,7 @@ import Board ( showBoard )
 import Pieces ( Side )
 import Valid ( genValidMoves )
 import Defs ( randomChoice )
+import Search ( search )
 
 -- vars / cons
 dft_time = 5000 :: Int
@@ -78,9 +79,10 @@ setPost a_post args = args{getPost=a_post}
 
 -- main funcs
 think :: Game -> StdGen -> Maybe Move
-think gm sg | not (null ms) = Just $ randomChoice ms sg
+think gm sg | not (null ms) = Just $ fst pickMove
             | otherwise = Nothing
   where ms = genValidMoves gm
+        pickMove = search 3 gm
 
 
 takeBack :: PlayArgs -> PlayArgs

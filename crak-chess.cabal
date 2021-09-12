@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 503b3943e9da2d4ad80541a42bf3d7e0245a737a97f82d6eb479ac441d15e518
+-- hash: b4ee757f01247f858f9aa0a150f9d3da9ee728ceeb0ecd9837515ebf2dcff882
 
 name:           crak-chess
 version:        0.1.0.0
@@ -34,10 +34,10 @@ library
       Play
       Utils
       Perft
-  other-modules:
       Evaluate
-      Rules
       Search
+  other-modules:
+      Rules
       Paths_crak_chess
   hs-source-dirs:
       src
