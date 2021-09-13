@@ -1,5 +1,11 @@
 # Revision history for crak-chess
 
+## 0.1.3.0 -- 2021-09-11 
+
+* Engine Plays With Search!
+----------------------------------
+
+
 ## 0.1.0.0 -- 2021-09-04 
 
 * Cleaning Xboard Protocol
