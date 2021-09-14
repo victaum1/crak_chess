@@ -15,6 +15,8 @@ max_material_score = 3900
 
 score_pieces = [100,300,300,500,900,0]
 
+mate_score = max_material_score+100
+
 material_map = Map.fromList
   $ zip piece_types score_pieces
 
@@ -43,7 +45,7 @@ isStaleMate g | not (isInCheck g) && null (genValidMoves g) = True
               | otherwise = False
 
 
-evalPos g | isMate g = negate (max_material_score + 1)
+evalPos g | isMate g = negate mate_score
           | isStaleMate g = 0
           | otherwise = matAndSp
   where si       = turn g

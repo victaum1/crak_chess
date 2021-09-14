@@ -49,6 +49,7 @@ executables:
       - transformers
       - containers
       - random
+      - time
 
 tests:
   u-perft:

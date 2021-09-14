@@ -79,10 +79,10 @@ setPost a_post args = args{getPost=a_post}
 
 -- main funcs
 think :: Game -> StdGen -> Maybe Move
-think gm sg | not (null ms) = Just $ fst pickMove
+think gm sg | not (null ms) = Just move
             | otherwise = Nothing
   where ms = genValidMoves gm
-        pickMove = search 3 gm
+        (move,_,_) = search 3 gm
 
 
 takeBack :: PlayArgs -> PlayArgs

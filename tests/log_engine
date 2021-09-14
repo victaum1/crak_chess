@@ -18,7 +18,7 @@ trap "rm -f $i_pipe $o_pipe" EXIT
 
 exec 3<>$i_pipe 4<>$o_pipe
 
-stockfish <&3  >&4 &
+./ManualPerft <&3  >&4 &
 
 PID1=$!
 

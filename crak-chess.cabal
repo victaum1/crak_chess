@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ff09cd9a4c3621b1bf8190cb619cf66a6bbc81e311e4de3071f5321ac6626e64
+-- hash: 74a02feecf0af9e2a40a7f931a7e44e8c7fbcdddd71ba0faa783af8aced2b3c9
 
 name:           crak-chess
 version:        0.1.3.0
@@ -63,6 +63,7 @@ executable crakchess-exe
     , containers
     , crak-chess
     , random
+    , time
     , transformers
   default-language: Haskell2010
 
