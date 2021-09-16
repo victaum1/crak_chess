@@ -39,7 +39,7 @@ mThinkMove = do
   gen  <- newStdGen
   let gen_ = maybe gen mkStdGen (getSeed args)
   let a_game = getGame args
-  let a_move = think a_game gen_
+  let a_move = think gen_ a_game
   maybe mAdjudicate (
     \m -> do
       mMakeMove m

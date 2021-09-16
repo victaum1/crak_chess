@@ -10,8 +10,8 @@ name    = "Craken"
 date    = "12/09/2021"
 
 
-randomChoice :: [a] -> StdGen -> a
-randomChoice l g = l !! fst (randomR (0, length l - 1) g)
+randomChoice :: StdGen -> [a] -> a
+randomChoice g l = l !! fst (randomR (0, length l - 1) g)
 
 -- IO
 quit :: IO ()

@@ -18,14 +18,15 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Control.Monad.Trans.State ()
 import System.Random ( StdGen )
-import Moves ( readMove, Move )
+import Moves ( readMove, Move, null_move )
 import Game
     ( fen2Game, game2FEN, init_game, Game, GameState(board) )
 import Board ( showBoard )
 import Pieces ( Side )
 import Valid ( genValidMoves )
 import Defs ( randomChoice )
-import Search ( search )
+import Search (MoveScore, searchList, search)
+import Evaluate (Delta,Score) 
 
 -- vars / cons
 dft_time = 5000 :: Int
@@ -78,11 +79,21 @@ setPost a_post args = args{getPost=a_post}
 
 
 -- main funcs
-think :: Game -> StdGen -> Maybe Move
-think gm sg | not (null ms) = Just move
+pickMove :: StdGen -> Delta -> [MoveScore] -> Move
+pickMove sg d ms | null ms = null_move
+              | length ms == 1 = (fst . head) ms
+              | otherwise = move
+  where (_,top) = last ms
+        (_,mt) = break bf ms
+        bf = \(m,s) -> s >= top - d
+        move = fst $ randomChoice sg mt
+
+think :: StdGen -> Game -> Maybe Move
+think sg gm | not (null ms) = Just move
             | otherwise = Nothing
-  where ms = genValidMoves gm
-        (move,_,_) = search 3 gm
+  where msn = searchList 3 gm
+        ms = map (\(a,b,_)->(a,b)) msn
+        move = pickMove sg 20 ms
 
 
 takeBack :: PlayArgs -> PlayArgs

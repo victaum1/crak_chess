@@ -18,7 +18,7 @@ import Pieces
     ( Piece(Piece, pieceType), PieceType(Pawn, King, Rook), Side )
 import Data.Maybe ( fromJust, isJust, isNothing, mapMaybe )
 import qualified Data.Map.Strict as Map
-import Moves ( readMove, Move(getCrown, getDestSq, getInitSq) )
+import Moves ( readMove, Move(getCrown, getDestSq, getInitSq), isNullMove )
 import Squares ( readSquare, File, Square(..) )
 import Rules ( sameSide )
 import Data.Bits ( Bits(clearBit, complement, (.&.)) )
@@ -42,7 +42,8 @@ rook_castle_sqs = map (fromJust.readSquare) ["h1","a1","h8","a8"]
 rook_move_map = Map.fromList $ zip rook_castle_sqs rook_flags
 
 makeMove :: Move -> Game -> Maybe Game
-makeMove m g = do
+makeMove m g | isNullMove m = Just g{turn=not (turn g),epSquare=Nothing,nPlys=((nPlys g) + 1),nMoves=(if (turn g) then (nMoves g) else ((nMoves g) + 1))}
+             | otherwise = do
   let i_side = si
   let i_nplys = nPlys g
   let i_nMoves = nMoves g

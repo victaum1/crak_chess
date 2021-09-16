@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Moves where
 
-import Squares ( Square, pSquare )
+import Squares ( Square(..), pSquare )
 import Parsing
   (Alternative((<|>), many), Parser, parse, sat, space )
 import Pieces ( PieceType , pPieceType, piece_chars)
@@ -19,7 +19,12 @@ data Move = Move {
 instance Show Move where
   show (Move a b c) = show a ++ show b ++ show c
 
+-- vars
+null_move = Move (Square 0 0) (Square 0 0) Nothing
+
 -- funcs
+isNullMove (Move a b _) = a == b 
+
 pLf :: Parser ()
 pLf = do
   many (sat (== '\n'))

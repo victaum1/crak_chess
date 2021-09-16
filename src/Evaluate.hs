@@ -8,7 +8,7 @@ import Pieces
 import Valid
 import Generator
 
-
+type Delta = Int
 type Score = Int
 
 max_material_score = 3900
@@ -36,17 +36,8 @@ space :: Game -> Score
 space g = 0
 
 
-isMate :: Game -> Bool
-isMate g | isInCheck g && null (genValidMoves g) = True
-         | otherwise = False
-
-
-isStaleMate g | not (isInCheck g) && null (genValidMoves g) = True
-              | otherwise = False
-
-
 evalPos g | isMate g = negate mate_score
-          | isStaleMate g = 0
+          | isDraw g = 0
           | otherwise = matAndSp
   where si       = turn g
         matAndSp = material g + space g

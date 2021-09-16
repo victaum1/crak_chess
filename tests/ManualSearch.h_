@@ -48,11 +48,12 @@ showBranches p n = do
   putStrLn $ "time " ++ show (end_t `diffUTCTime` star_t) ++ " elapsed."
   where ms = genValidMoves p
         sucPos = mapMaybe (`makeMove` p) ms
-        npb = map (alphaBeta 0 _inf_score inf_score _inf_score (n-1)) sucPos
+        npb = map (alphaBeta 0 _inf_score inf_score _inf_score (n-1))
+          sucPos
         spb = map show npb
         sms = map ((++ ": ") . show) ms
         sss = zipWith (++) sms spb
-        total = sum $ map (\(_,n) -> n) npb
+        total = sum $ map snd npb
 
 mainLoop :: Game -> IO ()
 mainLoop p = do
@@ -72,5 +73,5 @@ mainLoop p = do
 
 main :: IO ()
 main = do
-  hSetBuffering stdout NoBuffering 
+  hSetBuffering stdout NoBuffering
   mainLoop init_game

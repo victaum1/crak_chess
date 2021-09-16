@@ -66,7 +66,7 @@ uThink = do
   g <- newStdGen
   let g_ = maybe g mkStdGen (getSeed args)
   let a_game = getGame args
-  let a_move = think a_game g_
+  let a_move = think g_ a_game
   maybe (mio $ putStrLn "bestmove 0000") (
     \m -> do
       mio $ putStrLn $ "bestmove " ++ show m
