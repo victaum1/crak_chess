@@ -1,6 +1,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Moves where
 
+
+-- import Squares
+-- import Parsing
+-- import Pieces
+-- import Data.Maybe
+
 import Squares ( Square(..), pSquare )
 import Parsing
   (Alternative((<|>), many), Parser, parse, sat, space )

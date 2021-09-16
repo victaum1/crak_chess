@@ -4,8 +4,24 @@
 
 module Parsing (module Parsing, module Control.Applicative) where
 
-import           Control.Applicative
-import           Data.Char
+-- import           Control.Applicative
+-- import           Data.Char
+
+import Control.Applicative
+    ( (<$),
+      Applicative(..),
+      Alternative(..),
+      optional,
+      (<$>),
+      (<**>),
+      liftA,
+      liftA3,
+      WrappedArrow(..),
+      WrappedMonad(..),
+      ZipList(..),
+      Const(..) )
+import Data.Char
+    ( isAlpha, isAlphaNum, isDigit, isLower, isSpace, isUpper )
 
 -- Basic definitions
 newtype Parser a = P (String -> Maybe (a,String))

@@ -1,14 +1,31 @@
 module Board (Board, Pos, init_board_str, init_board_fen, init_board,
-  fen2Board, pFenBoard,board2FEN, pBoard, showBoard, readBoard, checkSquare, whereIsPiece, makePieceList,checkPiece_) where
+  fen2Board, pFenBoard,board2FEN, pBoard, showBoard, readBoard, checkSquare, whereIsPiece, whereIsKing, makePieceList,checkPiece_) where
 
-import Data.Char
+-- import Data.Char
+-- import Data.Maybe
+-- import Prelude hiding (lookup)
+-- import Data.Map.Strict (Map)
+-- import qualified Data.Map.Strict as Map
+-- import Parsing
+-- import Pieces
+-- import Squares
+
+import Data.Char ( Char, digitToInt, intToDigit, isDigit )
 import Data.Maybe
+    ( Maybe(..), fromJust, fromMaybe, isJust, isNothing )
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Parsing
+import Parsing ( Parser(..) )
 import Pieces
-import Squares
+    ( Piece(Piece),
+      Side,
+      PieceType(King),
+      all_pieces,
+      board_piece_chars,
+      readCPiece,
+      showPiece )
+import Squares ( Square, intToSquare )
 
 -- vars / const
 init_board_str = unlines [
@@ -87,6 +104,9 @@ checkPiece = Map.lookup
 
 whereIsPiece :: Piece -> Board -> [Square]
 whereIsPiece p b = map fst $ Map.toList $ Map.filter (p ==) b
+
+whereIsKing :: Side -> Board -> Square
+whereIsKing s b = head $ whereIsPiece (Piece s King) b
 
 
 makePieceList :: Board -> PieceList

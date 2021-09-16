@@ -1,73 +1,46 @@
 module Generator where
--- import Game
--- import Board
--- import Pieces
--- import Rules
--- import Squares
--- import Data.Maybe
--- import Prelude hiding (lookup)
--- import Data.Map.Strict (Map)
--- import qualified Data.Map.Strict as Map
--- import Moves
--- import Data.Bifunctor
--- import Data.Bits
-
-import Game ( Game, GameState(castleFlag, epSquare, board, turn) )
-import Board ( checkSquare, whereIsPiece, Board )
+import Game
+import Board
 import Pieces
-    ( Piece(Piece, pieceSide, pieceType), PieceType(..), Side )
 import Rules
-    ( black_pawn_captures,
-      black_pawn_step,
-      isAStep,
-      isEmpty,
-      knight_branches,
-      mini_bishop_branches,
-      mini_rook_branches,
-      onBoard',
-      sameSideStep,
-      white_pawn_captures,
-      white_pawn_step,
-      CBranch,
-      CPath,
-      Dir(..) )
 import Squares
-    ( square2Tuple, tuple2Square, Square(Square, squareRank) )
 import Data.Maybe
-    ( Maybe(Just, Nothing), maybe, fromJust, isNothing, mapMaybe )
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Moves ( Move(Move, getDestSq, getInitSq) )
-import Data.Bifunctor ( Bifunctor(bimap) )
-import Data.Bits ( Bits((.&.)) )
+import Moves
+import Data.Bifunctor
+import Data.Bits
+
 
 moveGenerator :: Game -> [Move]
 moveGenerator g = genKingMoves g ++ moveGenBySide g
 
+
+moveGenBySide_ :: Side -> Board -> [Move]
+moveGenBySide_ s b | s = concat $ map (`genKnightMoves` b) ns ++
+  map (`genBishopMoves` b) bs ++
+  map (`genRookMoves` b) rs ++
+  map (`genQueenMoves` b) qs
+                | otherwise = concat $ map (`genKnightMoves` b) ns ++
+  map (`genBishopMoves` b) bs ++
+  map (`genRookMoves` b) rs ++
+  map (`genQueenMoves` b) qs
+  where ns = whereIsPiece (Piece s Knight) b
+        bs = whereIsPiece (Piece s Bishop) b
+        rs = whereIsPiece (Piece s Rook) b
+        qs = whereIsPiece (Piece s Queen) b
+
 moveGenBySide :: Game -> [Move]
 moveGenBySide g | s         = concat $ map (`genAllPawnMoves` g) wps ++
-  map (`genKnightMoves` b) wns ++
-  map (`genBishopMoves` b) wbs ++
-  map (`genRookMoves` b) wrs ++
-  map (`genQueenMoves` b) wqs
+                  [moveGenBySide_ s b]
                 | otherwise = concat $ map (`genAllPawnMoves` g) bps ++
-  map (`genKnightMoves` b) bns ++
-  map (`genBishopMoves` b) bbs ++
-  map (`genRookMoves` b) brs ++
-  map (`genQueenMoves` b) bqs
+                  [moveGenBySide_ s b]
   where s = turn g
         b = board g
         wps = whereIsPiece (Piece True Pawn) b
         bps = whereIsPiece (Piece False Pawn) b
-        wns = whereIsPiece (Piece True Knight) b
-        bns = whereIsPiece (Piece False Knight) b
-        wbs = whereIsPiece (Piece True Bishop) b
-        bbs = whereIsPiece (Piece False Bishop) b
-        wrs = whereIsPiece (Piece True Rook) b
-        brs = whereIsPiece (Piece False Rook) b
-        wqs = whereIsPiece (Piece True Queen) b
-        bqs = whereIsPiece (Piece False Queen) b
+
 
 squareAttack :: Square -> Game -> Bool
 squareAttack sq ge = squareAttackOnBoard (not aSide) sq aBoard
@@ -344,7 +317,4 @@ isBoardInCheck :: Side -> Board -> Bool
 isBoardInCheck s b = squareAttackOnBoard ns (whereIsKing s b)
   b
   where ns = not s
-
-whereIsKing :: Side -> Board -> Square
-whereIsKing s b = head $ whereIsPiece (Piece s King) b
 

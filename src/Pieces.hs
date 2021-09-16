@@ -4,9 +4,14 @@ module Pieces (piece_types, piece_chars, Side(..), Piece(..)
   , pPieceType, all_piece_chars, all_pieces, all_white_pieces, all_black_pieces)
   where
 
-import Parsing
-import Data.Char  (isUpper, toLower, toUpper)
-import Data.Maybe ( fromJust, isJust )
+
+-- import Parsing
+-- import Data.Char
+-- import Data.Maybe
+
+import Parsing ( Parser(..) )
+import Data.Char ( isUpper, toLower, toUpper )
+import Data.Maybe ( fromJust )
 
 -- adts
 data PieceType = Pawn | Knight | Bishop | Rook | Queen | King

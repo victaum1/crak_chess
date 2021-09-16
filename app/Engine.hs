@@ -93,7 +93,7 @@ think sg gm | not (null ms) = Just move
             | otherwise = Nothing
   where msn = searchList 3 gm
         ms = map (\(a,b,_)->(a,b)) msn
-        move = pickMove sg 20 ms
+        move = pickMove sg 10 ms
 
 
 takeBack :: PlayArgs -> PlayArgs

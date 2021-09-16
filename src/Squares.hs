@@ -4,9 +4,14 @@ module Squares (File, Rank,SquareTuple, Square(..), showFile, showRank
   , square2Tuple, intToSquare, file_chrs, rank_chrs, all_squares)
   where
 
-import           Data.Char  (chr, ord, toLower)
-import           Data.Maybe
-import           Parsing
+
+-- import           Data.Char
+-- import           Data.Maybe
+-- import           Parsing
+
+import Data.Char ( ord, chr, toLower )
+import Data.Maybe ( fromJust, isNothing )
+import Parsing ( space, Parser(..) )
 
 -- vars
 file_chrs = ['a' .. 'h']

@@ -2,12 +2,25 @@
 module Game (Game, GameState(..), fen2Game, game2FEN, init_game
             , init_fen, pGame, castle_codes) where
 
-import           Board
-import           Data.Maybe
-import           Parsing
-import           Pieces     (Side (..))
-import           Squares
+-- import           Board
+-- import           Data.Maybe
+-- import           Parsing
+-- import           Pieces
+-- import           Squares
 
+
+import Board ( Board, init_board_fen, board2FEN, pFenBoard )
+import Data.Maybe ( fromJust, isJust )
+import Parsing
+    ( Alternative((<|>), many),
+      char,
+      natural,
+      oneOf,
+      parse,
+      token,
+      Parser(..) )
+import Pieces ( Side )
+import Squares ( Square, pSquare )
 
 -- vars / const
 init_fen = init_board_fen ++ "w KQkq - 0 1"
