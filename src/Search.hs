@@ -15,10 +15,11 @@ import Data.List ( sortOn, sortBy, sort )
 import Data.Bifunctor (first)
 import Moves ( Move(Move), null_move, isNullMove)
 import Evaluate ( evalPos, mate_score, Score )
-import Game ( Game )
+import Game ( Game,board )
 import Squares ( Square(Square) )
 import Valid ( genValidMoves )
 import Play ( makeMove )
+import Generator (isCapture)
 
 type Depth = Int
 
@@ -34,8 +35,31 @@ inf_score = mate_score + 1
 _inf_score = negate inf_score
 
 
+
+abQuiesence :: Nodes -> Score -> Score -> Score -> Game -> ABInfo 
+abQuiesence n a b r g | null moves = (evalPos g,n+1)
+                      | otherwise = (score, tn)
+  where bd = board g
+        moves = filter (isCapture bd) (genValidMoves g)
+        sucPos = mapMaybe (`makeMove` g) moves
+        bsn = betaCutQ n a b r sucPos
+        score = fst bsn
+        tn = snd bsn
+
+betaCutQ :: Nodes -> Score -> Score -> Score -> [Game] -> ABInfo
+betaCutQ n a b r [] = (r,n)
+betaCutQ n a b r (gi:gs) = bnext
+  where (si,n_) = abQuiesence 0 (negate b) (negate a) r gi
+        nsi = negate si
+        anext = if nsi > a then nsi else a
+        bnext = if nsi >= b then (rnext,nnext) else betaCutQ nnext anext b
+          rnext gs
+        rnext = if nsi > r then nsi else r
+        nnext = n + n_
+
 alphaBeta :: Nodes -> Score -> Score -> Score -> Depth -> Game -> ABInfo
 alphaBeta n a b r d g | d <= 0 = (evalPos g,n+1)
+                      | d >= 80 = alphaBeta n a b r 80 g
                       | otherwise = if score <= negate mate_score
                           then (negate mate_score + d, tn) else (score, tn)
   where moves = genValidMoves g
@@ -50,7 +74,8 @@ betaCut n a b r d (gi:gs) = bnext
   where (si,n_) = alphaBeta 0 (negate b) (negate a) r (d-1) gi
         nsi = negate si
         anext = if nsi > a then nsi else a
-        bnext = if nsi >= b then (rnext,nnext) else betaCut nnext anext b rnext (d-1) gs
+        bnext = if nsi >= b then (rnext,nnext) else betaCut nnext anext b
+          rnext (d-1) gs
         rnext = if nsi > r then nsi else r
         nnext = n + n_
 

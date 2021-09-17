@@ -32,36 +32,23 @@ material_map = Map.fromList
   $ zip piece_types score_pieces
 
 
-simpleMaterial :: Game -> Rational
-simpleMaterial g | si = fromIntegral
-  (countAllWhites g - countAllBlacks g)/15
-                 | otherwise = fromIntegral
-  (countAllBlacks g - countAllWhites g)/15
-  where si = turn g
-
-countAllWhites g = sum  $ map length sqs
-  where bd = board g
-        sqs = map (`whereIsPiece` bd) all_white_pieces
-
-countAllBlacks g = sum  $ map length sqs
-  where bd = board g
-        sqs = map (`whereIsPiece` bd) all_black_pieces
-
+ratMaterial :: Game -> Rational
+ratMaterial g = fromIntegral (material g) / fromIntegral max_material_score
 
 material :: Game -> Score
 material g | si = materialWhite - materialBlack
-           | otherwise = materialBlack - materialWhite
-  where si = turn g
-        bd = board g
-        materialWhite = sum $ zipWith (*) score_pieces
-          (map (length . (`checkPiece_` bd)) all_white_pieces)
-        materialBlack = sum $ zipWith (*) score_pieces
-          (map (length . (`checkPiece_` bd)) all_black_pieces)
+          | otherwise = materialBlack - materialWhite
+ where si = turn g
+       bd = board g
+       materialWhite = sum $ zipWith (*) score_pieces
+         (map (length . (`checkPiece_` bd)) all_white_pieces)
+       materialBlack = sum $ zipWith (*) score_pieces
+         (map (length . (`checkPiece_` bd)) all_black_pieces)
 
 
-space :: Game -> Score
-space g | si = spaceWhite g - spaceBlack g
-        | otherwise = spaceBlack g - spaceWhite g
+space :: Game -> Rational
+space g | si = fromIntegral (spaceWhite g - spaceBlack g) / 71
+        | otherwise = fromIntegral (spaceBlack g - spaceWhite g) / 71
   where si = turn g
 
 spaceWhite g = length (moveGenBySide_ True bd) + length
@@ -76,14 +63,18 @@ spaceBlack g = length (moveGenBySide_ False bd) + length
         wsk = whereIsKing False bd
         wap = whereIsPiece (Piece False Pawn) bd
 
+
+eval_factors :: [Rational]
+eval_factors = [3/4,1/4]
+
+eval_funcs = [ratMaterial, space]
+
 evalPos :: Game -> Score
 evalPos g | isMate g = negate mate_score
           | isDraw g = 0
-          | otherwise = matAndSp g
+          | otherwise = heuristic g
   where si       = turn g
 
 
-matAndSp :: Game -> Score
-matAndSp g = round $ fromIntegral max_material_score / 2
-  * (simpleMaterial g
-  + fromIntegral (space g) / 71)
+heuristic :: Game -> Score
+heuristic g = round $ fromIntegral max_material_score * sum (zipWith (*) eval_factors (map ($ g) eval_funcs))

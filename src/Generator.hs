@@ -318,3 +318,7 @@ isBoardInCheck s b = squareAttackOnBoard ns (whereIsKing s b)
   b
   where ns = not s
 
+isCapture :: Board -> Move -> Bool
+isCapture bd mv = isJust mp
+ where (Move _ dsq _) = mv
+       mp = checkSquare dsq bd
