@@ -4,7 +4,7 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import System.Random
 
-version = "0.1.3.0"
+version = "0.1.8.0"
 author  = "V. Manotas"
 name    = "Craken"
 date    = "12/09/2021"

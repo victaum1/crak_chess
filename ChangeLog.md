@@ -1,5 +1,10 @@
 # Revision history for crak-chess
 
+## 0.1.8.0 -- 2021-09-17 
+
+* Limit Quiesence Search to 1kn!
+----------------------------------
+
 ## 0.1.3.0 -- 2021-09-11 
 
 * Engine Plays With Search!

@@ -91,9 +91,9 @@ pickMove sg d ms | null ms = null_move
 think :: StdGen -> Game -> Maybe Move
 think sg gm | not (null ms) = Just move
             | otherwise = Nothing
-  where msn = searchList 3 gm
+  where msn = searchList 4 gm
         ms = map (\(a,b,_)->(a,b)) msn
-        move = pickMove sg 10 ms
+        move = pickMove sg 5 ms
 
 
 takeBack :: PlayArgs -> PlayArgs

@@ -37,7 +37,7 @@ _inf_score = negate inf_score
 
 
 abQuiesence :: Nodes -> Score -> Score -> Score -> Game -> ABInfo 
-abQuiesence n a b r g | null moves = (evalPos g,n+1)
+abQuiesence n a b r g | mod n 1024 == 0 ||  null moves = (evalPos g,n+1)
                       | otherwise = (score, tn)
   where bd = board g
         moves = filter (isCapture bd) (genValidMoves g)
@@ -45,6 +45,7 @@ abQuiesence n a b r g | null moves = (evalPos g,n+1)
         bsn = betaCutQ n a b r sucPos
         score = fst bsn
         tn = snd bsn
+
 
 betaCutQ :: Nodes -> Score -> Score -> Score -> [Game] -> ABInfo
 betaCutQ n a b r [] = (r,n)
@@ -58,7 +59,7 @@ betaCutQ n a b r (gi:gs) = bnext
         nnext = n + n_
 
 alphaBeta :: Nodes -> Score -> Score -> Score -> Depth -> Game -> ABInfo
-alphaBeta n a b r d g | d <= 0 = (evalPos g,n+1)
+alphaBeta n a b r d g | d <= 0 = abQuiesence n a b r g
                       | d >= 80 = alphaBeta n a b r 80 g
                       | otherwise = if score <= negate mate_score
                           then (negate mate_score + d, tn) else (score, tn)
