@@ -8,7 +8,7 @@ import Moves ( readMove, Move )
 import Game ( game2FEN, init_fen, init_game, pGame, Game )
 import SubEngine
     ( mMakeMove, mSetPosition, mDump, mDumpFEN, mDumpPlay )
-import Engine ( think, setGame, init_args, PlayArgs(getGame,getSeed) )
+import Engine ( think, setGame, init_args, PlayArgs(getGame,getSeed,getProt) )
 
 -- var
 uci_info = unlines ["id name " ++ name ++ " " ++ version,"id author " ++ author, "uciok"]
@@ -29,7 +29,7 @@ ui_map = [
          
 uNew = do
        args <- get
-       let arg_ = init_args{getSeed=getSeed args}
+       let arg_ = init_args{getSeed=getSeed args, getProt=False}
        put arg_
        uiLoop
 
@@ -54,19 +54,11 @@ uiLoop = do
 
 uGo :: StateT PlayArgs IO ()
 uGo = do
-  infoPost
   uThink
   uiLoop
 
-infoPost = do
-  mio $ putStrLn "info depth 1 score cp 0 time 1 pv 0000"
-
 uThink = do
-  args <- get
-  g <- newStdGen
-  let g_ = maybe g mkStdGen (getSeed args)
-  let a_game = getGame args
-  let a_move = think g_ a_game
+  a_move <- think
   maybe (mio $ putStrLn "bestmove 0000") (
     \m -> do
       mio $ putStrLn $ "bestmove " ++ show m

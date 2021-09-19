@@ -9,6 +9,7 @@ module Search where
 -- import Squares
 -- import Valid
 -- import Play
+-- import Generator
 
 import Data.Maybe ( mapMaybe )
 import Data.List ( sortOn, sortBy, sort )
@@ -37,7 +38,7 @@ _inf_score = negate inf_score
 
 
 abQuiesence :: Nodes -> Score -> Score -> Score -> Game -> ABInfo 
-abQuiesence n a b r g | mod n 1024 == 0 ||  null moves = (evalPos g,n+1)
+abQuiesence n a b r g | mod n 2048 == 0 ||  null moves = (evalPos g,n+1)
                       | otherwise = (score, tn)
   where bd = board g
         moves = filter (isCapture bd) (genValidMoves g)
@@ -53,7 +54,7 @@ betaCutQ n a b r (gi:gs) = bnext
   where (si,n_) = abQuiesence 0 (negate b) (negate a) r gi
         nsi = negate si
         anext = if nsi > a then nsi else a
-        bnext = if nsi >= b then (rnext,nnext) else betaCutQ nnext anext b
+        bnext = if nsi >= b then (b,nnext) else betaCutQ nnext anext b
           rnext gs
         rnext = if nsi > r then nsi else r
         nnext = n + n_
@@ -75,7 +76,7 @@ betaCut n a b r d (gi:gs) = bnext
   where (si,n_) = alphaBeta 0 (negate b) (negate a) r (d-1) gi
         nsi = negate si
         anext = if nsi > a then nsi else a
-        bnext = if nsi >= b then (rnext,nnext) else betaCut nnext anext b
+        bnext = if nsi >= b then (b,nnext) else betaCut nnext anext b
           rnext (d-1) gs
         rnext = if nsi > r then nsi else r
         nnext = n + n_

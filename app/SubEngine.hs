@@ -35,11 +35,11 @@ mAdjudicate = do
 
 mThinkMove :: StateT PlayArgs IO ()
 mThinkMove = do
-  args <- get
-  gen  <- newStdGen
-  let gen_ = maybe gen mkStdGen (getSeed args)
-  let a_game = getGame args
-  let a_move = think gen_ a_game
+--  args <- get
+--  gen  <- newStdGen
+--  let gen_ = maybe gen mkStdGen (getSeed args)
+--  let a_game = getGame args
+  a_move <- think
   maybe mAdjudicate (
     \m -> do
       mMakeMove m

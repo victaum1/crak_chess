@@ -2,7 +2,7 @@ module Main where
 
 import Control.Monad.Trans.State ( StateT, evalStateT, get, put )
 import Defs ( author, date, errorCmd, mio, quit, version )
-import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag, getSeed) )
+import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag, getSeed, getProt) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
 import SubEngine
@@ -47,12 +47,18 @@ play_map = [
   ,("help", const helpPlay)
   ,("quit", const quitPlay)
   ,("xboard", const $ mio $ xboardLoop init_args)
-  ,("uci", const $ mio $ uciLoop init_args)
+  ,("uci", const $ mio mUci)
   ,("setposition", setPos)
   ,("sp", setPos)
   ,("dumpfen", const (mDumpFEN >> playLoop))
   ,("dumpplay", const (mDumpPlay >> playLoop))
   ]
+
+
+mUci = do
+  let args = init_args{getProt=False}
+  uciLoop args
+
 
 mNew = do
        args <- get
@@ -131,7 +137,7 @@ main_map = [
   ("quit", const quit)
   ,("help", mainHelp)
   ,("xboard", xboardLoop)
-  ,("uci", uciLoop)
+  ,("uci", const mUci)
   ,("play", mainPlay)
   ]
 
