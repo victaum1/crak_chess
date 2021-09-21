@@ -1,24 +1,41 @@
 module Main where
 
-import Control.Monad.Trans.State ( StateT, evalStateT, get, put )
-import Defs ( author, date, errorCmd, mio, quit, version )
-import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag, getSeed, getProt) )
+
+-- import Control.Monad.Trans.State
+-- import Defs
+-- import Engine
+-- import Moves
+-- import Parsing
+-- import SubEngine
+-- import System.IO
+-- import System.Environment
+-- import Uci
+-- import Xboard
+-- import Data.Maybe
+-- import Game
+
+import Control.Monad.Trans.State ( put, get, evalStateT, StateT )
+import Defs ( version, quit, mio, errorCmd, date, author )
+import Engine
+    ( init_args,
+      PlayArgs(getHist, getGame, getCpFlag, getSeed, getProt) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
 import SubEngine
-    ( mDump,
-      mDumpFEN,
-      mDumpPlay,
-      mMakeMove,
-      mSetPosition,
+    ( mThinkMove,
       mTakeBack,
-      mThinkMove )
-import System.IO ( hSetBuffering, BufferMode(NoBuffering), stdout )
+      mSetPosition,
+      mMakeMove,
+      mDumpPlay,
+      mDumpFEN,
+      mDump )
+import System.IO ( stdout, hSetBuffering, BufferMode(NoBuffering) )
 import System.Environment ( getArgs )
 import Uci ( uciLoop )
 import Xboard ( xboardLoop )
-import Data.Maybe ( fromMaybe, isNothing, fromJust )
-import Game ( GameState(turn) )
+import Data.Maybe ( fromJust, isNothing, fromMaybe )
+import Game ( turn )
+
 
 help_str = unlines [
   "quit - Exits the engine."

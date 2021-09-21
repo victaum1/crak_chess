@@ -10,27 +10,26 @@ module Xboard where
 -- import SubEngine
 -- import Engine
 
-
-import Control.Monad.Trans.State ( evalStateT, put, get, StateT )
-import Data.Maybe ( isNothing, fromJust )
-import Defs ( errorCmd, quit, mio, version, name )
+import Control.Monad.Trans.State ( put, get, evalStateT, StateT )
+import Data.Maybe ( fromJust, isNothing )
+import Defs ( version, quit, mio, errorCmd, name )
 import Parsing ( nat, parse )
 import Pieces ()
 import Moves ( pMoveCoord )
-import Game ( GameState(turn) )
+import Game ( turn )
 import SubEngine
-    ( mTakeBack,
-      mMakeMove,
+    ( mThinkMove,
+      mTakeBack,
       mSetPosition,
-      mThinkMove,
+      mMakeMove,
       mDumpPlay,
       mDumpFEN,
       mDump )
 import Engine
     ( init_args,
-      setPost,
-      getSeed,
-      PlayArgs(getGame, getHist, getPost, getCpFlag) )
+      PlayArgs(getHist, getGame, getPost, getCpFlag, getSeed),
+      setPost )
+
 -- import System.Console.Readline
 
 -- vars

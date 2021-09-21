@@ -1,26 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
-module Game (Game, GameState(..), fen2Game, game2FEN, init_game
-            , init_fen, pGame, castle_codes) where
+module Game where
 
--- import           Board
--- import           Data.Maybe
--- import           Parsing
--- import           Pieces
--- import           Squares
-
-
-import Board ( Board, init_board_fen, board2FEN, pFenBoard )
-import Data.Maybe ( fromJust, isJust )
-import Parsing
-    ( Alternative((<|>), many),
-      char,
-      natural,
-      oneOf,
-      parse,
-      token,
-      Parser(..) )
-import Pieces ( Side )
-import Squares ( Square, pSquare )
+import           Board
+import           Data.Maybe
+import           Parsing
+import           Pieces
+import           Squares
 
 -- vars / const
 init_fen = init_board_fen ++ "w KQkq - 0 1"
@@ -31,17 +16,38 @@ castle_table = zip castle_chars castle_codes
 castle_table' = zip castle_codes castle_chars
 
 -- adts
-data GameState = GameState {
-     board :: Board
-    ,turn :: Side
-    ,castleFlag :: Int
-    ,epSquare :: Maybe Square
-    ,nPlys :: Int
-    ,nMoves :: Int
-  } deriving (Eq,Show)
 
-type Game = GameState
+type CastleFlag = Int
+type Nplys = Int
+type Nmoves = Int
+type GameState = (Board,Side,CastleFlag,Maybe Square,Nplys,Nmoves)
 
+-- data GameState = MkGameState {
+--      board :: Board
+--     ,turn :: Side
+--     ,castleFlag :: castleFlag
+--     ,epSquare :: Maybe Square
+--     ,nPlys :: Int
+--     ,nMoves :: Int
+--   } deriving (Eq)
+
+newtype Game = MkGame {fromGame::GameState} deriving (Eq)
+
+board (MkGame (b,_,_,_,_,_)) = b
+turn (MkGame (_,t,_,_,_,_)) = t
+castleFlag (MkGame (_,_,c,_,_,_)) = c
+epSquare (MkGame (_,_,_,e,_,_)) = e
+nPlys (MkGame (_,_,_,_,p,_)) = p
+nMoves (MkGame (_,_,_,_,_,m)) = m
+
+
+showGame :: Game -> String
+showGame (MkGame (bd,si,cf,ep,ps,ms)) = "Game{ " ++ show bd ++ "," ++ show si ++ "," ++ show cf ++ "," ++ show ep ++ "," ++ show ps ++ "," ++ show ms ++ "}" 
+
+instance Show Game where
+  show a = showGame a
+
+-- funcs 
 pTurn :: Parser Side
 pTurn = P(\case
   [] -> Nothing
@@ -91,7 +97,8 @@ pGame = do
   c <- token pCastle
   sq <- token pEpSq
   ps <- token pPlys
-  GameState bd t c sq ps <$> token pNMoves
+  nm <- token pNMoves
+  return (MkGame (bd,t,c,sq,ps,nm))
 
 fen2Game :: String -> Maybe Game
 fen2Game str = fst <$> pG

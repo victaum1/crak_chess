@@ -11,13 +11,12 @@ module Engine where
 -- import Game
 -- import Board
 -- import Pieces
--- import Valid
 -- import Defs
 -- import Search
 -- import Evaluate
 
 
-import System.Random ( mkStdGen, newStdGen, StdGen )
+import System.Random ( newStdGen, mkStdGen, StdGen )
 import Control.Monad.Trans.State ( get, StateT )
 import System.Clock
     ( getTime, Clock(Monotonic), TimeSpec(TimeSpec) )
@@ -25,13 +24,13 @@ import Data.Maybe ( isNothing )
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Moves ( null_move, Move )
-import Game ( game2FEN, init_game, Game, GameState(board) )
+import Game ( board, game2FEN, init_game, Game )
 import Board ( showBoard )
 import Pieces ( Side )
-import Valid ()
 import Defs ( mio, randomChoice )
 import Search ( searchList, Depth, MoveInfo, MoveScore, Nodes )
 import Evaluate ( Score, Delta )
+
 
 -- vars / cons
 max_depth = 60 :: Int

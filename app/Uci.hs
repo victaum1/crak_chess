@@ -1,14 +1,27 @@
 module Uci where
-import Control.Monad.Trans.State ( evalStateT, get, put, StateT )
-import System.Random (StdGen, newStdGen, mkStdGen )
-import Data.Maybe (isNothing,fromJust)
-import Defs ( version, author, name, quit, mio, errorCmd )
+
+-- import Control.Monad.Trans.State
+-- import System.Random
+-- import Data.Maybe
+-- import Defs
+-- import Parsing
+-- import Moves
+-- import Game
+-- import SubEngine
+-- import Engine
+
+import Control.Monad.Trans.State ( put, get, evalStateT, StateT )
+import System.Random ()
+import Data.Maybe ( fromJust, isNothing )
+import Defs ( version, quit, mio, errorCmd, author, name )
 import Parsing ( parse, symbol )
 import Moves ( readMove, Move )
 import Game ( game2FEN, init_fen, init_game, pGame, Game )
 import SubEngine
-    ( mMakeMove, mSetPosition, mDump, mDumpFEN, mDumpPlay )
-import Engine ( think, setGame, init_args, PlayArgs(getGame,getSeed,getProt) )
+    ( mSetPosition, mMakeMove, mDumpPlay, mDumpFEN, mDump )
+import Engine
+    ( init_args, PlayArgs(getProt, getSeed), setGame, think )
+
 
 -- var
 uci_info = unlines ["id name " ++ name ++ " " ++ version,"id author " ++ author, "uciok"]

@@ -1,22 +1,13 @@
 module Evaluate where
 
--- import Game
--- import Data.Map.Strict (Map)
--- import qualified Data.Map.Strict as Map
--- import Board
--- import Pieces
--- import Valid
--- import Generator
-
-import Game ( Game, GameState(board, turn) )
+import Game
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Board ( checkPiece_, whereIsPiece, whereIsKing )
-import Pieces (Piece(Piece), all_black_pieces, all_white_pieces, piece_types, PieceType (Pawn,Knight) )
-import Valid ( isDraw, isMate )
-import Generator (genKingMoves, moveGenBySide_, genKingSimpleSquares,
-                  genPawnCaptureSquares)
-import Moves
+import Board
+import Pieces
+import Valid
+import Generator
+--- import Moves
 
 type Delta = Int
 type Score = Int
@@ -55,13 +46,13 @@ spaceWhite g = length (moveGenBySide_ True bd) + length
   (genKingSimpleSquares wsk bd) + length (concatMap (flip (genPawnCaptureSquares True) bd) wap)
   where bd = board g
         wsk = whereIsKing True bd
-        wap = whereIsPiece (Piece True Pawn) bd
+        wap = whereIsPiece (MkPiece (True,Pawn)) bd
 
 spaceBlack g = length (moveGenBySide_ False bd) + length
   (genKingSimpleSquares wsk bd) + length (concatMap (flip (genPawnCaptureSquares False) bd) wap)
   where bd = board g
         wsk = whereIsKing False bd
-        wap = whereIsPiece (Piece False Pawn) bd
+        wap = whereIsPiece (MkPiece (False,Pawn)) bd
 
 
 eval_factors :: [Rational]

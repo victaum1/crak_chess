@@ -2,34 +2,44 @@
 module Moves where
 
 
--- import Squares
--- import Parsing
--- import Pieces
--- import Data.Maybe
-
-import Squares ( Square(..), pSquare )
+import Squares
 import Parsing
-  (Alternative((<|>), many), Parser, parse, sat, space )
-import Pieces ( PieceType , pPieceType, piece_chars)
-import Data.Maybe (isNothing)
-
+import Pieces
+import Data.Maybe
 
 -- adts
--- type Move = (InitSquare,EndSquare)
-data Move = Move {
-    getInitSq :: Square
-  , getDestSq :: Square
-  , getCrown  :: Maybe PieceType
-                 } deriving (Eq,Ord)
+type Tmove = (Square,Square,Ptype)
+
+-- data Move = Move
+--    getInitSq :: Square
+--  , getDestSq :: Square
+--  , getCrown  :: Ptype
+--          } deriving (Eq,Ord)
+
+newtype Move = MkMove{
+  fromMove :: Tmove } deriving (Eq,Ord)
+
+
 
 instance Show Move where
-  show (Move a b c) = show a ++ show b ++ show c
+  show (MkMove (a,b,c)) = showSquare a ++ showSquare b ++ show c
 
 -- vars
-null_move = Move (Square 0 0) (Square 0 0) Nothing
+null_move = MkMove (MkSquare (0,0), MkSquare (0,0), Ptype Nothing)
 
 -- funcs
-isNullMove (Move a b _) = a == b 
+
+
+getInitSq :: Move -> Square
+getInitSq (MkMove (i,_,_)) = i  
+
+getDestSq :: Move -> Square
+getDestSq (MkMove (_,f,_)) = f  
+
+getCrown :: Move -> Ptype
+getCrown (MkMove (_,_,c)) = c
+
+isNullMove (MkMove (a,b,_)) = a == b 
 
 pLf :: Parser ()
 pLf = do
@@ -40,14 +50,14 @@ pMoveCoordSimple :: Parser Move
 pMoveCoordSimple = do
           sqi <- pSquare
           sqf <- pSquare
-          return (Move sqi sqf Nothing)
-
+          return (MkMove (sqi, sqf, Ptype Nothing))
 
 pMoveCoordCrown :: Parser Move
 pMoveCoordCrown = do
           sqi <- pSquare
           sqf <- pSquare
-          Move sqi sqf <$> pPieceType
+          pt <- pPieceType
+          return (MkMove (sqi, sqf, pt))
 
 
 pMoveCoord :: Parser Move

@@ -1,21 +1,12 @@
 module Rules where
 
--- import Data.Maybe
--- import Pieces
--- import Board
--- import Prelude hiding (lookup)
--- import Data.Map.Strict (Map)
--- import qualified Data.Map.Strict as Map
--- import Squares
-
-import Data.Maybe ( fromMaybe, isNothing )
-import Pieces ( Piece(pieceSide) )
-import Board ( Board, checkSquare )
+import Data.Maybe
+import Pieces
+import Board
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Squares ( Square, square2Tuple )
-
+import Squares
 
 -- data MoveLike = Slider | Jumper | OneStep deriving (Eq,Show)
 data Dir = North | South | East | West deriving (Eq,Show)

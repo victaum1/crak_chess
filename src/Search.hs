@@ -1,26 +1,16 @@
 module Search where
 
--- import Data.Maybe
--- import Data.Bifunctor
--- import Data.List
--- import Moves
--- import Evaluate
--- import Game
--- import Squares
--- import Valid
--- import Play
--- import Generator
+import Data.Maybe
+import Data.Bifunctor
+import Data.List
+import Moves
+import Evaluate
+import Game
+import Squares
+import Valid
+import Play
+import Generator
 
-import Data.Maybe ( mapMaybe )
-import Data.List ( sortOn, sortBy, sort )
-import Data.Bifunctor (first)
-import Moves ( Move(Move), null_move, isNullMove)
-import Evaluate ( evalPos, mate_score, Score )
-import Game ( Game,board )
-import Squares ( Square(Square) )
-import Valid ( genValidMoves )
-import Play ( makeMove )
-import Generator (isCapture)
 
 type Depth = Int
 

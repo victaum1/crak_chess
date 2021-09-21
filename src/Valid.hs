@@ -1,21 +1,13 @@
 module Valid where
 
 
--- import Generator
--- import Play
--- import Board
--- import Game
--- import Moves
--- import Pieces
--- import Data.Maybe
-
-import Generator ( moveGenerator, isInCheck, isBoardInCheck )
-import Play ( makeMove )
-import Board ()
-import Game ( Game, GameState(turn, board, nPlys) )
-import Moves ( Move )
-import Pieces ()
-import Data.Maybe ()
+import Generator
+import Play
+import Board
+import Game
+import Moves
+import Pieces
+import Data.Maybe
 
 
 isMate :: Game -> Bool
