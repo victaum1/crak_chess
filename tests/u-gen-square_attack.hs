@@ -1,7 +1,8 @@
 module Main (main) where
 
 import Control.Monad (when)
-import Data.Maybe (mapMaybe)
+import Data.Maybe
+import Data.Either
 import Game
 import Generator
 import Squares
@@ -10,9 +11,11 @@ import Test.HUnit
 
 assertEq = assertEqual "falla: " :: Bool -> Bool -> Assertion
 
-genGames = mapMaybe fen2Game
+toMaybe = either (\a -> Nothing) (\b -> Just b)
 
-genTestSqs = mapMaybe readSquare
+genGames = mapMaybe (toMaybe . fen2Game)
+
+genTestSqs = mapMaybe (readSquare)
 
 main :: IO ()
 main = do

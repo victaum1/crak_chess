@@ -12,30 +12,25 @@ module Main where
 -- import Uci
 -- import Xboard
 -- import Data.Maybe
+-- import Data.Either
 -- import Game
+-- import Utils
 
-import Control.Monad.Trans.State ( put, get, evalStateT, StateT )
-import Defs ( version, quit, mio, errorCmd, date, author )
+
+import Control.Monad.Trans.State
+import Defs
 import Engine
-    ( init_args,
-      PlayArgs(getHist, getGame, getCpFlag, getSeed, getProt) )
-import Moves ( pMoveCoord )
-import Parsing ( parse )
+import Moves
+import Parsing
 import SubEngine
-    ( mThinkMove,
-      mTakeBack,
-      mSetPosition,
-      mMakeMove,
-      mDumpPlay,
-      mDumpFEN,
-      mDump )
-import System.IO ( stdout, hSetBuffering, BufferMode(NoBuffering) )
-import System.Environment ( getArgs )
-import Uci ( uciLoop )
-import Xboard ( xboardLoop )
-import Data.Maybe ( fromJust, isNothing, fromMaybe )
-import Game ( turn )
-
+import System.IO
+import System.Environment
+import Uci
+import Xboard
+import Data.Maybe
+import Data.Either
+import Game
+import Utils
 
 help_str = unlines [
   "quit - Exits the engine."
@@ -91,14 +86,14 @@ playLoop = do
     let input = words line
     let cmd = head input
     let args = unwords $ tail input
-    let a_move = parse pMoveCoord cmd
-    if isNothing a_move then do
+    let a_move = parse pMoveCoord "" cmd
+    if isLeft a_move then do
         let res = lookup cmd play_map
         maybe (mio (errorCmd ["unknown command", unwords input]) >>
           playLoop)
           (\a -> a args) res
     else do
-      let m = fromJust $ fst <$> a_move
+      let m = myRight a_move
       mMakeMove m
       pargs <-get
       let cpf = getCpFlag pargs

@@ -10,7 +10,8 @@ import Pieces
 import Valid
 import Play
 import Generator
-
+import Utils
+import Data.Either
 
 mTakeBack :: StateT PlayArgs IO ()
 mTakeBack = do
@@ -65,7 +66,7 @@ mSetPosition :: String -> StateT PlayArgs IO ()
 mSetPosition strs = do
   pargs <- get
   let a_pos = fen2Game strs
-  maybe (mio $ errorCmd ["not a FEN position!", strs])
+  either (const $ mio $ errorCmd ["not a FEN position!", strs])
     (\res -> do
         let o_args = setGame res pargs
         put o_args

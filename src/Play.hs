@@ -4,15 +4,16 @@ import Game
 import Board
 import Pieces
 import Data.Maybe
+import Data.Either
 import qualified Data.Map.Strict as Map
 import Moves
 import Squares
 import Rules
 import Data.Bits
+import Utils 
 
-
-castle_moves = map (fromJust.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
-castle_rook_moves = map (fromJust.readMove) ["h1f1","a1d1","h8f8", "a8d8"]
+castle_moves = map (myRight.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
+castle_rook_moves = map (myRight.readMove) ["h1f1","a1d1","h8f8", "a8d8"]
 
 flag_masks  = [3,3,12,12]
 rook_flags  = [1,2,4,8]

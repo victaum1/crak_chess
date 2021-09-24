@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 module Pieces
   where
 
@@ -6,9 +5,9 @@ module Pieces
 -- import Data.Char
 -- import Data.Maybe
 
-import Parsing ( Parser(..) )
-import Data.Char ( isUpper, toLower, toUpper )
+import Parsing
 import Data.Maybe ( fromJust )
+import Data.Char ( isUpper, toLower, toUpper )
 
 -- adts
 data PieceType = Pawn | Knight | Bishop | Rook | Queen | King
@@ -22,13 +21,13 @@ instance Show PieceType where
          | a == Queen  = "Q"
          | a == King   = "K"
 
-newtype Ptype = Ptype {fromPtype :: Maybe PieceType}
+newtype Ptype = MkPtype {fromPtype :: Maybe PieceType}
   deriving (Eq,Ord)
 
 
 instance Show Ptype where
-  show (Ptype Nothing)  = ""
-  show (Ptype (Just a)) = show a
+  show (MkPtype Nothing)  = ""
+  show (MkPtype (Just a)) = show a
 
 
 type Side = Bool
@@ -67,29 +66,31 @@ pieceSide (MkPiece (s,_)) = s
 pieceType :: Piece -> PieceType
 pieceType (MkPiece (_,pt)) = pt
 
-readPieceType :: Char -> Ptype
-readPieceType c = Ptype (lookup (toUpper c) type_map)
+readPieceType :: Char -> Maybe Ptype
+readPieceType c = do
+   mpt <- lookup (toUpper c) type_map
+   return (MkPtype (Just mpt))
+   
 
 readCPiece :: Char -> Maybe Piece
 readCPiece c | toUpper c `elem` piece_chars = Just(MkPiece
                                                    (isUpper c,toPt c))
              | otherwise = Nothing
            where
-             toPt x = fromJust $ fromPtype $ readPieceType (toUpper c)
+             toPt x = fromJust $ fromPtype $ fromJust $
+               readPieceType (toUpper c)
 
 showPiece :: Piece -> Char
 showPiece p = if pieceSide p then p2char p else
   (toLower . p2char) p
   where p2char x = fromJust $ lookup (pieceType x) type_map'
  
+-- parsing
+pPiece :: GenParser Char st (Maybe Piece)
+pPiece = readCPiece <$> oneOf board_piece_chars
 
-pPiece :: Parser Piece
-pPiece = P(\case
-  [] -> Nothing
-  (r:cs) -> (\p -> Just (p,cs)) =<< readCPiece r
-          )
+pPieceType :: GenParser Char st Ptype
+pPieceType = do
+  mpt <- readPieceType <$> anyChar
+  maybe (fail "(not a piece type)") return mpt
 
-pPieceType :: Parser Ptype
-pPieceType = P(\case
-  [] -> Nothing
-  (r:cs) -> Just (readPieceType r, cs))

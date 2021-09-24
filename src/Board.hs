@@ -1,6 +1,5 @@
 module Board where
 
-
 -- import Data.Char
 -- import Data.Maybe
 -- import Prelude hiding (lookup)
@@ -113,8 +112,7 @@ whereIsKing s b = head $ whereIsPiece (MkPiece (s,King)) b
 
 makePieceList :: Board -> PieceList
 makePieceList bd = Map.fromList $ zip all_pieces $ map
-                                     (`whereIsPiece` bd)
-  all_pieces
+                                     (`whereIsPiece` bd) all_pieces
 
 
 subs :: Char -> Char -> String -> String
@@ -160,17 +158,25 @@ board2FEN_ :: PosList -> String
 board2FEN_ = init . packFENline . subs '\n' '/' . showBoard_
 
 
-pBoard :: Parser Board
-pBoard = P (\inp -> case res inp of
-               [] -> Nothing
-               _ -> Just (MkBoard $ Map.fromList $ res inp,drop 72 inp))
-         where res x = if length x >= 72 then readBoardList $ take 72 x
-                       else []
+pBoard :: GenParser Char st Board
+pBoard = do
+  inp <- many anyChar
+  let ib = res inp
+  if null ib then fail "(not a board)" else do
+    let r = MkBoard (Map.fromList ib)
+    let s = drop (length $ showBoard r) inp
+    setInput s
+    return r
+  where res x = if length x >= 72 then readBoardList $ take 72 x
+        else []
 
-pFenBoard :: Parser Board
-pFenBoard = P(\str -> case str of
-                 [] -> Nothing
-                 _  -> if null (f2B_ str) then Nothing else
-                   Just (f2B str,unwords $ tail $ words str))
-            where f2B    = fen2Board
-                  f2B_   = fen2Board_
+pFenBoard :: GenParser Char st Board
+pFenBoard = do
+  inp <- many anyChar
+  let ib = f2B_ inp
+  if null ib then fail "(not a FEN)" else do
+    let r = MkBoard $ Map.fromList ib
+    let s = drop (length $ board2FEN r) inp
+    setInput s
+    return r
+  where f2B_ = fen2Board_

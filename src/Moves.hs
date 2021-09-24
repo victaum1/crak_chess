@@ -25,11 +25,9 @@ instance Show Move where
   show (MkMove (a,b,c)) = showSquare a ++ showSquare b ++ show c
 
 -- vars
-null_move = MkMove (MkSquare (0,0), MkSquare (0,0), Ptype Nothing)
+null_move = MkMove (MkSquare (0,0), MkSquare (0,0), MkPtype Nothing)
 
 -- funcs
-
-
 getInitSq :: Move -> Square
 getInitSq (MkMove (i,_,_)) = i  
 
@@ -41,31 +39,24 @@ getCrown (MkMove (_,_,c)) = c
 
 isNullMove (MkMove (a,b,_)) = a == b 
 
-pLf :: Parser ()
-pLf = do
-  many (sat (== '\n'))
-  return ()
+-- parsing
+pMoveCoordS :: GenParser Char st Move
+pMoveCoordS = do
+  sqi <- pSquare
+  sqf <- pSquare
+  return (MkMove (sqi,sqf,MkPtype Nothing))
 
-pMoveCoordSimple :: Parser Move
-pMoveCoordSimple = do
-          sqi <- pSquare
-          sqf <- pSquare
-          return (MkMove (sqi, sqf, Ptype Nothing))
+pMoveCoord_ :: GenParser Char st Move
+pMoveCoord_ = do
+  sqi <- pSquare
+  sqf <- pSquare
+  mpt <- readPieceType <$> anyChar
+  maybe (fail "(not a Crown move)")
+    (\a -> return (MkMove (sqi,sqf,a))) mpt
 
-pMoveCoordCrown :: Parser Move
-pMoveCoordCrown = do
-          sqi <- pSquare
-          sqf <- pSquare
-          pt <- pPieceType
-          return (MkMove (sqi, sqf, pt))
-
-
-pMoveCoord :: Parser Move
+pMoveCoord :: GenParser Char st Move
 pMoveCoord = do
-          space <|> pLf
-          pMoveCoordCrown <|> pMoveCoordSimple
+  try pMoveCoord_ <|> pMoveCoordS
 
-readMove :: String -> Maybe Move
-readMove str = do
-  let m = parse pMoveCoord str
-  fst <$> m
+readMove :: String -> Either ParseError Move
+readMove = parse (many space >> pMoveCoord) "(not a move)"

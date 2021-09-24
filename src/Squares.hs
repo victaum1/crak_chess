@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase, TupleSections #-}
 module Squares
   where
 
@@ -8,7 +7,7 @@ module Squares
 
 import Data.Char ( ord, chr, toLower )
 import Data.Maybe ( fromJust, isNothing )
-import Parsing ( space, Parser(..) )
+import Parsing
 
 -- vars
 file_chrs = ['a' .. 'h']
@@ -76,28 +75,22 @@ readSquare :: String -> Maybe Square
 readSquare str = if length str < 2  then Nothing else readSquare'
   (head str) (str!!1)
 
+-- parsing 
+pFile :: GenParser Char st File
+pFile = do
+  mf <- readCFile <$> anyChar
+  maybe (fail "(not a file)") return mf
 
-pFile :: Parser File
-pFile = P(\case
-    [] -> Nothing
-    (f:cs) -> (\f -> Just (f,cs)) =<< readCFile f
-         )
+pRank :: GenParser Char st Rank
+pRank = do
+  mf <- readRank <$> anyChar
+  maybe (fail "(not a rank)") return mf
 
-pRank :: Parser Rank
-pRank = P(\case
-             [] -> Nothing
-             (r:cs) ->
-               -- (\r -> Just(r,cs)) =<< readRank r
-               do ra <- readRank r
-                  return (ra,cs)
-         )
-
-pSquare :: Parser Square
+pSquare :: GenParser Char st Square
 pSquare = do
-            space
-            f <- pFile
-            r <- pRank
-            return (MkSquare (f,r))
+  f <- pFile
+  r <- pRank
+  return (MkSquare (f,r))
 
 -- Integer tuple encoding
 tuple2Square :: SquareTuple -> Square

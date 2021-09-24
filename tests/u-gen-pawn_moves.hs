@@ -1,32 +1,34 @@
 module Main (main) where
 
-import Control.Monad (when)
-import Data.Maybe (fromJust, mapMaybe)
+import Control.Monad
+import Data.Maybe
+import Data.Either
 import qualified System.Exit as Exit
 import Test.HUnit
-import Data.List (sort)
+import Data.List
 import Game
-import Moves (Move, readMove, pMoveCoord)
+import Moves
 import Generator
 import Squares
 import Parsing
+import Utils
 
 fixtures = "tests/fixtures/"
 fens = "pawn_move-fens.txt"
 squares = "pawn_move-sqs.txt"
 specs = "pawn_move-specs.txt"
 
-manyPMove = parse (many pMoveCoord)
+manyPMove = parse (many (many space>>pMoveCoord)) ""
 
 assertEq = assertEqual "falla: " :: [Move] -> [Move] -> Assertion
 
-genGames = mapMaybe fen2Game
+genGames = map (myRight . fen2Game)
 
 genTestSqs = mapMaybe readSquare
 
 genMoves = flip genAllPawnMoves
 
-genSpecMoves = mapMaybe ((fst <$>) . manyPMove) . lines
+genSpecMoves = map (myRight . manyPMove) . lines
 
 genTests = zipWith assertEq
 

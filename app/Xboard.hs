@@ -2,6 +2,7 @@ module Xboard where
 
 -- import Control.Monad.Trans.State
 -- import Data.Maybe
+-- import Data.Either
 -- import Defs
 -- import Parsing
 -- import Pieces
@@ -10,25 +11,17 @@ module Xboard where
 -- import SubEngine
 -- import Engine
 
-import Control.Monad.Trans.State ( put, get, evalStateT, StateT )
-import Data.Maybe ( fromJust, isNothing )
-import Defs ( version, quit, mio, errorCmd, name )
-import Parsing ( nat, parse )
-import Pieces ()
-import Moves ( pMoveCoord )
-import Game ( turn )
+import Control.Monad.Trans.State
+import Data.Maybe
+import Data.Either
+import Defs
+import Parsing
+import Pieces
+import Moves
+import Game
 import SubEngine
-    ( mThinkMove,
-      mTakeBack,
-      mSetPosition,
-      mMakeMove,
-      mDumpPlay,
-      mDumpFEN,
-      mDump )
 import Engine
-    ( init_args,
-      PlayArgs(getHist, getGame, getPost, getCpFlag, getSeed),
-      setPost )
+import Utils
 
 -- import System.Console.Readline
 
@@ -101,8 +94,8 @@ xbLoop = do
       let cmd = head input
       let args = tail input
       let res = lookup cmd xb_map
-      let pm = parse pMoveCoord cmd
-      if null pm then maybe (mio (errorCmd ["unknown command",
+      let pm = parse pMoveCoord "" cmd
+      if isLeft pm then maybe (mio (errorCmd ["unknown command",
                                             unwords input]) >>
                               xbLoop)
         (\a -> a args) res else userMove [cmd]
@@ -132,22 +125,23 @@ rejected = xbLoop
 ping :: [String] -> StateT PlayArgs IO ()
 ping args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
           | otherwise = do
-              let n = parse nat $ head $ take 1 args
-              if isNothing n then mio (errorCmd ["not a number", unwords args])
+              let n = parse pNat (head $ take 1 args) ""
+              if isLeft n then
+                mio (errorCmd ["not a number", unwords args])
                 >>
                 xbLoop
               else do
-                mio $ putStrLn $ "pong " ++ show (fromJust $ fst <$> n)
+                mio $ putStrLn $ "pong " ++ show (myRight n)
                 xbLoop
 
 
 protover :: [String] -> StateT PlayArgs IO ()
 protover strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
               | otherwise = do
-  let res_n = parse nat $ head $ take 1 strs
-  if isNothing res_n then mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
+  let res_n = parse pNat (head $ take 1 strs) ""
+  if isLeft res_n then mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
     else do
-           let n = fromJust $ fst <$> res_n
+           let n = myRight res_n
            if n==1 then xbLoop
              else if n==2 then do
                mio $ putStrLn features_str
@@ -159,12 +153,12 @@ protover strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
 userMove :: [String] -> StateT PlayArgs IO ()
 userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
               | otherwise =  do
-  let res_m = parse pMoveCoord $ head $ take 1 strs
-  if isNothing res_m then do
+  let res_m = parse pMoveCoord "" (head $ take 1 strs)
+  if isLeft res_m then do
     mio $ putStrLn $ "Illegal move (not a move): " ++ head strs
     xbLoop
   else do
-         let m = fromJust $ fst <$> res_m
+         let m = myRight res_m
          mMakeMove m
          args <- get
          if getCpFlag args == Just (turn (getGame args)) then

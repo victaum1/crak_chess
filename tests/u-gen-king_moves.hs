@@ -1,15 +1,17 @@
 module Main (main) where
 
-import Control.Monad (when)
+import Control.Monad
 -- import Data.Maybe (fromJust)
 import qualified System.Exit as Exit
 import Test.HUnit
-import Data.List (sort)
-import Data.Maybe (mapMaybe)
+import Data.List
+import Data.Maybe
+import Data.Either
 import Game
 import Moves
 import Generator
 import Parsing
+import Utils
 
 fixtures = "tests/fixtures/"
 inputs = "king_move_inputs.txt"
@@ -18,12 +20,12 @@ specs = "king_move_specs.txt"
 
 noHeadLines = drop 2 . lines
 
-manyPMove = parse (many pMoveCoord)
+manyPMove = parse (many (many space>>pMoveCoord)) ""
 
 assertEq = assertEqual "falla: " :: [Move] -> [Move] -> Assertion
 
-genGames = mapMaybe ((fst <$>) . parse pGame)
-genSpecMoves = mapMaybe ((fst <$>) . manyPMove)
+genGames = map (myRight . parse pGame "")
+genSpecMoves = map (myRight . manyPMove)
 
 genMoves :: [Game] -> [[Move]]
 genMoves = map genKingMoves
