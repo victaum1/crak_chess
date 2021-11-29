@@ -42,8 +42,9 @@ init_args = PlayArgs dft_time max_depth dft_cp_flag init_game []
   dft_post_flag dft_seed True
 
 
--- simple types
+-- type syns
 type Protocol = Bool
+
 
 -- adts
 data PlayArgs = PlayArgs {
@@ -56,7 +57,6 @@ data PlayArgs = PlayArgs {
   ,getSeed   :: Maybe Int
   ,getProt   :: Bool
   } deriving (Eq,Show)
-
 
 -- setters for PlayArgs
 setTime :: Int -> PlayArgs -> PlayArgs
@@ -88,12 +88,6 @@ pickMove sg d ms | null ms = null_move
         bf = \(m,s) -> s >= top - d
         move = fst $ randomChoice sg mt
 
--- think :: StdGen -> Game -> Maybe Move
--- think sg gm | not (null ms) = Just move
---            | otherwise = Nothing
---  where msn = searchList 4 gm
---        ms = map (\(a,b,_)->(a,b)) msn
---        move = pickMove sg 5 ms
 
 think :: StateT PlayArgs IO (Maybe Move)
 think = do
@@ -189,3 +183,4 @@ dumpPlay pa = do
   "... Time: " ++ show a_time ++ ", Depth: " ++ show a_depth
     ++ ", CpFlat: " ++ show cp_flag ++ ", Hist: " ++ show (length a_hist)
     ++ ", Post: " ++ show a_post ++ ", Prot: " ++ show a_prot
+

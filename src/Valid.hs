@@ -42,3 +42,6 @@ isMoveValid g m = maybe False
 genValidMoves :: Game -> [Move]
 genValidMoves g = filter (isMoveValid g) $ moveGenerator g
  
+moveExists :: Game -> Move -> Bool
+moveExists g m = m `elem` ms
+  where ms = genValidMoves g
