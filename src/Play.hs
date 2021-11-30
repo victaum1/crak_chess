@@ -53,14 +53,14 @@ makeMove m g = do
     fun <- Map.lookup m castle_rook_map
     o_bd <- fun o_bd
     return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves, castleFlag=o_castle})
+           , nMoves = o_nMoves, castleFlag=o_castle, epSquare=Nothing})
     else do
       if isCastleSq && isRookMove && i_castle /= 0 then do
         mask <- Map.lookup initSq rook_move_map
         let o_castle = i_castle + mask
         o_bd <- mkMoveBoard m i_bd
         return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
-           , nMoves = o_nMoves, castleFlag=o_castle})
+           , nMoves = o_nMoves, castleFlag=o_castle, epSquare=Nothing})
         else do
         let o_bd = if isEpCapture m g then Map.delete (epSqDel (not si)
                                                          dFile) i_bd
@@ -68,8 +68,6 @@ makeMove m g = do
         o_bd <- mkMoveBoard m o_bd
         let epSq = if isEpTrigged si m i_bd then mkEp si iFile
               else Nothing
-         
-
         return (g{board=o_bd, turn = not i_side, nPlys = o_nplys
            , nMoves = o_nMoves, epSquare = epSq})
   where i_bd = if not isCrown then board g
@@ -150,7 +148,7 @@ mkMoveBoard m b = do
 mkSimpleMoveBoard :: Move -> Board -> Maybe Board
 mkSimpleMoveBoard m b = do
   let initsq = getInitSq m
-  let destsq   = getDestSq m
-  initpiece <- checkSquare initsq b
-  let o_bd = Map.delete destsq (Map.delete initsq b)
+  let destsq = getDestSq m
+  initpiece  <- checkSquare initsq b
+  let o_bd   = Map.delete destsq (Map.delete initsq b)
   return (Map.insert destsq initpiece o_bd)
