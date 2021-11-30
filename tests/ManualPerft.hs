@@ -1,4 +1,4 @@
-module Main where
+module ManualPerft where
 
 import Game
 import Valid

@@ -93,7 +93,7 @@ isEpCapture m g = isSidePawn && (Just destSq==epSq)
   where initSq = getInitSq m
         destSq = getDestSq m
         bd = board g
-         si = turn g
+        si = turn g
         epSq = epSquare g
         isSidePawn = Just (Piece si Pawn) == checkSquare initSq bd
 
