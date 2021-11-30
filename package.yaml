@@ -29,6 +29,7 @@ library:
       - Valid
       - Play
       - Utils
+      - Perft
     dependencies:
       - containers
 
