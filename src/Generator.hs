@@ -276,19 +276,22 @@ squareAttackedByKing si bd sq = sq `elem`
   where ksq = whereIsKing si bd
 
 checkCastleSquares :: Game -> Bool -> Bool
-checkCastleSquares g b | s && b     = (((==2) . length) . filterBoth) whiteKingSide
-                       | s && not b = (((==3) . length) . filterBoth) whiteQueenSide
-                       | not s && b = (((==2) . length) . filterBoth) blackKingSide
-                       | otherwise  = (((==3) . length) . filterBoth) blackQueenSide
+checkCastleSquares g b | s && b     = (((==2) . length) . filterBoth)
+  whiteKingSide 
+                       | s && not b = (((==2) . length) . filterBoth)
+  whiteQueenSide && isEmpty (Square 1 0) bd
+                       | not s && b = (((==2) . length) . filterBoth)
+  blackKingSide
+                       | otherwise  = (((==2) . length) . filterBoth)
+  blackQueenSide && isEmpty (Square 1 7) bd
   where
        whiteKingSide  = [Square 5 0, Square 6 0]
-       whiteQueenSide = [Square 3 0, Square 2 0, Square 1 0]
+       whiteQueenSide = [Square 3 0, Square 2 0]
        blackKingSide  = [Square 5 7, Square 6 7]
-       blackQueenSide = [Square 3 7, Square 2 7, Square 1 7]
+       blackQueenSide = [Square 3 7, Square 2 7]
        s = turn g
        bd = board g
        filterBoth = filter (not .
-
           (`squareAttack` g)) . filter (`isEmpty` bd)
 
 
