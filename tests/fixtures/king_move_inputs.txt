@@ -19,3 +19,4 @@ r3k2r/pppp1ppp/8/6B1/6b1/8/PPPP1PPP/R3K2R b KQkq - 0 1
 r3k2r/pppp1ppp/6N1/6B1/6b1/6n1/PPPP1PPP/R3K2R w KQkq - 0 1
 r3k2r/pppp1ppp/6N1/6B1/6b1/6n1/PPPP1PPP/R3K2R b KQkq - 0 1
 8/8/2R5/B7/3PbK2/3P3k/5r2/1R6 w - - 11 84
+r4k1r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/5Q1p/PPPBBPPP/RN2K2R w KQ - 2 2

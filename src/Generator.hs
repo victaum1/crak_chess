@@ -1,48 +1,17 @@
 module Generator where
--- import Game
--- import Board
--- import Pieces
--- import Rules
--- import Squares
--- import Data.Maybe
--- import Prelude hiding (lookup)
--- import Data.Map.Strict (Map)
--- import qualified Data.Map.Strict as Map
--- import Moves
--- import Data.Bifunctor
--- import Data.Bits
 
 import Game
-    ( Game,
-      GameState(castleFlag, epSquare, nMoves, nPlys, turn, board) )
-import Board ( whereIsPiece, checkSquare, Board )
+import Board
 import Pieces
-    ( Piece(Piece, pieceSide, pieceType), PieceType(..), Side )
 import Rules
-    ( mini_bishop_branches,
-      mini_rook_branches,
-      knight_branches,
-      onBoard',
-      isAStep,
-      black_pawn_step,
-      white_pawn_step,
-      black_pawn_captures,
-      white_pawn_captures,
-      sameSideStep,
-      isEmpty,
-      Dir(..),
-      CPath,
-      CBranch )
 import Squares
-    ( square2Tuple, tuple2Square, Square(Square, squareRank) )
 import Data.Maybe
-    ( Maybe(..), maybe, mapMaybe, fromJust, isNothing, isJust )
 import Prelude hiding (lookup)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Moves ( Move(Move, getDestSq, getInitSq) )
-import Data.Bifunctor ( Bifunctor(bimap) )
-import Data.Bits ( Bits((.&.)) )
+import Moves
+import Data.Bifunctor
+import Data.Bits
 
 
 moveGenerator :: Game -> [Move]
@@ -307,18 +276,19 @@ squareAttackedByKing si bd sq = sq `elem`
   where ksq = whereIsKing si bd
 
 checkCastleSquares :: Game -> Bool -> Bool
-checkCastleSquares g b | s && b     = filterBoth whiteKingSide
-                       | s && not b = filterBoth whiteQueenSide
-                       | not s && b = filterBoth blackKingSide
-                       | otherwise  = filterBoth blackQueenSide
+checkCastleSquares g b | s && b     = (((==2) . length) . filterBoth) whiteKingSide
+                       | s && not b = (((==3) . length) . filterBoth) whiteQueenSide
+                       | not s && b = (((==2) . length) . filterBoth) blackKingSide
+                       | otherwise  = (((==3) . length) . filterBoth) blackQueenSide
   where
        whiteKingSide  = [Square 5 0, Square 6 0]
-       whiteQueenSide = [Square 3 0, Square 2 0]
+       whiteQueenSide = [Square 3 0, Square 2 0, Square 1 0]
        blackKingSide  = [Square 5 7, Square 6 7]
-       blackQueenSide = [Square 3 7, Square 2 7]
+       blackQueenSide = [Square 3 7, Square 2 7, Square 1 7]
        s = turn g
        bd = board g
-       filterBoth = ((==2) . length) . filter (not .
+       filterBoth = filter (not .
+
           (`squareAttack` g)) . filter (`isEmpty` bd)
 
 
