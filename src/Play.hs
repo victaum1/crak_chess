@@ -39,12 +39,22 @@ makeMove m g = do
   let o_castle
         | isCastle = maybe i_castle (i_castle +) (Map.lookup m
                                                   castle_flags_map)
-        | isCastleSq && isRookMove && i_castle /= 0 && not
-          isKingOutOfCastle = maybe i_castle (i_castle +)
+        | isRookMovedFromCastleSq && isRookMove && i_castle /= 0 && not
+          isKingOutOfInitSq = maybe i_castle (i_castle +)
           (Map.lookup initSq rook_move_map)
-        | isKingMoved m g && i_castle /=0 && not isKingOutOfCastle =
+        | isKingMoved m g && i_castle /=0 && not isKingOutOfInitSq =
           if i_side then i_castle - 3
           else i_castle -12
+        | isRookCaptureInCastleSq && i_castle /=0 && not
+          isKingOutOfInitSq = if si && destSq == Square 7 7 then
+            i_castle - 4
+          else if si && destSq == Square 0 7 then
+            i_castle - 8
+          else if not si && destSq == Square 7 0 then
+            i_castle - 1
+          else if not si && destSq == Square 0 0 then
+            i_castle - 2
+          else i_castle
         | otherwise = i_castle
   let o_nplys = if isPawn initSq i_bd || isCapture || isCrown then 0 else
         i_nplys + 1
@@ -65,7 +75,8 @@ makeMove m g = do
         destSq = getDestSq m
         isCapture = isJust $ checkSquare destSq bd
         isCastle = m `elem` castle_moves
-        isCastleSq = getInitSq m `elem` rook_castle_sqs
+        isRookCaptureInCastleSq = destSq `elem` rook_castle_sqs
+        isRookMovedFromCastleSq = initSq `elem` rook_castle_sqs
         isRookMove = Just Rook ==
          (pieceType <$> checkSquare initSq bd)
         crown_p = getCrown m
@@ -74,7 +85,7 @@ makeMove m g = do
         dFile = squareFile destSq
         si = turn g
         bd = board g
-        isKingOutOfCastle = if si then whereIsKing /= [Square 4 0] else
+        isKingOutOfInitSq = if si then whereIsKing /= [Square 4 0] else
           whereIsKing /= [Square 4 7]
         whereIsKing = whereIsPiece (Piece si King) bd
 
