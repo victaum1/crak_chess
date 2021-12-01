@@ -39,8 +39,8 @@ makeMove m g = do
   let o_castle
         | isCastle = maybe i_castle (i_castle +) (Map.lookup m
                                                   castle_flags_map)
-        | isCastleSq && isRookMove && i_castle /= 0 = maybe i_castle
-          (i_castle +)
+        | isCastleSq && isRookMove && i_castle /= 0 && not
+          isKingOutOfCastle = maybe i_castle (i_castle +)
           (Map.lookup initSq rook_move_map)
         | isKingMoved m g && i_castle /=0 && not isKingOutOfCastle =
           if i_side then i_castle - 3
