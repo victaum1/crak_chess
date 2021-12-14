@@ -77,6 +77,12 @@ squareAttackByRook  sq si bd =  any isRook
   where isRook p = Piece si Rook == p
 
 
+squareAttackedByKing :: Side -> Board -> Square -> Bool
+squareAttackedByKing si bd sq = sq `elem`
+  genKingSimpleSquares' ksq bd
+  where ksq = whereIsKing si bd
+
+
 squareAttackByPawn :: Square -> Side -> Board -> Bool
 squareAttackByPawn sq si bd = any isPawn
   (mapMaybe (`checkSquare` bd) (genPawnCaptureSquares (not si) sq
@@ -177,8 +183,11 @@ genMoveFromBranches s b c = map (makeSimpleMove s)  $
 
 genSquaresFromBranches :: Square -> Board -> CBranch -> [Square]
 genSquaresFromBranches s b c = filter (isAStep s
-  b) (map tuple2Square (filter onBoard' (makeSquares'
-  (square2Tuple s) c)))
+  b) (genSquaresFromBranches' s b c)
+
+genSquaresFromBranches' :: Square -> Board -> CBranch -> [Square]
+genSquaresFromBranches' s b c = map tuple2Square (filter onBoard' (makeSquares'
+  (square2Tuple s) c))
 
 
 mkRaysFromBranches :: Square -> Board -> CBranch -> [[Square]]
@@ -242,6 +251,11 @@ genKingSimpleSquares :: Square -> Board -> [Square]
 genKingSimpleSquares s b = genSquaresFromBranches s b (mini_rook_branches
   ++ mini_bishop_branches)
 
+genKingSimpleSquares' :: Square -> Board -> [Square]
+genKingSimpleSquares' s b = genSquaresFromBranches' s b (mini_rook_branches
+  ++ mini_bishop_branches)
+
+
 genCastleSquare :: Side -> Bool -> Square
 genCastleSquare s b | s && b = Square 6 0
                     | s && not b = Square 2 0
@@ -269,11 +283,6 @@ isFlagCastle g b | s =  if b then 1 .&. c > 0 else 2 .&. c > 0
   where s = turn g
         c = castleFlag g
 
-
-squareAttackedByKing :: Side -> Board -> Square -> Bool
-squareAttackedByKing si bd sq = sq `elem`
-  genKingSimpleSquares ksq bd
-  where ksq = whereIsKing si bd
 
 checkCastleSquares :: Game -> Bool -> Bool
 checkCastleSquares g b | s && b     = (((==2) . length) . filterBoth)
