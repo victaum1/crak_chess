@@ -78,10 +78,12 @@ makeMove m g = do
   where initSq = getInitSq m
         destSq = getDestSq m
         isCapture = isJust $ checkSquare destSq bd
-        isCastle = m `elem` castle_moves
+        isCastle = (m `elem` castle_moves) && isKingMove
         isRookCaptureInCastleSq = destSq `elem` rook_castle_sqs
         isRookMovedFromCastleSq = initSq `elem` rook_castle_sqs
         isRookMove = Just Rook ==
+         (pieceType <$> checkSquare initSq bd)
+        isKingMove = Just King ==
          (pieceType <$> checkSquare initSq bd)
         crown_p = getCrown m
         isCrown = isJust crown_p
