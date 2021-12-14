@@ -44,13 +44,13 @@ makeMove m g = do
         | isCastle = maybe i_castle ((.&.) i_castle . complement)
           (Map.lookup m castle_flags_map)
         | isRookMovedFromCastleSq && isRookMove && i_castle /= 0 && not
-          isKingOutOfInitSq = maybe i_castle ((.&.) i_castle . complement)
+          (isKingOutOfInitSq si) = maybe i_castle ((.&.) i_castle . complement)
           (Map.lookup initSq rook_move_map)
-        | isKingMoved m g && i_castle /=0 && not isKingOutOfInitSq =
+       | isKingMoved m g && i_castle /=0 && not (isKingOutOfInitSq si) =
           if i_side then i_castle .&. 12
           else i_castle .&. 3
         | isRookCaptureInCastleSq && i_castle /=0 && not
-          isKingOutOfInitSq = if si && destSq == Square 7 7 then
+          (isKingOutOfInitSq (not si)) = if si && destSq == Square 7 7 then
               i_castle `clearBit` 2
             else if si && destSq == Square 0 7 then 
               i_castle `clearBit` 3 else
@@ -89,9 +89,9 @@ makeMove m g = do
         dFile = squareFile destSq
         si = turn g
         bd = board g
-        isKingOutOfInitSq = if si then whereIsKing /= [Square 4 0] else
-          whereIsKing /= [Square 4 7]
-        whereIsKing = whereIsPiece (Piece si King) bd
+        isKingOutOfInitSq ss = if ss then whereIsKing ss /= [Square 4 0] else
+          whereIsKing ss /= [Square 4 7]
+        whereIsKing ss = whereIsPiece (Piece ss King) bd
 
 
 isKingMoved :: Move -> Game -> Bool
