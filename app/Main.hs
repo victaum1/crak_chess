@@ -1,7 +1,7 @@
 module Main where
 
 import Control.Monad.Trans.State ( evalStateT, get, StateT )
-import Defs ( author, version, quit, errorCmd, mio, name )
+import Defs ( author, date, version, quit, errorCmd, mio, name )
 import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
@@ -75,7 +75,7 @@ playLoop = do
       pargs <-get
       let cpf = getCpFlag pargs
       let s = turn $ getGame pargs
-      if s == cpf then do
+      if Just s == cpf then do
          mThinkMove
          playLoop
       else
@@ -90,7 +90,7 @@ playGo = do
   args <- get
   let g = getGame args
   let s = turn g
-  let arg_ = args{getCpFlag=s}
+  let arg_ = args{getCpFlag= Just s}
   mThinkMove
   playLoop
 
@@ -158,7 +158,7 @@ main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
   putStrLn $ name ++ " " ++ version ++ " by " ++ author ++ "."
-  putStrLn "x/x/2021."
+  putStrLn $ date ++ "."
   putStrLn "'help' show usage."
   args <- getArgs
   if null args then mainLoop else

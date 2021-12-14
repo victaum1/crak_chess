@@ -19,7 +19,7 @@ dft_str_move_w = "e2e4"
 dft_str_move_b = "e7e5"
 game_fen1 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
 game_fen2 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
-dft_cp_flag = False -- Black
+dft_cp_flag = Nothing -- Human vs Human 
 move_w = fromJust $ readMove dft_str_move_w
 move_b = fromJust $ readMove dft_str_move_b
 game_st1 = fromJust $ fen2Game game_fen1
@@ -32,7 +32,7 @@ init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game []
 data PlayArgs = PlayArgs {
    getTime   :: Int
   ,getDepth  :: Int
-  ,getCpFlag :: Side
+  ,getCpFlag :: Maybe Side
   ,getGame   :: Game
   ,getHist   :: [Game]
   ,getPost   :: Bool
@@ -46,7 +46,7 @@ setTime a_time args = args{getTime=a_time}
 setDepth :: Int -> PlayArgs -> PlayArgs
 setDepth a_depth args = args{getDepth=a_depth}
 
-setCpFlag :: Side -> PlayArgs -> PlayArgs
+setCpFlag :: Maybe Side -> PlayArgs -> PlayArgs
 setCpFlag a_side args = args{getCpFlag=a_side}
 
 setGame :: Game -> PlayArgs -> PlayArgs

@@ -6,7 +6,7 @@ Este proyecto es un ejercicio de programación en donde se implementará un
 caso concreto. La aplicación en particular es un motor de ajedrez en
 principio simple. El lenguaje a utilizar es "Haskell" a modo de prototipado.
 
-* versión 0.0.38.2
+* versión 0.1.0.0
 El versionado que se adoptará será el de (https://pvp.haskell.org/).
 
 * [Aprende Markdown] (https://www.markdowntutorial.com/)
