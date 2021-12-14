@@ -15,7 +15,7 @@ ui_map :: [(String, [String] -> StateT PlayArgs IO())]
 ui_map = [
    ("quit", const $ mio quit)
   ,("isready", const $ mio (putStrLn "readyok")>>uiLoop)
-  ,("ucinewgame", const $ mio $ evalStateT uiLoop init_args)
+  ,("ucinewgame", const $ uNew)
   ,("stop", const $ mio (putStrLn "bestmove 0000")>>uiLoop)
   ,("position", \ss -> setUpos ss >> uiLoop)
   ,("dump", const (mDump >> uiLoop))
@@ -24,6 +24,14 @@ ui_map = [
   ,("go", const uGo)
   ,("uci", const uciInfo)
          ]
+
+
+uNew = do
+       args <- get
+       let arg_ = init_args{getSeed=getSeed args}
+       put arg_
+       uiLoop
+
          
 uciInfo :: StateT PlayArgs IO ()
 uciInfo = do
@@ -54,10 +62,11 @@ infoPost = do
   mio $ putStrLn "info depth 1 score cp 0 time 1 pv 0000"
 
 uThink = do
-  g <- newStdGen
   args <- get
+  g <- newStdGen
+  let g_ = maybe g mkStdGen (getSeed args)
   let a_game = getGame args
-  let a_move = think a_game g
+  let a_move = think a_game g_
   maybe (mio $ putStrLn "bestmove 0000") (
     \m -> do
       mio $ putStrLn $ "bestmove " ++ show m
@@ -116,7 +125,7 @@ setListMoves (m:ms) = do
   mMakeMove m
   setListMoves ms
 
+uciLoop :: PlayArgs -> IO ()
+uciLoop pa = do
+             evalStateT uiLoop pa
 
-uciLoop :: IO ()
-uciLoop = do
-             evalStateT uciInfo init_args
