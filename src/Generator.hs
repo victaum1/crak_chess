@@ -55,7 +55,7 @@ squareAttackOnBoard si sq bd = squareAttackByKnight sq si bd ||
 
 squareAttackByKnight :: Square -> Side -> Board -> Bool
 squareAttackByKnight sq si bd =  any isKnight
-  (mapMaybe (`checkSquare` bd) (genKnightSquares sq Map.empty))
+  (mapMaybe (`checkSquare` bd) (genKnightSquares' sq bd))
   where isKnight p = Piece si Knight == p
 
 
@@ -220,6 +220,9 @@ genKnightMoves s b = genMoveFromBranches s b knight_branches
 
 genKnightSquares :: Square -> Board -> [Square]
 genKnightSquares s b = genSquaresFromBranches s b knight_branches
+
+genKnightSquares' :: Square -> Board -> [Square]
+genKnightSquares' s b = genSquaresFromBranches' s b knight_branches
 
 
 genRookMoves :: Square -> Board -> [Move]

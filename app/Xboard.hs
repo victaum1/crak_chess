@@ -15,7 +15,7 @@ import Control.Monad.Trans.State
 features_str = unwords [
   "feature"
   ,"usermove=1"
-  ,"myname=\"Craken 0.0.13.8\""
+  ,"myname=" ++ name ++ " " ++ version
   ,"colors=0"
   ,"ping=1"
   ,"setboard=1"

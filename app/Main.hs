@@ -1,23 +1,24 @@
 module Main where
 
 import Control.Monad.Trans.State ( evalStateT, get, StateT )
-import Defs ( version, quit, errorCmd, mio )
+import Defs ( author, version, quit, errorCmd, mio, name )
 import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag) )
 import Moves ( pMoveCoord )
 import Parsing ( parse )
 import SubEngine
     ( mDump,
       mTakeBack,
-      mThinkMove,
       mSetPosition,
+      mThinkMove,
       mMakeMove,
       mDumpPlay,
       mDumpFEN )
 import System.IO ( stdout, hSetBuffering, BufferMode(NoBuffering) )
-import           Uci                       (uciLoop)
-import           Xboard                    (xboardLoop)
-import Data.Maybe
-import Game
+import System.Environment ( getArgs )
+import Uci ( uciLoop )
+import Xboard ( xboardLoop )
+import Data.Maybe ( fromMaybe )
+import Game ( GameState(turn) )
 
 
 help_str = unlines [
@@ -156,7 +157,12 @@ mainLoop = do
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
-  putStrLn $ "Craken " ++ version ++ " by V. Manotas."
+  putStrLn $ name ++ " " ++ version ++ " by " ++ author ++ "."
   putStrLn "x/x/2021."
   putStrLn "'help' show usage."
-  mainLoop
+  args <- getArgs
+  if null args then mainLoop else
+    if head args == "-x" then xboardLoop
+    else if head args == "-u" then uciLoop
+    else mainLoop
+
