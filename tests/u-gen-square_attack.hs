@@ -10,9 +10,9 @@ import Test.HUnit
 
 assertEq = assertEqual "falla: " :: Bool -> Bool -> Assertion
 
-genGames = map (fromJust . fen2Game)
+genGames = mapMaybe fen2Game
 
-genTestSqs = map (fromJust . readSquare)
+genTestSqs = mapMaybe readSquare
 
 main :: IO ()
 main = do

@@ -66,12 +66,12 @@ showPiece p = if pieceSide p then p2char p else
 
 pPiece :: Parser Piece
 pPiece = P(\case
-  [] -> []
-  (r:cs) -> [(fromJust (readCPiece r),cs)|isJust $ readCPiece r]
-          )
+  [] -> Nothing
+  (r:cs) -> (\p -> Just (p,cs)) =<< readCPiece r)
+
 
 pPieceType :: Parser (Maybe PieceType)
 pPieceType = P(\case
-  [] -> []
-  (r:cs) -> [(readPieceType r, cs)])
+  [] -> Nothing
+  (r:cs) -> Just (readPieceType r, cs))
  

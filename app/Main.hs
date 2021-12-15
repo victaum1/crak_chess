@@ -1,5 +1,6 @@
 module Main where
 
+import Data.Maybe
 import Control.Monad.Trans.State ( evalStateT, StateT, get, put )
 import Defs ( author, date, version, quit, errorCmd, mio, name )
 import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag, getSeed) )
@@ -70,13 +71,13 @@ playLoop = do
     let cmd = head input
     let args = unwords $ tail input
     let a_move = parse pMoveCoord cmd
-    if null a_move then do
+    if isNothing a_move then do
         let res = lookup cmd play_map
         maybe (mio (errorCmd ["unknown command", unwords input]) >>
           playLoop)
           (\a -> a args) res
     else do
-      let m = fst $ head a_move
+      let m = fromJust $ fst <$> a_move
       mMakeMove m
       pargs <-get
       let cpf = getCpFlag pargs

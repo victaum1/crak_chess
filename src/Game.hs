@@ -31,10 +31,11 @@ type Game = GameState
 
 pTurn :: Parser Side
 pTurn = P(\case
-  [] -> []
-  (c:cs) | c == 'w' -> [(True, cs)]
-         | c == 'b' -> [(False, cs)]
-         | otherwise -> [])
+  [] -> Nothing
+  (c:cs) | c == 'w' -> Just (True, cs)
+         | c == 'b' -> Just (False, cs)
+         | otherwise -> Nothing)
+ 
 
 packCastle :: String -> Int -> String -> Maybe Int
 packCastle [] n _ = Just n
@@ -81,8 +82,7 @@ pGame = do
   GameState bd t c sq ps <$> token pNMoves
 
 fen2Game :: String -> Maybe Game
-fen2Game str | null pG = Nothing
-             | otherwise = Just $ fst $ head pG
+fen2Game str = fst <$> pG
   where pG = parse pGame str
 
 showCflags :: Int -> String

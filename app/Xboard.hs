@@ -1,5 +1,8 @@
 module Xboard where
 
+-- import System.Console.Readline
+import Data.Maybe
+import Control.Monad.Trans.State
 import Defs
 import Parsing
 import Pieces
@@ -7,8 +10,6 @@ import Moves
 import Game
 import SubEngine
 import Engine
--- import System.Console.Readline
-import Control.Monad.Trans.State
 
 
 -- vars
@@ -110,11 +111,11 @@ ping :: [String] -> StateT PlayArgs IO ()
 ping args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
           | otherwise = do
               let n = parse nat $ head $ take 1 args
-              if null n then mio (errorCmd ["not a number", unwords args])
+              if isNothing n then mio (errorCmd ["not a number", unwords args])
                 >>
                 xbLoop
               else do
-                mio $ putStrLn $ "pong " ++ show (fst $ head n)
+                mio $ putStrLn $ "pong " ++ show (fromJust $ fst <$> n)
                 xbLoop
 
 
@@ -122,9 +123,9 @@ protover :: [String] -> StateT PlayArgs IO ()
 protover strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
               | otherwise = do
   let res_n = parse nat $ head $ take 1 strs
-  if null res_n then mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
+  if isNothing res_n then mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
     else do
-           let n = fst $ head res_n
+           let n = fromJust $ fst <$> res_n
            if n==1 then xbLoop
              else if n==2 then do
                mio $ putStrLn features_str
@@ -137,11 +138,11 @@ userMove :: [String] -> StateT PlayArgs IO ()
 userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
               | otherwise =  do
   let res_m = parse pMoveCoord $ head $ take 1 strs
-  if null res_m then do
+  if isNothing res_m then do
     mio $ putStrLn $ "Illegal move (not a move): " ++ head strs
     xbLoop
   else do
-         let m = fst $ head res_m
+         let m = fromJust $ fst <$> res_m
          mMakeMove m
          args <- get
          if getCpFlag args == Just (turn (getGame args)) then

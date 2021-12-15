@@ -1,6 +1,7 @@
 module Uci where
 import Control.Monad.Trans.State
 import System.Random
+import Data.Maybe
 import Defs
 import Parsing
 import Moves
@@ -77,21 +78,21 @@ setUpos :: [String] -> StateT PlayArgs IO ()
 setUpos [] = mio $ errorCmd ["incomplete", []]
 setUpos [s] = do
   let p = parse (symbol "startpos") s
-  if null p then mio $ errorCmd ["unknown command", s]
+  if isNothing p then mio $ errorCmd ["unknown command", s]
   else mSetPosition init_fen
 setUpos (s:ss) = do
   let input = unwords (s:ss)
   let pinp0 = parse (symbol "startpos" >> symbol "moves" ) input
   let pinp1 = parse pGame input
-  if null pinp0 && null pinp1 then mio $ errorCmd ["unknown command",
+  if isNothing pinp0 && isNothing pinp1 then mio $ errorCmd ["unknown command",
     input]
-  else if null pinp0 then do
-         let g = fst $ head pinp1
-         let ns = snd $ head pinp1
-         if null ns then do
-           mSetPosition $ game2FEN g
+  else if isNothing pinp0 then do
+         let g = fromJust (fst <$> pinp1)
+         let ns = snd <$> pinp1
+         if isNothing ns then do
+          mSetPosition $ game2FEN g
          else do
-           let pms = words ns
+           let pms = fromJust $ words <$> ns
            let hmoves = head pms
            let tmoves = tail pms
            if hmoves == "moves" then do
@@ -101,10 +102,10 @@ setUpos (s:ss) = do
                      setPosWithMoves g m) movs
            else mio $ errorCmd ["unknown command", input]
        else do
-         let ns = snd $ head pinp0
-         if null ns then mio $ errorCmd ["incomplete", input]
+         let ns = snd <$> pinp0
+         if isNothing ns then mio $ errorCmd ["incomplete", input]
          else do
-            let mvs = words ns
+            let mvs = fromJust $ words <$> ns
             let movs = mapM readMove mvs
             maybe (mio $ errorCmd ["not moves", input])
                   (\m -> do

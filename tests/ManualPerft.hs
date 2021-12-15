@@ -20,9 +20,9 @@ quit = return ()
 setPos :: Game -> String -> IO ()
 setPos g str = do
            let p = parse pGame str
-           if null p then mainLoop g
+           if isNothing p then mainLoop g
            else do
-             let p_ = (fst . head) p
+             let p_ = fromJust $ fst <$> p
              mainLoop p_
 
 perfTest :: Game -> String -> IO ()

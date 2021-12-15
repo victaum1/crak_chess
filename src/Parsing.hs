@@ -8,47 +8,47 @@ import           Control.Applicative
 import           Data.Char
 
 -- Basic definitions
-newtype Parser a = P (String -> [(a,String)])
+newtype Parser a = P (String -> Maybe (a,String))
 
-parse :: Parser a -> String -> [(a,String)]
+parse :: Parser a -> String -> Maybe (a,String)
 parse (P p) = p
 
 item :: Parser Char
 item = P (\case
-             []     -> []
-             (x:xs) -> [(x,xs)])
+             []     -> Nothing
+             (x:xs) -> Just (x,xs))
 
 -- Sequencing parsers
 instance Functor Parser where
    -- fmap :: (a -> b) -> Parser a -> Parser b
    fmap g p = P (\inp -> case parse p inp of
-                            []        -> []
-                            [(v,out)] -> [(g v, out)])
+                            Nothing      -> Nothing
+                            Just (v,out) -> Just (g v, out))
 
 instance Applicative Parser where
    -- pure :: a -> Parser a
-   pure v = P (\inp -> [(v,inp)])
+   pure v = P (\inp -> Just (v,inp))
 
    -- <*> :: Parser (a -> b) -> Parser a -> Parser b
    pg <*> px = P (\inp -> case parse pg inp of
-                             []        -> []
-                             [(g,out)] -> parse (fmap g px) out)
+                             Nothing   -> Nothing
+                             Just (g,out) -> parse (fmap g px) out)
 
 instance Monad Parser where
    -- (>>=) :: Parser a -> (a -> Parser b) -> Parser b
    p >>= f = P (\inp -> case parse p inp of
-                           []        -> []
-                           [(v,out)] -> parse (f v) out)
+                           Nothing   -> Nothing
+                           Just (v,out) -> parse (f v) out)
 
 -- Making choices
 instance Alternative Parser where
    -- empty :: Parser a
-   empty = P (const [])
+   empty = P (const Nothing)
 
    -- (<|>) :: Parser a -> Parser a -> Parser a
    p <|> q = P (\inp -> case parse p inp of
-                           []        -> parse q inp
-                           [(v,out)] -> [(v,out)])
+                           Nothing      -> parse q inp
+                           Just (v,out) -> Just (v,out))
 
 -- Derived primitives
 sat :: (Char -> Bool) -> Parser Char
@@ -119,6 +119,6 @@ symbol xs = token (string xs)
 
 oneOf :: String -> Parser Char
 oneOf str = P(\case
-             [] -> []
-             (c:cs) | elem c str -> [(c,cs)]
-                    | otherwise -> [])
+             [] -> Nothing
+             (c:cs) | elem c str -> Just (c,cs)
+                    | otherwise -> Nothing)

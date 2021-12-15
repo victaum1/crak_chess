@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Control.Monad (when)
-import Data.Maybe (fromJust)
+import Data.Maybe (mapMaybe)
 import qualified System.Exit as Exit
 import Test.HUnit
 import Data.List (sort)
@@ -22,14 +22,14 @@ manyPSquare = parse (many pSquare)
 
 assertEq = assertEqual "falla: " :: Move -> Move -> Assertion
 
-genBoards = map ((fst . head) . manyPBoard)
+genBoards = mapMaybe ((fst <$>) . manyPBoard)
 
-genTestSqs = map ((fst.head).manyPSquare)
+genTestSqs = mapMaybe ((fst <$>) . manyPSquare)
 
 genMoves :: [Square] -> [Board] -> [[Move]]
 genMoves = zipWith id . zipWith id gen_funcs
 
-genSpecMoves = map ((fst . head) . manyPMove)
+genSpecMoves = mapMaybe ((fst <$>) . manyPMove)
 
 genTest = (zipWith . zipWith) assertEq
 

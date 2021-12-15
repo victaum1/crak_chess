@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Control.Monad (when)
--- import Data.Maybe (fromJust)
+import Data.Maybe (mapMaybe)
 import qualified System.Exit as Exit
 import Test.HUnit
 import Data.List (sort)
@@ -21,8 +21,9 @@ manyPMove = parse (many pMoveCoord)
 
 assertEq = assertEqual "falla: " :: [Move] -> [Move] -> Assertion
 
-genGames = map ((fst . head) . parse pGame)
-genSpecMoves = map ((fst . head) . manyPMove)
+genGames = mapMaybe ((fst <$>) . parse pGame)
+genSpecMoves = mapMaybe ((fst <$>) . manyPMove)
+
 
 genMoves :: [Game] -> [[Move]]
 genMoves = map genKingMoves
