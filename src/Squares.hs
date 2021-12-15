@@ -1,10 +1,8 @@
-{-# LANGUAGE LambdaCase #-}
-module Squares (File, Rank,SquareTuple, Square(..), showFile, showRank
-  , pSquare, readRank, readCFile, readSquare, files, ranks, tuple2Square
-  , square2Tuple, intToSquare, file_chrs, rank_chrs, all_squares)
+{-# LANGUAGE LambdaCase, TupleSections #-}
+module Squares
   where
 
-import           Data.Char  (chr, ord, toLower)
+import           Data.Char
 import           Data.Maybe
 import           Parsing
 
@@ -13,25 +11,27 @@ file_chrs = ['a' .. 'h']
 rank_chrs = ['1' .. '8']
 files = [0..7]::[Int]
 ranks = files
-all_squares = Square <$> files <*> ranks
-
+all_squares = zipWith (curry MkSquare) files ranks
 
 --adts
 type File = Int
 type Rank = Int
 type SquareTuple = (Int,Int)
 
+newtype Square = MkSquare { fromSquare :: SquareTuple} deriving (Eq,Ord)
 
-data Square = Square {
-                         squareFile :: File
-                       , squareRank :: Rank
-                      } deriving (Eq, Ord)
 
 instance Show Square where
-  show (Square f r) =  showFile f : [showRank r]
-
+  show = showSquare
 
 -- funcs
+squareRank :: Square -> Rank
+squareRank (MkSquare (f,r)) = r
+
+squareFile :: Square -> File
+squareFile (MkSquare (f,r)) = f
+
+
 showFile :: File -> Char
 showFile f | (f<0) || (f>7) = error "showFile: Out of bounds"
            | otherwise = chr $ 97 + f
@@ -40,6 +40,10 @@ showFile f | (f<0) || (f>7) = error "showFile: Out of bounds"
 showRank :: Rank -> Char
 showRank r | (r<0) || (r>7) = error "showRank: Out of bounds"
            | otherwise = chr $ 49 + r
+
+showSquare :: Square -> String
+showSquare (MkSquare a) = showFile (fst a) : [showRank (snd a)]
+
 
 toInt = ord
 
@@ -57,8 +61,8 @@ readRank c | (c2int <49) || (c2int>56) = Nothing
 
 readSquare' :: Char -> Char -> Maybe Square
 readSquare' c1 c2 = if isNothing (mkF c1) || isNothing (mkR c2)
-  then Nothing  else Just (Square (fromJust (mkF c1))
-  (fromJust (mkR c2)))
+  then Nothing  else Just (MkSquare (fromJust (mkF c1),
+  fromJust (mkR c2)))
   where mkF = readCFile
         mkR = readRank
 
@@ -86,21 +90,22 @@ pSquare :: Parser Square
 pSquare = do
             space
             f <- pFile
-            Square f <$> pRank
+            r <- pRank
+            return (MkSquare (f,r))
 
 -- Integer tuple encoding
 tuple2Square :: SquareTuple -> Square
-tuple2Square (f,r) = Square f r
+tuple2Square (f,r) = MkSquare (f,r)
 
 
 square2Tuple :: Square -> SquareTuple
-square2Tuple (Square f r) = (f,r)
+square2Tuple = fromSquare
 
 --- Integers encoding Squares
 intToSquare = int64ToSquare
 
 int64ToSquare :: Int -> Maybe Square
-int64ToSquare n | (n < 64) && (n >= 0) = Just $ Square a_f a_r
+int64ToSquare n | (n < 64) && (n >= 0) = Just $ MkSquare (a_f,a_r)
                 | otherwise = Nothing
   where a_f = n `mod` 8
         a_r = (n-(n `mod` 8)) `div` 8

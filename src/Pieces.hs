@@ -1,7 +1,5 @@
-{-# LANGUAGE LambdaCase, FlexibleInstances #-}
-module Pieces (piece_types, piece_chars, Side(..), Piece(..)
-  , showPiece, readCPiece, PieceType(..), board_piece_chars, pPiece
-  , pPieceType, all_piece_chars, all_pieces)
+{-# LANGUAGE LambdaCase #-}
+module Pieces
   where
 
 import Parsing
@@ -20,28 +18,26 @@ instance Show PieceType where
          | a == Queen  = "Q"
          | a == King   = "K"
 
--- data Side =  White | Black
---             deriving (Eq,Ord)
-
 type Side = Bool
 
-data Piece = Piece {
-                      pieceSide :: Side
-                    , pieceType :: PieceType
-                    } deriving (Eq,Ord)
+newtype Ptype = Ptype {fromPtype :: Maybe PieceType} deriving (Eq, Ord)
+
+instance Show Ptype where
+  show (Ptype Nothing)  = ""
+  show (Ptype (Just a)) = show a
+
+type Tpiece = (Side,PieceType)
+
+newtype Piece = MkPiece {fromPiece::Tpiece} deriving (Eq,Ord)
 
 instance Show Piece where
-  show (Piece s p) = (if s then "W" else "B") ++ show p
-
-instance {-# OVERLAPS #-} Show (Maybe PieceType) where
-  show Nothing = ""
-  show (Just a) = show a
+  show (MkPiece (s,p)) = (if s then "W" else "B") ++ show p
 
 
 -- vars / const
-piece_types = [Pawn .. ]
-all_pieces = zipWith Piece (replicate 6 True ++ replicate 6 False) (concat
-  $ replicate 2 piece_types)
+piece_types =  [Pawn .. ]
+all_pieces = zipWith (curry (MkPiece)) (replicate 6 True
+  ++ replicate 6 False) (concat $ replicate 2 piece_types)
   
 piece_chars = "PNBRQK"
 l_piece_chars = map toLower piece_chars
@@ -51,17 +47,27 @@ board_piece_chars = "." ++ all_piece_chars
 type_map = zip piece_chars piece_types
 type_map' = zip piece_types piece_chars
 
+all_black_pieces = map (MkPiece) $ zip (replicate 6 False) piece_types
+all_white_pieces = map (MkPiece) $ zip (replicate 6 True) piece_types
+
+
 -- funcs
-readPieceType :: Char -> Maybe PieceType
-readPieceType c = lookup (toUpper c) type_map
+pieceSide :: Piece -> Side
+pieceSide (MkPiece (s,_)) = s
+
+pieceType :: Piece -> PieceType
+pieceType (MkPiece (_,pt)) = pt
+
+readPieceType :: Char -> Ptype
+readPieceType c = Ptype (lookup (toUpper c) type_map)
 
 readCPiece :: Char -> Maybe Piece
-readCPiece c | toUpper c `elem` piece_chars = Just(Piece (isUpper c)
-               (toPt c))
+readCPiece c | toUpper c `elem` piece_chars = Just(MkPiece
+                                                   (isUpper c,toPt c))
+
              | otherwise = Nothing
            where
-             toPt x = fromJust $ readPieceType (toUpper c)
-             -- toSide x = if isUpper x then White else Black
+             toPt x = fromJust $ fromPtype $ readPieceType (toUpper c)
 
 showPiece :: Piece -> Char
 showPiece p = if pieceSide p then p2char p else
@@ -75,7 +81,7 @@ pPiece = P(\case
   (r:cs) -> (\p -> Just (p,cs)) =<< readCPiece r)
 
 
-pPieceType :: Parser (Maybe PieceType)
+pPieceType :: Parser Ptype
 pPieceType = P(\case
   [] -> Nothing
   (r:cs) -> Just (readPieceType r, cs))

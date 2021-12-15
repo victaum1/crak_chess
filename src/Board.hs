@@ -1,5 +1,4 @@
-module Board (Board, Pos, init_board_str, init_board_fen, init_board,
-  fen2Board, pFenBoard,board2FEN, pBoard, showBoard, readBoard, checkSquare, whereIsPiece, makePieceList) where
+module Board where
 
 import Data.Char
 import Data.Maybe
@@ -9,6 +8,7 @@ import qualified Data.Map.Strict as Map
 import Parsing
 import Pieces
 import Squares
+
 
 -- vars / const
 init_board_str = unlines [
@@ -21,21 +21,32 @@ all_fen_chars = "rnbqkpRNBQKP/12345678"
 init_board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR "
 init_board = fen2Board init_board_fen
 
+empty_board = MkBoard Map.empty
+
 -- adts
-type Pos = (Square,Piece)
-type Board = Map Square Piece
+type Pos = (SquareTuple, Tpiece)
+type Tboard = Map SquareTuple Tpiece
+-- type PieceList_ = Map Tpiece [SquareTuple]
 type PieceList = Map Piece [Square]
 type PosList = [Pos]
+
+newtype Board = MkBoard { fromBoard::Tboard} deriving (Eq)
+
+instance Show Board where
+  show b = showBoard b
 
 -- funcs
 makePosList :: [Maybe Piece] -> Int -> PosList
 makePosList [] _ = []
-makePosList (a:as) n | isJust a = (fromJust $ intToSquare n,fromJust a) : nexT
+makePosList (a:as) n | isJust a = (square2Tuple (fromJust (intToSquare n))
+                                  , fromPiece (fromJust a)) : nexT
                      | otherwise = nexT
                    where nexT = makePosList as (n+1)
 
+
 readBoard :: String -> Board
-readBoard = Map.fromList . readBoardList
+readBoard = MkBoard . Map.fromList . readBoardList
+
 
 readBoardList :: String -> PosList
 readBoardList str | isNull = []
@@ -62,32 +73,38 @@ filterBoard (r:cs) | inPiece r = if null (filterBoard cs)
 inPiece r = r `elem` board_piece_chars
 
 showBoard :: Board -> String
-showBoard = showBoard_ . Map.toAscList
+showBoard = showBoard_ . Map.toAscList . fromBoard
 
 showBoard_ = unlines . showBoardList
 
 showBoardList :: PosList -> [String]
-showBoardList ps = (map.map) showP $ reverse $ splitb lps
-  where lps = [Map.lookup  (toSq n) (Map.fromList ps) | n <- [0..63]]
+showBoardList ps = (map.map) showP (reverse $ splitb lps)
+  where lps = [Map.lookup  (square2Tuple (toSq n)) (Map.fromList ps) | n <- [0..63]]
         toSq n = fromJust $ intToSquare n
         splitb [] = []
         splitb xs = take 8 xs : splitb (drop 8 xs)
-        showP p | isJust p = showPiece $ fromJust p
+        showP p | isJust p = showPiece $ MkPiece (fromJust p)
                 | otherwise = '.'
 
 
 checkSquare :: Square -> Board -> Maybe Piece
-checkSquare = Map.lookup
+checkSquare (MkSquare sq) (MkBoard bd) = MkPiece <$> Map.lookup sq bd
+
 
 checkPiece :: Piece -> PieceList -> Maybe [Square]
 checkPiece = Map.lookup
 
 whereIsPiece :: Piece -> Board -> [Square]
-whereIsPiece p b = map fst $ Map.toList $ Map.filter (p ==) b
+whereIsPiece (MkPiece p) (MkBoard b) = map MkSquare  <$> map fst $
+  Map.toList $ Map.filter (p ==) b
+ 
+
+whereIsKing s b = head $ whereIsPiece (MkPiece (s,King)) b
 
 
 makePieceList :: Board -> PieceList
-makePieceList bd = Map.fromList $ zip all_pieces $ map (`whereIsPiece` bd)
+makePieceList bd = Map.fromList $ zip all_pieces $ map
+                                     (`whereIsPiece` bd)
   all_pieces
 
 
@@ -121,14 +138,14 @@ packFENline (c:cs) | c == '.' = intToDigit (countDots (c:cs) 0) :
 
 
 fen2Board :: String -> Board
-fen2Board = Map.fromList . fen2Board_
+fen2Board = MkBoard . Map.fromList . fen2Board_
 
 fen2Board_ :: String -> PosList
 fen2Board_ = readBoardList . showFENline . head . words
 
 
 board2FEN :: Board -> String
-board2FEN = board2FEN_ . Map.toAscList
+board2FEN = board2FEN_ . Map.toAscList .fromBoard
 
 board2FEN_ :: PosList -> String
 board2FEN_ = init . packFENline . subs '\n' '/' . showBoard_
@@ -137,7 +154,7 @@ board2FEN_ = init . packFENline . subs '\n' '/' . showBoard_
 pBoard :: Parser Board
 pBoard = P (\inp -> case res inp of
                [] -> Nothing
-               _ -> Just (Map.fromList $ res inp,drop 72 inp))
+               _ -> Just (MkBoard $ Map.fromList $ res inp,drop 72 inp))
          where res x = if length x >= 72 then readBoardList $ take 72 x
                        else []
 

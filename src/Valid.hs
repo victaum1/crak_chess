@@ -4,7 +4,7 @@ import Play
 import Board
 import Game
 import Moves
-import Pieces(Side)
+import Pieces
 import Data.Maybe
 
 isMoveValid :: Game -> Move -> Bool

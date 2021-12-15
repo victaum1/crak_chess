@@ -1,25 +1,18 @@
 module Main where
 
 import Data.Maybe
-import Control.Monad.Trans.State ( evalStateT, StateT, get, put )
-import Defs ( author, date, version, quit, errorCmd, mio, name )
-import Engine ( init_args, PlayArgs(getHist, getGame, getCpFlag, getSeed) )
-import Moves ( pMoveCoord )
+import Control.Monad.Trans.State
+import Defs
+import Engine
+import Moves
 import Parsing ( parse )
 import SubEngine
-    ( mDump,
-      mTakeBack,
-      mSetPosition,
-      mThinkMove,
-      mMakeMove,
-      mDumpPlay,
-      mDumpFEN )
-import System.IO ( stdout, hSetBuffering, BufferMode(NoBuffering) )
-import System.Environment ( getArgs )
-import Uci ( uciLoop )
-import Xboard ( xboardLoop )
-import Data.Maybe ( fromMaybe )
-import Game ( GameState(turn) )
+import System.IO
+import System.Environment
+import Uci
+import Xboard
+import Data.Maybe
+import Game
 
 
 help_str = unlines [

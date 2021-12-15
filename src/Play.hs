@@ -1,17 +1,14 @@
 module Play where
 
 import Game
-    ( GameState(epSquare, castleFlag, nMoves, nPlys, board, turn),
-      Game )
-import Board ( whereIsPiece, checkSquare, Board )
+import Board
 import Pieces
-    ( PieceType(Pawn, King, Rook), Piece(Piece, pieceType), Side )
-import Data.Maybe ( isJust, fromJust, isNothing, mapMaybe )
+import Data.Maybe
 import qualified Data.Map.Strict as Map
-import Moves ( readMove, Move(getCrown, getDestSq, getInitSq) )
-import Squares ( File, readSquare, Square(..) )
-import Rules ( sameSide )
-import Data.Bits ( Bits(clearBit, complement, (.&.)) )
+import Moves
+import Squares
+import Rules
+import Data.Bits
 
 castle_moves = map (fromJust.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
 castle_rook_moves = map (fromJust.readMove) ["h1f1","a1d1","h8f8", "a8d8"]
@@ -26,19 +23,23 @@ castle_map = Map.fromList $ zip castle_moves (map mkSimpleMoveBoard castle_rook_
 castle_rook_map = Map.fromList $ zip castle_moves (map mkSimpleMoveBoard
   castle_rook_moves)
 
-rook_castle_sqs = map (fromJust.readSquare) ["h1","a1","h8","a8"]
+rook_castle_sqs = map (square2Tuple.fromJust.readSquare) ["h1","a1","h8","a8"]
 
 rook_move_map = Map.fromList $ zip rook_castle_sqs rook_flags
 
 makeMove :: Move -> Game -> Maybe Game
-makeMove m g = do
+makeMove m g | isNullMove m = Just (MkGame (bd,
+                                            not (turn g),cf,Nothing
+                                           ,nPlys g + 1,if turn g then
+                                               nMoves g else nMoves g + 1))
+             | otherwise = do 
   let i_side = turn g
   let i_nplys = nPlys g
   let i_nMoves = nMoves g
-  let i_castle = castleFlag g
-  let i_bd = if not isCrown then board g
-          else Map.insert initSq (Piece (turn g) (fromJust crown_p))
-            (board g)
+  let i_castle = cf
+  let i_bd = if not isCrown then bd
+          else MkBoard (Map.insert initSq (turn g,fromJust $ fromPtype
+                                            crown_p) (fromBoard (board g)))
   let o_side = not i_side
   let o_castle
         | isCastle = maybe i_castle ((.&.) i_castle . complement)
@@ -50,17 +51,17 @@ makeMove m g = do
           if i_side then i_castle .&. 12
           else i_castle .&. 3
         | isRookCaptureInCastleSq && i_castle /=0 && not
-          (isKingOutOfInitSq (not si)) = if si && destSq == Square 7 7 then
+          (isKingOutOfInitSq (not si)) = if si && destSq == MkSquare (7,7) then
               i_castle `clearBit` 2
-            else if si && destSq == Square 0 7 then 
+            else if si && destSq == MkSquare (0,7) then
               i_castle `clearBit` 3 else
-            if not si && destSq == Square 7 0 then
+            if not si && destSq == MkSquare (7,0) then
               i_castle `clearBit` 0 else
-               if not si && destSq == Square 0 0 then
+               if not si && destSq == MkSquare (0,0) then
                  i_castle `clearBit` 1
                             else i_castle
         | otherwise = i_castle
-  let o_nplys = if isPawn initSq i_bd || isCapture || isCrown then 0 else
+  let o_nplys = if isPawn (tuple2Square initSq) i_bd || isCapture || isCrown then 0 else
         i_nplys + 1
   let o_nMoves = if not i_side then i_nMoves + 1 else i_nMoves
   let epSq =
@@ -71,29 +72,30 @@ makeMove m g = do
       i_bd_ <- mkMoveBoard m i_bd
       fun i_bd_
     else if isEpCapture m g then
-           mkMoveBoard m (Map.delete (epSqDel (not si) dFile) i_bd)
+           mkMoveBoard m (MkBoard (Map.delete (square2Tuple (epSqDel (not si) dFile)) (fromBoard i_bd)))
            else mkMoveBoard m i_bd
-  return g{board=o_bd,turn=o_side,castleFlag=o_castle,epSquare=epSq,
-           nPlys=o_nplys,nMoves=o_nMoves}
-  where initSq = getInitSq m
+  return (MkGame (o_bd,o_side,o_castle,epSq,o_nplys,o_nMoves))
+  where initSq = square2Tuple (getInitSq m)
         destSq = getDestSq m
         isCapture = isJust $ checkSquare destSq bd
-        isCastle = (m `elem` castle_moves) && isKingMove
-        isRookCaptureInCastleSq = destSq `elem` rook_castle_sqs
+        isCastle = m `elem` castle_moves && isKingMove
+        isRookCaptureInCastleSq = destSq `elem` map tuple2Square rook_castle_sqs
         isRookMovedFromCastleSq = initSq `elem` rook_castle_sqs
         isRookMove = Just Rook ==
-         (pieceType <$> checkSquare initSq bd)
+         (pieceType <$> checkSquare (tuple2Square initSq) bd)
         isKingMove = Just King ==
-         (pieceType <$> checkSquare initSq bd)
+         (pieceType <$> checkSquare (tuple2Square initSq) bd)
         crown_p = getCrown m
-        isCrown = isJust crown_p
-        iFile = squareFile initSq
+        isCrown = isJust (fromPtype crown_p)
+        iFile = squareFile (tuple2Square initSq)
         dFile = squareFile destSq
         si = turn g
         bd = board g
-        isKingOutOfInitSq ss = if ss then whereIsKing ss /= [Square 4 0] else
-          whereIsKing ss /= [Square 4 7]
-        whereIsKing ss = whereIsPiece (Piece ss King) bd
+        cf = castleFlag g
+        isKingOutOfInitSq ss = if ss then
+          whereIsKing ss /= [MkSquare (4, 0)] else
+          whereIsKing ss /= [MkSquare (4,7)]
+        whereIsKing ss = whereIsPiece (MkPiece (ss,King)) bd
 
 
 isKingMoved :: Move -> Game -> Bool
@@ -103,27 +105,24 @@ isKingMoved m g = Just King == (pieceType <$> checkSquare sq bd)
 
 
 isEpCapture :: Move -> Game -> Bool
-isEpCapture m g = isSidePawn && (Just destSq==epSq)
+isEpCapture m g = isSidePawn && Just destSq==epSq
   where initSq = getInitSq m
         destSq = getDestSq m
         bd = board g
         si = turn g
         epSq = epSquare g
-        isSidePawn = Just (Piece si Pawn) == checkSquare initSq bd
-
+        isSidePawn = Just (MkPiece (si,Pawn)) == checkSquare initSq bd
 
 mkEp :: Side -> File -> Maybe Square
-mkEp si fi | si = Just (Square fi 2)
-           | otherwise = Just (Square fi 5)
-
-
+mkEp si fi | si = Just (MkSquare (fi,2))
+           | otherwise = Just (MkSquare (fi,5))
+ 
 epSqDel :: Side -> File -> Square
-epSqDel si fi | si = Square fi 3
-              | otherwise = Square fi 4
-
+epSqDel si fi | si = MkSquare (fi,3)
+              | otherwise = MkSquare (fi,4)
 
 isEpTrigged :: Side -> Move -> Board -> Bool
-isEpTrigged si mv bd | isDoublePushPawn mv si bd = Piece (not si) Pawn
+isEpTrigged si mv bd | isDoublePushPawn mv si bd = MkPiece (not si,Pawn)
                        `elem` mapMaybe (`checkSquare` bd)
                        (adjSquares si initSq)
                      | otherwise = False
@@ -143,9 +142,10 @@ isDoublePushPawn m s b | isPawn initSq b = if s then delta > 1
         delta  = fRank - iRank
 
 adjSquares :: Side -> Square -> [Square]
-adjSquares si (Square f r) | si = [Square (f+1) (r+2), Square (f-1) (r+2)]
+adjSquares si (MkSquare (f,r)) | si = [MkSquare (f+1,r+2), MkSquare (f-1,r+2)]
                            | otherwise =
-                             [Square (f+1) (r-2), Square (f-1) (r-2)]
+                             [MkSquare (f+1,r-2), MkSquare (f-1,r-2)]
+
 
 mkMoveBoard :: Move -> Board -> Maybe Board
 mkMoveBoard m b = do
@@ -163,8 +163,9 @@ mkMoveBoard m b = do
 
 mkSimpleMoveBoard :: Move -> Board -> Maybe Board
 mkSimpleMoveBoard m b = do
-  let initsq = getInitSq m
-  let destsq = getDestSq m
-  initpiece  <- checkSquare initsq b
-  let o_bd   = Map.delete destsq (Map.delete initsq b)
-  return (Map.insert destsq initpiece o_bd)
+  let initsq = square2Tuple (getInitSq m)
+  let destsq = square2Tuple (getDestSq m)
+  initpiece <- fromPiece <$> checkSquare (tuple2Square initsq) b
+  let o_bd = Map.delete destsq (Map.delete initsq (fromBoard b))
+  return (MkBoard (Map.insert destsq initpiece o_bd))
+
