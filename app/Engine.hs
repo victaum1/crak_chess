@@ -1,5 +1,7 @@
 module Engine where
-import Data.Maybe (fromJust, isNothing, isJust)
+
+import Data.Either
+import Data.Maybe
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Control.Monad.Trans.State
@@ -10,6 +12,7 @@ import Board
 import Pieces
 import Valid
 import Defs
+import Utils
 
 -- vars / cons
 dft_time = 5000 :: Int
@@ -21,10 +24,10 @@ game_fen1 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
 game_fen2 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
 dft_cp_flag = Just False -- Black
 dft_seed = Nothing -- Auto gen random number
-move_w = fromJust $ readMove dft_str_move_w
-move_b = fromJust $ readMove dft_str_move_b
-game_st1 = fromJust $ fen2Game game_fen1
-game_st2 = fromJust $ fen2Game game_fen2
+move_w = myRight $ readMove dft_str_move_w
+move_b = myRight $ readMove dft_str_move_b
+game_st1 = myRight $ fen2Game game_fen1
+game_st2 = myRight $ fen2Game game_fen2
 init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game []
   dft_post_flag dft_seed
 

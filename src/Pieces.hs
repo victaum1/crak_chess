@@ -1,10 +1,9 @@
-{-# LANGUAGE LambdaCase #-}
 module Pieces
   where
 
+import Data.Maybe
 import Parsing
-import Data.Char  (isUpper, toLower, toUpper)
-import Data.Maybe ( fromJust, isJust )
+import Data.Char
 
 -- adts
 data PieceType = Pawn | Knight | Bishop | Rook | Queen | King
@@ -20,11 +19,11 @@ instance Show PieceType where
 
 type Side = Bool
 
-newtype Ptype = Ptype {fromPtype :: Maybe PieceType} deriving (Eq, Ord)
+newtype Ptype = MkPtype {fromPtype :: Maybe PieceType} deriving (Eq, Ord)
 
 instance Show Ptype where
-  show (Ptype Nothing)  = ""
-  show (Ptype (Just a)) = show a
+  show (MkPtype Nothing)  = ""
+  show (MkPtype (Just a)) = show a
 
 type Tpiece = (Side,PieceType)
 
@@ -58,8 +57,10 @@ pieceSide (MkPiece (s,_)) = s
 pieceType :: Piece -> PieceType
 pieceType (MkPiece (_,pt)) = pt
 
-readPieceType :: Char -> Ptype
-readPieceType c = Ptype (lookup (toUpper c) type_map)
+readPieceType :: Char -> Maybe Ptype
+readPieceType c = do
+   mpt <- lookup (toUpper c) type_map
+   return (MkPtype (Just mpt))
 
 readCPiece :: Char -> Maybe Piece
 readCPiece c | toUpper c `elem` piece_chars = Just(MkPiece
@@ -67,7 +68,9 @@ readCPiece c | toUpper c `elem` piece_chars = Just(MkPiece
 
              | otherwise = Nothing
            where
-             toPt x = fromJust $ fromPtype $ readPieceType (toUpper c)
+             toPt x = fromJust $ fromPtype $ fromJust $
+               readPieceType (toUpper c)
+
 
 showPiece :: Piece -> Char
 showPiece p = if pieceSide p then p2char p else
@@ -75,14 +78,12 @@ showPiece p = if pieceSide p then p2char p else
   where p2char x = fromJust $ lookup (pieceType x) type_map'
 
 
-pPiece :: Parser Piece
-pPiece = P(\case
-  [] -> Nothing
-  (r:cs) -> (\p -> Just (p,cs)) =<< readCPiece r)
+-- parsing
+pPiece :: GenParser Char st (Maybe Piece)
+pPiece = readCPiece <$> oneOf board_piece_chars
 
-
-pPieceType :: Parser Ptype
-pPieceType = P(\case
-  [] -> Nothing
-  (r:cs) -> Just (readPieceType r, cs))
- 
+pPieceType :: GenParser Char st Ptype
+pPieceType = do
+  mpt <- readPieceType <$> anyChar
+  maybe (fail "(not a piece type)") return mpt
+  

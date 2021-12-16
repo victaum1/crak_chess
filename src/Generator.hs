@@ -208,11 +208,11 @@ mkRayIter sq bd dr n isq | onBoard' (head isq) && isEmpty (tuple2Square $
 
 
 makeSimpleMove :: Square -> Square -> Move
-makeSimpleMove i f = MkMove (i,f,Ptype Nothing)
+makeSimpleMove i f = MkMove (i,f,MkPtype Nothing)
 
 
 makeCrownMove :: Square -> Square -> PieceType -> Move
-makeCrownMove i f p = MkMove (i,f,Ptype(Just p))
+makeCrownMove i f p = MkMove (i,f,MkPtype(Just p))
 
 
 genKnightMoves :: Square -> Board -> [Move]

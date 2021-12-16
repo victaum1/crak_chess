@@ -1,14 +1,15 @@
 {-# LANGUAGE TemplateHaskell #-}
-import Board
 import Test.QuickCheck
 import qualified System.Exit as Exit
-import Control.Monad(unless)
+import Control.Monad
+import Data.Either
 import Parsing
-import Data.Map.Strict as Map hiding (null)
+import Board
 
 
 -- failing on readBoard
-prop_read_board_fail str = readBoard str == empty_board ==> (null . parse pBoard) str
+prop_read_board_fail str = readBoard str == empty_board ==>
+  (isLeft . parse pBoard "") str
 
 -- readBoard and showBoard are reverse
 genSafeCChar :: Gen Char

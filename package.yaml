@@ -32,6 +32,7 @@ library:
       - Perft
     dependencies:
       - containers
+      - parsec
 
 executables:
   crakchess-exe:

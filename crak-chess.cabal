@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d9ecf13f2a4c38c006270fdf876125493589e1e893ada7836b0db2a52983a776
+-- hash: 6ea6d80165fdd23500bc2e7e8c24d58cc3ab42007965e581fbea9f2d1e195d82
 
 name:           crak-chess
 version:        0.1.0.0
@@ -44,6 +44,7 @@ library
   build-depends:
       base >=4.6 && <5
     , containers
+    , parsec
   default-language: Haskell2010
 
 executable crakchess-exe

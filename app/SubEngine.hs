@@ -1,5 +1,6 @@
 module SubEngine where
 
+import Data.Either
 import Control.Monad.Trans.State
 import System.Random
 import Engine
@@ -10,6 +11,7 @@ import Pieces
 import Valid
 import Play
 import Generator
+import Utils
 
 
 mTakeBack :: StateT PlayArgs IO ()
@@ -65,7 +67,7 @@ mSetPosition :: String -> StateT PlayArgs IO ()
 mSetPosition strs = do
   pargs <- get
   let a_pos = fen2Game strs
-  maybe (mio $ errorCmd ["not a FEN position!", strs])
+  either (const $ mio $ errorCmd ["not a FEN position!", strs])
     (\res -> do
         let o_args = setGame res pargs
         put o_args

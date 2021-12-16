@@ -1,11 +1,12 @@
 module Main (main) where
-import Data.Maybe
+import Data.Either
 import Test.HUnit
-import Game
 import qualified System.Exit as Exit
 import Control.Monad(when)
+import Game
+import Utils
 
-genInputGames = map (fromJust . fen2Game)
+genInputGames = map (myRight . fen2Game)
 genSpecFENs   = map game2FEN
 genAsserts    = map assertEq
 

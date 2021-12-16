@@ -1,4 +1,5 @@
 module Uci where
+import Data.Either
 import Control.Monad.Trans.State
 import System.Random
 import Data.Maybe
@@ -8,6 +9,7 @@ import Moves
 import Game
 import SubEngine
 import Engine
+import Utils
 
 -- var
 uci_info = unlines ["id name " ++ name ++ " " ++ version,"id author " ++ author, "uciok"]
@@ -48,9 +50,10 @@ uiLoop = do
                      let cmd = head input
                      let args = tail input
                      let res = lookup cmd ui_map
-                     maybe (mio (errorCmd ["unknown command", unwords input]) >>
-                            uiLoop)
-                       (\a -> a args) res
+                     maybe (mio (errorCmd ["unknown command"
+                                          , unwords input]) >>
+                             uiLoop)
+                           (\a -> a args) res
 
 
 uGo :: StateT PlayArgs IO ()
@@ -74,40 +77,53 @@ uThink = do
     ) a_move
 
 
+pIpos = do
+  symbol "startpos"
+  m <- symbol "moves"
+  s <- getInput
+  return (m,s)
+
+pFg = do
+  symbol "fen"
+  g <- pGame
+  s <- getInput
+  return (g,s)
+
+
 setUpos :: [String] -> StateT PlayArgs IO ()
 setUpos [] = mio $ errorCmd ["incomplete", []]
 setUpos [s] = do
-  let p = parse (symbol "startpos") s
-  if isNothing p then mio $ errorCmd ["unknown command", s]
+  let p = parse (string "startpos") "" s
+  if isLeft p then mio $ errorCmd ["unknown command", s]
   else mSetPosition init_fen
 setUpos (s:ss) = do
   let input = unwords (s:ss)
-  let pinp0 = parse (symbol "startpos" >> symbol "moves" ) input
-  let pinp1 = parse pGame input
-  if isNothing pinp0 && isNothing pinp1 then mio $ errorCmd ["unknown command",
+  let pinp0 = parse pIpos "" input
+  let pinp1 = parse pFg "" input
+  if isLeft pinp0 && isLeft pinp1 then mio $ errorCmd ["unknown command",
     input]
-  else if isNothing pinp0 then do
-         let g = fromJust (fst <$> pinp1)
+  else if isLeft pinp0 then do
+         let g = myRight (fst <$> pinp1)
          let ns = snd <$> pinp1
-         if isNothing ns then do
+         if (null <$> ns) == Right True then do
           mSetPosition $ game2FEN g
          else do
-           let pms = fromJust $ words <$> ns
+           let pms = myRight $ words <$> ns
            let hmoves = head pms
            let tmoves = tail pms
            if hmoves == "moves" then do
              let movs = mapM readMove tmoves
-             maybe (mio $ errorCmd ["not moves", input])
+             either (const $ mio $ errorCmd ["not moves", input])
                    (\m -> do
                      setPosWithMoves g m) movs
            else mio $ errorCmd ["unknown command", input]
        else do
          let ns = snd <$> pinp0
-         if isNothing ns then mio $ errorCmd ["incomplete", input]
+         if isLeft ns then mio $ errorCmd ["incomplete", input]
          else do
-            let mvs = fromJust $ words <$> ns
+            let mvs = words $ myRight ns
             let movs = mapM readMove mvs
-            maybe (mio $ errorCmd ["not moves", input])
+            either (const $ mio $ errorCmd ["not moves", input])
                   (\m -> do
                       setPosWithMoves init_game m) movs
 

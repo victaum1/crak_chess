@@ -1,12 +1,14 @@
 module ManualPerft where
 
+import Data.Either
+import Data.Maybe
 import Game
 import Valid
 import Play
-import Data.Maybe
 import Moves
 import Parsing
 import Perft
+import Utils
 
 main_map :: [(String, Game -> String -> IO ())]
 main_map = [
@@ -19,10 +21,10 @@ quit = return ()
 
 setPos :: Game -> String -> IO ()
 setPos g str = do
-           let p = parse pGame str
-           if isNothing p then mainLoop g
+           let p = parse pGame str ""
+           if isRight p then mainLoop g
            else do
-             let p_ = fromJust $ fst <$> p
+             let p_ = myRight p
              mainLoop p_
 
 perfTest :: Game -> String -> IO ()

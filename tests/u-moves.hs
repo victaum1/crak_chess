@@ -2,7 +2,7 @@ module Main (main) where
 import qualified System.Exit as Exit
 import Data.Maybe
 import Test.HUnit
-import Control.Monad(when)
+import Control.Monad
 import Utils
 import Parsing
 import Moves
@@ -10,9 +10,7 @@ import Moves
 fixtures = "tests/fixtures/"
 inputs = "make_move_input.csv"
 
-
-genMoves = (fst <$>) . parse pMoveCoord
-
+genMoves = myRight . parse pMoveCoord ""
 
 noHeadLines = drop 1 . lines
 
@@ -28,7 +26,7 @@ main = do
          let slines = noHeadLines inputs
          let triples = map (splitOn ';') slines
          let inp_strs = map head triples
-         let moves = mapMaybe (genMoves . head) triples
+         let moves = map (genMoves . head) triples
          let spec_strs = map show moves
          let pre_tests = genTest spec_strs inp_strs
          let tests = TestList $ map TestCase pre_tests

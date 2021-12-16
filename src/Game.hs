@@ -1,18 +1,19 @@
-{-# LANGUAGE LambdaCase #-}
 module Game where
 
-import           Board
+import           Data.Either
 import           Data.Maybe
+import           Board
 import           Parsing
 import           Pieces
 import           Squares
+import           Utils
 
 
 -- vars / const
 init_fen = init_board_fen ++ "w KQkq - 0 1"
 castle_chars = "KQkq"
 castle_codes = [1,2,4,8] :: [Int]
-init_game = fromJust $ fen2Game init_fen
+init_game = myRight $ fen2Game init_fen
 castle_table = zip castle_chars castle_codes
 castle_table' = zip castle_codes castle_chars
 
@@ -38,14 +39,6 @@ instance Show Game where
   show a = showGame a
 
 -- funcs
-pTurn :: Parser Side
-pTurn = P(\case
-  [] -> Nothing
-  (c:cs) | c == 'w' -> Just (True, cs)
-         | c == 'b' -> Just (False, cs)
-         | otherwise -> Nothing)
- 
-
 packCastle :: String -> Int -> String -> Maybe Int
 packCastle [] n _ = Just n
 packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
@@ -55,47 +48,10 @@ packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
                         isInTable = isJust findCastle && not already
                         nCastle = n + fromJust findCastle
 
-pCastle :: Parser Int
-pCastle = do
-            char '-'
-            return 0
-          <|>
-          do
-            x <- many (oneOf castle_chars)
-            return (fromJust $ packCastle x 0 "")
 
-pPlys :: Parser Int
-pPlys = natural
+fen2Game :: String -> Either ParseError Game
+fen2Game = parse pGame ""
 
-pNMoves :: Parser Int
-pNMoves = natural
-
-pNoSq :: Parser Char
-pNoSq = char '-'
-
-pEpSq :: Parser (Maybe Square)
-pEpSq = do
-          pNoSq
-          return Nothing
-        <|>
-        do
-          Just <$> pSquare
-
-
-pGame :: Parser Game
-pGame = do
-  bd <- pFenBoard
-  t <- pTurn
-  c <- token pCastle
-  sq <- token pEpSq
-  ps <- token pPlys
-  nm <- token pNMoves
-  return (MkGame (bd,t,c,sq,ps,nm))
-
-
-fen2Game :: String -> Maybe Game
-fen2Game str = fst <$> pG
-  where pG = parse pGame str
 
 showCflags :: Int -> String
 showCflags n | isInTable = [findChar]
@@ -120,3 +76,48 @@ game2FEN g = unwords [board2FEN getBoard,getTurn,getCf,getSq,getPlys,getMoves]
                   getCf = showCflags $ castleFlag g
                   getSq = maybe "-" show $ epSquare g
                   getMoves = show $ nMoves g
+
+-- parsing
+pPlys :: GenParser Char st Int
+pPlys = pNat
+
+pNmoves :: GenParser Char st Int
+pNmoves = pNat
+
+pNoSq :: GenParser Char st Char
+pNoSq = char '-'
+
+pEpSq :: GenParser Char st (Maybe Square)
+pEpSq = do
+          try pNoSq >> return Nothing
+        <|>
+        do
+          Just <$> pSquare
+
+pTurn :: GenParser Char st Side
+pTurn = do
+  try (sat (=='w')) >> return True
+  <|>
+  do
+  sat (=='b')
+  return False
+
+pCastle :: GenParser Char st Int
+pCastle = do
+            try (char '-') >> return 0
+          <|>
+          do
+            x <- many (oneOf castle_chars)
+            return (fromJust $ packCastle x 0 "")
+
+pGame :: GenParser Char st Game
+pGame = do
+  bd <- pFenBoard
+  t <- pToken pTurn
+  c <- pCastle
+  sq <- pToken pEpSq
+  ps <- pPlys
+  space
+  nm <- pNmoves
+  return (MkGame (bd,t,c,sq,ps,nm))
+

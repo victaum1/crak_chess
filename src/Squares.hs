@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase, TupleSections #-}
 module Squares
   where
 
@@ -47,7 +46,7 @@ showSquare (MkSquare a) = showFile (fst a) : [showRank (snd a)]
 
 toInt = ord
 
--- Reading Data Structures / Parsing
+-- Reading Data Structures
 readCFile :: Char -> Maybe File
 readCFile c | (c2int <97) || (c2int>104) = Nothing
             | otherwise = Just $ c2int - 97
@@ -70,28 +69,23 @@ readSquare :: String -> Maybe Square
 readSquare str = if length str < 2  then Nothing else readSquare'
   (head str) (str!!1)
 
+-- Parsing
+pFile :: GenParser Char st File
+pFile = do
+  mf <- readCFile <$> anyChar
+  maybe (fail "(not a file)") return mf
 
-pFile :: Parser File
-pFile = P(\case
-    []     -> Nothing
-    (r:cs) -> (\p -> Just (p,cs)) =<< readCFile r)
-
-
-pRank :: Parser Rank
-pRank = P(\case
-             [] -> Nothing
-             (r:cs) ->
-               -- (\r -> Just(r,cs)) =<< readRank r
-               do ra <- readRank r
-                  return (ra,cs))
-
-
-pSquare :: Parser Square
+pRank :: GenParser Char st Rank
+pRank = do
+  mf <- readRank <$> anyChar
+  maybe (fail "(not a rank)") return mf
+ 
+pSquare :: GenParser Char st Square
 pSquare = do
-            space
-            f <- pFile
-            r <- pRank
-            return (MkSquare (f,r))
+  f <- pFile
+  r <- pRank
+  return (MkSquare (f,r))
+
 
 -- Integer tuple encoding
 tuple2Square :: SquareTuple -> Square

@@ -1,28 +1,29 @@
 module Main (main) where
 
-import Data.Maybe(mapMaybe)
-import Control.Monad (when)
+import Data.Either
+import Data.Maybe
+import Control.Monad
 import qualified System.Exit as Exit
-import Test.HUnit (Assertion, Test(TestList, TestCase), runTestTT, assertEqual, failures)
-import Game ( Game, pGame )
-import Moves ( pMoveCoord )
-import Play ( makeMove )
-import Parsing ( parse )
+import Test.HUnit
+import Game
+import Moves
+import Play
+import Parsing
 import Utils (splitOn)
 
 fixtures = "tests/fixtures/"
 inputs = "make_move_input.csv"
 
-genGames = (fst <$>) . parse pGame
+genGames = (either (\a -> Nothing) (\b -> Just b)) . parse pGame ""
 
-genMoves = (fst <$>) . parse pMoveCoord
+genMoves = (either (\a -> Nothing) (\b -> Just b)) . parse pMoveCoord ""
 
 noHeadLines = drop 1 . lines
 
 genOutGames = zipWith makeMove
 
-assertEq    = assertEqual "falla: " :: Maybe Game -> Maybe
-  Game -> Assertion
+assertEq    = assertEqual "falla: " :: Maybe Game -> Maybe Game
+  -> Assertion
 
 genTest     = zipWith assertEq
 
