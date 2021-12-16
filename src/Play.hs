@@ -1,16 +1,29 @@
 module Play where
 
-import Data.Maybe
-import Data.Bits
+import Data.Maybe ( isNothing, fromJust, mapMaybe, isJust )
+import Data.Bits ( Bits(clearBit, complement, (.&.)) )
 import qualified Data.Map.Strict as Map
-import Data.Either
 import Game
-import Board
+    ( Game(MkGame), board, castleFlag, epSquare, nMoves, nPlys, turn )
+import Board ( checkSquare, whereIsPiece, Board(..) )
 import Pieces
+    ( pieceType,
+      Piece(MkPiece, fromPiece),
+      PieceType(Pawn, King, Rook),
+      Ptype(fromPtype),
+      Side )
 import Moves
+    ( Move, getCrown, getDestSq, getInitSq, isNullMove, readMove )
 import Squares
-import Rules
-import Utils
+    ( readSquare,
+      square2Tuple,
+      squareFile,
+      squareRank,
+      tuple2Square,
+      File,
+      Square(MkSquare) )
+import Rules ( sameSide )
+import Utils ( myRight )
 
 castle_moves = map (myRight.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
 castle_rook_moves = map (myRight.readMove) ["h1f1","a1d1","h8f8", "a8d8"]
@@ -171,3 +184,10 @@ mkSimpleMoveBoard m b = do
   let o_bd = Map.delete destsq (Map.delete initsq (fromBoard b))
   return (MkBoard (Map.insert destsq initpiece o_bd))
 
+
+-- unMakeMove :: Move -> Game -> [Game] -> Maybe Game
+-- unMakeMove _ _ [] = Nothing
+-- unMakeMove m g h  | isValidUnMake = Just lastGame
+--                   | otherwise  = Nothing
+--   where isValidUnMake = makeMove m lastGame == Just g
+--         lastGame  = head h
