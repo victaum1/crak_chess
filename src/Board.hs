@@ -94,6 +94,10 @@ checkSquare (MkSquare sq) (MkBoard bd) = MkPiece <$> Map.lookup sq bd
 checkPiece :: Piece -> PieceList -> Maybe [Square]
 checkPiece = Map.lookup
 
+checkPiece_ :: Piece -> Board -> [Square]
+checkPiece_  p b = fromMaybe [] $ checkPiece p (makePieceList b)
+
+
 whereIsPiece :: Piece -> Board -> [Square]
 whereIsPiece (MkPiece p) (MkBoard b) = map MkSquare  <$> map fst $
   Map.toList $ Map.filter (p ==) b

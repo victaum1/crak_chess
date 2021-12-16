@@ -17,29 +17,30 @@ import Data.Bits
 moveGenerator :: Game -> [Move]
 moveGenerator g = genKingMoves g ++ moveGenBySide g
 
+
+moveGenBySide_ :: Side -> Board -> [Move]
+moveGenBySide_ s b | s = concat $ map (`genKnightMoves` b) ns ++
+  map (`genBishopMoves` b) bs ++
+  map (`genRookMoves` b) rs ++
+  map (`genQueenMoves` b) qs
+                | otherwise = concat $ map (`genKnightMoves` b) ns ++
+  map (`genBishopMoves` b) bs ++
+  map (`genRookMoves` b) rs ++
+  map (`genQueenMoves` b) qs
+  where ns = whereIsPiece (MkPiece(s,Knight)) b
+        bs = whereIsPiece (MkPiece(s,Bishop)) b
+        rs = whereIsPiece (MkPiece(s,Rook)) b
+        qs = whereIsPiece (MkPiece(s,Queen)) b
+
 moveGenBySide :: Game -> [Move]
 moveGenBySide g | s         = concat $ map (`genAllPawnMoves` g) wps ++
-  map (`genKnightMoves` b) wns ++
-  map (`genBishopMoves` b) wbs ++
-  map (`genRookMoves` b) wrs ++
-  map (`genQueenMoves` b) wqs
+                  [moveGenBySide_ s b]
                 | otherwise = concat $ map (`genAllPawnMoves` g) bps ++
-  map (`genKnightMoves` b) bns ++
-  map (`genBishopMoves` b) bbs ++
-  map (`genRookMoves` b) brs ++
-  map (`genQueenMoves` b) bqs
+                  [moveGenBySide_ s b]
   where s = turn g
         b = board g
         wps = whereIsPiece (MkPiece (True,Pawn)) b
         bps = whereIsPiece (MkPiece (False,Pawn)) b
-        wns = whereIsPiece (MkPiece (True,Knight)) b
-        bns = whereIsPiece (MkPiece (False,Knight)) b
-        wbs = whereIsPiece (MkPiece (True,Bishop)) b
-        bbs = whereIsPiece (MkPiece (False,Bishop)) b
-        wrs = whereIsPiece (MkPiece (True,Rook)) b
-        brs = whereIsPiece (MkPiece (False,Rook)) b
-        wqs = whereIsPiece (MkPiece (True,Queen)) b
-        bqs = whereIsPiece (MkPiece (False,Queen)) b
 
 squareAttack :: Square -> Game -> Bool
 squareAttack sq ge = squareAttackOnBoard (not aSide) sq aBoard
