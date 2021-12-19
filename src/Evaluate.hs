@@ -13,6 +13,7 @@ type Score = Int
 max_material = 3900:: Score
 mate_score = max_material + 100
 inf_score = max_material + 1
+_inf_score = negate inf_score
 material_w = max_material
 
 score_pieces = [100,300,300,500,900,0]
