@@ -7,6 +7,7 @@ import Play ( makeMove )
 import Valid ( genValidMoves )
 import Evaluate ( evaluate, Score, _inf_score, inf_score )
 import Generator (isCapture)
+import Data.List (sortBy)
 
 -- types
 type Depth = Int
@@ -14,13 +15,14 @@ type MoveScore = (Move,Score)
 
 -- funcs
 searchDivide :: Game -> Depth -> [MoveScore]
-
 searchDivide g d | d < 0 = []
                  | d == 0 = [(null_move,evaluate g)]
-                 | otherwise = zip moves scores
+                 | otherwise = sortBy (\(_,a) (_,b) -> compare a b)
+                                 mScores
   where moves = genValidMoves g
         sucPos = mapMaybe (`makeMove` g) moves
-        scores = map (search (d-1)) sucPos
+        scores = map ((* (-1)) . search (d-1)) sucPos
+        mScores = zip moves scores
 
 
 search :: Depth -> Game -> Score

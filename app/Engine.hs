@@ -1,18 +1,19 @@
 module Engine where
 
-import Data.Either
-import Data.Maybe
+-- import Data.Either ()
+-- import Data.Maybe ()
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Control.Monad.Trans.State
-import System.Random
-import Moves
-import Game
-import Board
-import Pieces
-import Valid
-import Defs
-import Utils
+-- import Control.Monad.Trans.State ()
+import System.Random ( StdGen )
+import Moves ( readMove, Move )
+import Game ( board, fen2Game, game2FEN, init_game, Game )
+import Board ( showBoard )
+import Pieces ( Side )
+import Valid ( genValidMoves )
+import Defs ( randomChoice )
+import Utils ( myRight )
+import Search (searchDivide)
 
 -- vars / cons
 dft_time = 5000 :: Int
@@ -66,7 +67,7 @@ setPost a_post args = args{getPost=a_post}
 
 -- main funcs
 think :: Game -> StdGen -> Maybe Move
-think gm sg | not (null ms) = Just $ randomChoice ms sg
+think gm sg | not (null ms) = Just $ fst $ last $ searchDivide gm 3
             | otherwise = Nothing
   where ms = genValidMoves gm
 

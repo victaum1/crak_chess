@@ -1,5 +1,5 @@
 name: crak-chess
-version: 0.1.0.0
+version: 0.1.3.0
 synopsis: A simple chess engine in haskell by Victaum
 description: See README at <https://gitlab.com/victaum/vichess#readme>
 maintainer: Victor H. Manotas G. <victorma32@gmail.com>
@@ -30,6 +30,7 @@ library:
       - Play
       - Utils
       - Perft
+      - Search
     dependencies:
       - containers
       - parsec
