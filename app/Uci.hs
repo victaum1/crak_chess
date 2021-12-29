@@ -66,11 +66,7 @@ infoPost = do
   mio $ putStrLn "info depth 1 score cp 0 time 1 pv 0000"
 
 uThink = do
-  args <- get
-  g <- newStdGen
-  let g_ = maybe g mkStdGen (getSeed args)
-  let a_game = getGame args
-  let a_move = think a_game g_
+  a_move <- think
   maybe (mio $ putStrLn "bestmove 0000") (
     \m -> do
       mio $ putStrLn $ "bestmove " ++ show m

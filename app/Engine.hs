@@ -1,41 +1,37 @@
+{-# LANGUAGE BangPatterns #-}
 module Engine where
 
 -- import Data.Either ()
 -- import Data.Maybe ()
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
--- import Control.Monad.Trans.State ()
 import System.Random ( StdGen )
+import System.Clock (Clock (Monotonic, Realtime), getTime, TimeSpec(..), timeSpecAsNanoSecs, diffTimeSpec, toNanoSecs)
 import Moves ( readMove, Move )
-import Game ( board, fen2Game, game2FEN, init_game, Game )
+import Game ( board, fen2Game, game2FEN, init_game, Game, nMoves )
 import Board ( showBoard )
 import Pieces ( Side )
 import Valid ( genValidMoves )
-import Defs ( randomChoice )
+import Defs ( randomChoice, mio )
 import Utils ( myRight )
-import Search (searchDivide)
+import Search (searchDivide, MoveScore, Depth)
+-- import Evaluate ()
+import Control.Monad.Trans.State ( get, put, StateT )
 
 -- vars / cons
-dft_time = 5000 :: Int
-dft_depth = 10 :: Int
+max_depth = 22 :: Int
+dft_time = 300000 :: Int -- ms, 5 mins
 dft_post_flag = True
-dft_str_move_w = "e2e4"
-dft_str_move_b = "e7e5"
-game_fen1 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
-game_fen2 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
 dft_cp_flag = Just False -- Black
 dft_seed = Nothing -- Auto gen random number
-move_w = myRight $ readMove dft_str_move_w
-move_b = myRight $ readMove dft_str_move_b
-game_st1 = myRight $ fen2Game game_fen1
-game_st2 = myRight $ fen2Game game_fen2
-init_args = PlayArgs dft_time dft_depth dft_cp_flag init_game []
+
+init_args = PlayArgs dft_time max_depth dft_cp_flag init_game []
   dft_post_flag dft_seed
 
 
 -- adts
 data PlayArgs = PlayArgs {
-   getTime   :: Int
+   getCTime   :: Int
   ,getDepth  :: Int
   ,getCpFlag :: Maybe Side
   ,getGame   :: Game
@@ -47,7 +43,7 @@ data PlayArgs = PlayArgs {
 
 -- setters for PlayArgs
 setTime :: Int -> PlayArgs -> PlayArgs
-setTime a_time args = args{getTime=a_time}
+setTime a_time args = args{getCTime=a_time}
 
 setDepth :: Int -> PlayArgs -> PlayArgs
 setDepth a_depth args = args{getDepth=a_depth}
@@ -66,10 +62,67 @@ setPost a_post args = args{getPost=a_post}
 
 
 -- main funcs
-think :: Game -> StdGen -> Maybe Move
-think gm sg | not (null ms) = Just $ fst $ last $ searchDivide gm 3
-            | otherwise = Nothing
-  where ms = genValidMoves gm
+think :: StateT PlayArgs IO (Maybe Move)
+think = do
+  args <- get
+  ti <- mio $ getTime Realtime
+  ms <- iterDeep ti 1
+  if not (null ms) then return (Just (pickMove ms))
+    else return Nothing
+
+pickMove :: [MoveScore] -> Move
+pickMove ms = fst $ last ms
+
+
+difTime :: TimeSpec -> TimeSpec -> Integer -- nano secs
+difTime tf ti = toNanoSecs $ diffTimeSpec tf ti
+
+
+checkTime :: TimeSpec -> StateT PlayArgs IO Bool
+checkTime ti = do
+  tf <- mio $ getTime Realtime
+  let dif = difTime tf ti
+  args <- get
+  let ttime = getCTime args
+  mob <- movesOutOfBook
+  let nMs = min mob 5
+  let facTor = 2 - toRational nMs / 5
+  mtc <- movesUntiTimeControl
+  let target = (ttime * round 1e6) `div` (mtc + 5)
+  let te = round (fromIntegral target * facTor)
+  put (setTime (ttime-( fromIntegral dif `div` round 1e6)) args)
+  mio $ putStrLn $ show dif ++ " - " ++ show te
+  if dif >= te then return True
+  else return False
+
+movesUntiTimeControl :: StateT PlayArgs IO Int
+movesUntiTimeControl = do
+  args <- get
+  let g = getGame args
+  let nms = nMoves g
+  if nms > 40 then return 0
+  else return (40 - nms)
+
+
+movesOutOfBook :: StateT PlayArgs IO Int
+movesOutOfBook = do
+  args <- get
+  let g = getGame args
+  let nms = nMoves g
+  if nms < 5 then return 0
+  else return (nms - 5)
+
+
+iterDeep :: TimeSpec -> Depth -> StateT PlayArgs IO [MoveScore]
+iterDeep ti ni = do
+  args <- get
+  let g = getGame args
+  let !ms = searchDivide g ni
+  tc <- checkTime ti
+  if ni < max_depth && not tc then
+    iterDeep ti (ni + 1)
+  else
+    return ms
 
 
 takeBack :: PlayArgs -> PlayArgs
@@ -93,7 +146,7 @@ dumpFEN pa = do
 
 dumpPlay :: PlayArgs -> String
 dumpPlay pa = do
-  let a_time = getTime pa
+  let a_time = getCTime pa
   let a_depth = getDepth pa
   let cp_flag = getCpFlag pa
   let a_hist = getHist pa
