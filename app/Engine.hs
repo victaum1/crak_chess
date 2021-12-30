@@ -14,7 +14,7 @@ import Pieces ( Side )
 import Valid ( genValidMoves )
 import Defs ( randomChoice, mio )
 import Utils ( myRight )
-import Search ( searchDivide, MoveScore, Depth, Nodes )
+import Search ( searchDivide, MoveScore, Depth, Nodes, SearchInfo )
 import Control.Monad.Trans.State ( get, put, StateT )
 import Evaluate (Score)
 
@@ -74,8 +74,8 @@ think = do
   if not (null ms) then return (Just (pickMove ms))
     else return Nothing
 
-pickMove :: [MoveScore] -> Move
-pickMove ms = fst $ last ms
+pickMove :: [SearchInfo] -> Move
+pickMove ms = (\(a,_,_) -> a) $ last ms
 
 
 difTime :: TimeSpec -> TimeSpec -> Integer -- nano secs
@@ -117,15 +117,16 @@ movesOutOfBook = do
   else return (nms - 5)
 
 
-postInfo :: Protocol -> Depth -> Score -> Nodes -> Move -> IO ()
-postInfo p d s n m | p = putStrLn $ show d ++ " " ++ show s ++ " "
-                   ++ show n ++ " " ++ show m
-                 | otherwise = putStrLn $ "info depth " ++ show d ++
-                   " score cp " ++ show s ++ " nodes " ++ show n
-                   ++ " pv " ++ show m
+postInfo :: Bool -> Protocol -> Depth -> Score -> Nodes -> Move -> IO ()
+postInfo b p d s n m | b = if p then putStrLn $ show d ++ " " ++ show s ++ " "
+                                ++ show n ++ " " ++ show m
+                           else putStrLn $ "info depth " ++ show d ++
+                                " score cp " ++ show s ++ " nodes " ++ show n
+                                ++ " pv " ++ show m
+                     | otherwise = putStr ""
 
 
-iterDeep :: TimeSpec -> Depth -> StateT PlayArgs IO [MoveScore]
+iterDeep :: TimeSpec -> Depth -> StateT PlayArgs IO [SearchInfo]
 iterDeep ti ni = do
   args <- get
   let g = getGame args
@@ -133,14 +134,11 @@ iterDeep ti ni = do
   let post = getPost args
   let !ms = searchDivide g ni
   tc <- checkTime ti
-  let (m,s) = last ms
-  if ni < max_depth && not tc then
-    if post then do
-      mio $ postInfo prot ni s 1 m
-      iterDeep ti (ni + 1)
-    else iterDeep ti (ni + 1)
-  else
-    return ms
+  let (m,s,_) = last ms
+  let nodes = sum $ map (\(_,_,n) -> n) ms
+  mio $ postInfo post prot ni s nodes m
+  if ni < max_depth && not tc then iterDeep ti (ni+1)
+      else return ms
 
 
 takeBack :: PlayArgs -> PlayArgs
