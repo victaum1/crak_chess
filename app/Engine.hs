@@ -14,9 +14,9 @@ import Pieces ( Side )
 import Valid ( genValidMoves )
 import Defs ( randomChoice, mio )
 import Utils ( myRight )
-import Search (searchDivide, MoveScore, Depth)
--- import Evaluate ()
+import Search ( searchDivide, MoveScore, Depth, Nodes )
 import Control.Monad.Trans.State ( get, put, StateT )
+import Evaluate (Score)
 
 -- vars / cons
 max_depth = 22 :: Int
@@ -24,10 +24,13 @@ dft_time = 300000 :: Int -- ms, 5 mins
 dft_post_flag = True
 dft_cp_flag = Just False -- Black
 dft_seed = Nothing -- Auto gen random number
+dft_protocol = True -- Xboard protocol || UCI prot...
 
 init_args = PlayArgs dft_time max_depth dft_cp_flag init_game []
-  dft_post_flag dft_seed
+  dft_post_flag dft_seed dft_protocol
 
+-- simple types
+type Protocol = Bool
 
 -- adts
 data PlayArgs = PlayArgs {
@@ -38,6 +41,7 @@ data PlayArgs = PlayArgs {
   ,getHist   :: [Game]
   ,getPost   :: Bool
   ,getSeed   :: Maybe Int
+  ,getProtocol :: Bool
   } deriving (Eq,Show)
 
 
@@ -91,7 +95,7 @@ checkTime ti = do
   let target = (ttime * round 1e6) `div` (mtc + 5)
   let te = round (fromIntegral target * facTor)
   put (setTime (ttime-( fromIntegral dif `div` round 1e6)) args)
-  mio $ putStrLn $ show dif ++ " - " ++ show te
+--  mio $ putStrLn $ show dif ++ " - " ++ show te
   if dif >= te then return True
   else return False
 
@@ -113,14 +117,28 @@ movesOutOfBook = do
   else return (nms - 5)
 
 
+postInfo :: Protocol -> Depth -> Score -> Nodes -> Move -> IO ()
+postInfo p d s n m | p = putStrLn $ show d ++ " " ++ show s ++ " "
+                   ++ show n ++ " " ++ show m
+                 | otherwise = putStrLn $ "info depth " ++ show d ++
+                   " score cp " ++ show s ++ " nodes " ++ show n
+                   ++ " pv " ++ show m
+
+
 iterDeep :: TimeSpec -> Depth -> StateT PlayArgs IO [MoveScore]
 iterDeep ti ni = do
   args <- get
   let g = getGame args
+  let prot = getProtocol args
+  let post = getPost args
   let !ms = searchDivide g ni
   tc <- checkTime ti
+  let (m,s) = last ms
   if ni < max_depth && not tc then
-    iterDeep ti (ni + 1)
+    if post then do
+      mio $ postInfo prot ni s 1 m
+      iterDeep ti (ni + 1)
+    else iterDeep ti (ni + 1)
   else
     return ms
 

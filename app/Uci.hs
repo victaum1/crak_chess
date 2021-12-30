@@ -31,7 +31,7 @@ ui_map = [
 
 uNew = do
        args <- get
-       let arg_ = init_args{getSeed=getSeed args}
+       let arg_ = init_args{getProtocol=False}
        put arg_
        uiLoop
 

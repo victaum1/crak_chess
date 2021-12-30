@@ -11,7 +11,9 @@ import Data.List (sortBy)
 
 -- types
 type Depth = Int
+type Nodes = Int
 type MoveScore = (Move,Score)
+type SearchInfo = (Move,Score,Nodes)
 
 -- funcs
 searchDivide :: Game -> Depth -> [MoveScore]
