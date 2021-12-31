@@ -5,10 +5,13 @@ import Moves ( Move, null_move )
 import Data.Maybe ( fromJust, mapMaybe )
 import Play ( makeMove )
 import Valid ( genValidMoves )
-import Evaluate ( evaluate, Score, _inf_score, inf_score )
+import Evaluate ( evaluate, Score, _inf_score, inf_score, eval_factors )
 import Generator (isCapture)
 import Data.List (sortBy)
 import qualified Data.Bifunctor
+
+-- vars
+max_depth = 22 :: Int
 
 -- types
 type Depth = Int
@@ -51,13 +54,16 @@ isRep :: [GamePos] -> Game -> Bool
 isRep gp g = gamePos g `elem` gp
 
 alphaBeta :: [GamePos] -> Nodes -> Score -> Score -> Depth -> Game -> ScoreNodes
-alphaBeta _  _  _ _ d _  | d < 0    = undefined
-alphaBeta gp ni a b d g  | isRep gp g = (0,ni+1)
-                         | d == 0 = qS gp ni a b g
-                         | otherwise = abIt (gpi:gp) ni a b (d-1) sucPos
+alphaBeta _  _  _ _ d _  | d < 0                = undefined
+alphaBeta gp ni a b d g  | depthi >=  max_depth = (evaluate g,ni+1)
+                         | isRep gp g           = (0,ni+1)
+                         | d == 0               = qS gp ni a b g
+                         | otherwise            = abIt (gpi:gp) ni a b
+                           (d-1) sucPos
   where moves = genValidMoves g
         sucPos = mapMaybe (`makeMove` g) moves
         gpi = gamePos g
+        depthi = length gp
 
 abIt :: [GamePos] -> Nodes -> Score -> Score -> Depth -> [Game] -> ScoreNodes
 abIt gp ni a _ _ []      = (a,ni)
