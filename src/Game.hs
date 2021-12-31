@@ -21,6 +21,7 @@ castle_table' = zip castle_codes castle_chars
 type CastleFlag = Int
 type Nplys = Int
 type Nmoves = Int
+type GamePos = (Board,Side,CastleFlag,Maybe Square)
 type GameState = (Board,Side,CastleFlag,Maybe Square,Nplys,Nmoves)
 
 newtype Game = MkGame {fromGame::GameState} deriving (Eq)
@@ -31,6 +32,7 @@ castleFlag (MkGame (_,_,c,_,_,_)) = c
 epSquare (MkGame (_,_,_,e,_,_)) = e
 nPlys (MkGame (_,_,_,_,p,_)) = p
 nMoves (MkGame (_,_,_,_,_,m)) = m
+gamePos (MkGame(b,t,c,e,_,_)) = (b,t,c,e)
 
 showGame :: Game -> String
 showGame (MkGame (bd,si,cf,ep,ps,ms)) = "Game{ " ++ show bd ++ "," ++ show si ++ "," ++ show cf ++ "," ++ show ep ++ "," ++ show ps ++ "," ++ show ms ++ "}" 
