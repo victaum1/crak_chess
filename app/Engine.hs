@@ -69,8 +69,13 @@ setPost a_post args = args{getPost=a_post}
 think :: StateT PlayArgs IO (Maybe Move)
 think = do
   args <- get
+  let ttime = getCTime args
   ti <- mio $ getTime Realtime
   ms <- iterDeep ti 1
+  tf <- mio $ getTime Realtime
+  let dif = difTime tf ti
+--  mio $ print dif
+  put (setTime (ttime-(fromInteger dif `div` round 1e6)) args)
   if not (null ms) then return (Just (pickMove ms))
     else return Nothing
 
@@ -94,9 +99,8 @@ checkTime ti = do
   mtc <- movesUntiTimeControl
   let target = (ttime * round 1e6) `div` (mtc + 5)
   let te = round (fromIntegral target * facTor)
-  put (setTime (ttime-( fromIntegral dif `div` round 1e6)) args)
---  mio $ putStrLn $ show dif ++ " - " ++ show te
-  if dif >= te then return True
+--  mio $ print dif
+  if 2*dif > te then return True
   else return False
 
 movesUntiTimeControl :: StateT PlayArgs IO Int
