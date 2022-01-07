@@ -1,16 +1,29 @@
 module Play where
 
-import Game
-import Board
-import Pieces
-import Data.Maybe
-import Data.Either
+import Data.Maybe ( isNothing, fromJust, mapMaybe, isJust )
+import Data.Bits ( Bits(clearBit, complement, (.&.)) )
 import qualified Data.Map.Strict as Map
+import Game
+    ( Game(MkGame), board, castleFlag, epSquare, nMoves, nPlys, turn )
+import Board ( checkSquare, whereIsPiece, Board(..) )
+import Pieces
+    ( pieceType,
+      Piece(MkPiece, fromPiece),
+      PieceType(Pawn, King, Rook),
+      Ptype(fromPtype),
+      Side )
 import Moves
+    ( Move, getCrown, getDestSq, getInitSq, isNullMove, readMove )
 import Squares
-import Rules
-import Data.Bits
-import Utils 
+    ( readSquare,
+      square2Tuple,
+      squareFile,
+      squareRank,
+      tuple2Square,
+      File,
+      Square(MkSquare) )
+import Rules ( sameSide )
+import Utils ( myRight )
 
 castle_moves = map (myRight.readMove) ["e1g1","e1c1","e8g8", "e8c8"]
 castle_rook_moves = map (myRight.readMove) ["h1f1","a1d1","h8f8", "a8d8"]
@@ -34,8 +47,8 @@ makeMove m g | isNullMove m = Just (MkGame (bd,
                                             not (turn g),cf,Nothing
                                            ,nPlys g + 1,if turn g then
                                                nMoves g else nMoves g + 1))
-             | otherwise = do
-  let i_side = si
+             | otherwise = do 
+  let i_side = turn g
   let i_nplys = nPlys g
   let i_nMoves = nMoves g
   let i_castle = cf
@@ -49,10 +62,10 @@ makeMove m g | isNullMove m = Just (MkGame (bd,
         | isRookMovedFromCastleSq && isRookMove && i_castle /= 0 && not
           (isKingOutOfInitSq si) = maybe i_castle ((.&.) i_castle . complement)
           (Map.lookup initSq rook_move_map)
-        | isKingMoved m g && i_castle /=0 && not (isKingOutOfInitSq si) =
+       | isKingMoved m g && i_castle /=0 && not (isKingOutOfInitSq si) =
           if i_side then i_castle .&. 12
           else i_castle .&. 3
-        | isRookCaptureInCastleSq && i_castle /=0 && not
+       | isRookCaptureInCastleSq && i_castle /=0 && not
           (isKingOutOfInitSq (not si)) = if si && destSq == MkSquare (7,7) then
               i_castle `clearBit` 2
             else if si && destSq == MkSquare (0,7) then
@@ -62,7 +75,7 @@ makeMove m g | isNullMove m = Just (MkGame (bd,
                if not si && destSq == MkSquare (0,0) then
                  i_castle `clearBit` 1
                             else i_castle
-        | otherwise = i_castle
+       | otherwise = i_castle
   let o_nplys = if isPawn (tuple2Square initSq) i_bd || isCapture || isCrown then 0 else
         i_nplys + 1
   let o_nMoves = if not i_side then i_nMoves + 1 else i_nMoves
@@ -99,10 +112,12 @@ makeMove m g | isNullMove m = Just (MkGame (bd,
           whereIsKing ss /= [MkSquare (4,7)]
         whereIsKing ss = whereIsPiece (MkPiece (ss,King)) bd
 
+
 isKingMoved :: Move -> Game -> Bool
 isKingMoved m g = Just King == (pieceType <$> checkSquare sq bd)
   where sq = getInitSq m
         bd = board g
+
 
 isEpCapture :: Move -> Game -> Bool
 isEpCapture m g = isSidePawn && Just destSq==epSq
@@ -116,7 +131,7 @@ isEpCapture m g = isSidePawn && Just destSq==epSq
 mkEp :: Side -> File -> Maybe Square
 mkEp si fi | si = Just (MkSquare (fi,2))
            | otherwise = Just (MkSquare (fi,5))
-
+ 
 epSqDel :: Side -> File -> Square
 epSqDel si fi | si = MkSquare (fi,3)
               | otherwise = MkSquare (fi,4)
@@ -146,6 +161,7 @@ adjSquares si (MkSquare (f,r)) | si = [MkSquare (f+1,r+2), MkSquare (f-1,r+2)]
                            | otherwise =
                              [MkSquare (f+1,r-2), MkSquare (f-1,r-2)]
 
+
 mkMoveBoard :: Move -> Board -> Maybe Board
 mkMoveBoard m b = do
   let initsq    = getInitSq m
@@ -167,3 +183,10 @@ mkSimpleMoveBoard m b = do
   initpiece <- fromPiece <$> checkSquare (tuple2Square initsq) b
   let o_bd = Map.delete destsq (Map.delete initsq (fromBoard b))
   return (MkBoard (Map.insert destsq initpiece o_bd))
+
+-- unMakeMove :: Move -> Game -> [Game] -> Maybe Game
+-- unMakeMove _ _ [] = Nothing
+-- unMakeMove m g h  | isValidUnMake = Just lastGame
+--                   | otherwise  = Nothing
+--   where isValidUnMake = makeMove m lastGame == Just g
+--         lastGame  = head h

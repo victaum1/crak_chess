@@ -1,50 +1,36 @@
 {-# LANGUAGE BangPatterns #-}
 module Engine where
 
--- import System.Random
--- import Control.Monad.Trans.State
--- import System.Clock
--- import Data.Maybe
--- import Data.Map.Strict (Map)
--- import qualified Data.Map.Strict as Map
--- import Moves
--- import Game
--- import Board
--- import Pieces
--- import Defs
--- import Search
--- import Evaluate
-
-
-import System.Random ( newStdGen, mkStdGen, StdGen )
-import Control.Monad.Trans.State ( get, StateT )
-import System.Clock
-    ( getTime, Clock(Monotonic), TimeSpec(TimeSpec) )
-import Data.Maybe ( isNothing )
+-- import Data.Either ()
+-- import Data.Maybe ()
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Moves ( null_move, Move )
-import Game ( board, game2FEN, init_game, Game )
+import System.Random ( StdGen )
+import System.Clock (Clock (Monotonic, Realtime), getTime, TimeSpec(..), timeSpecAsNanoSecs, diffTimeSpec, toNanoSecs)
+import Moves ( readMove, Move )
+import Game ( board, fen2Game, game2FEN, init_game, Game, nMoves )
 import Board ( showBoard )
 import Pieces ( Side )
-import Defs ( mio, randomChoice )
-import Search ( searchList, Depth, MoveInfo, MoveScore, Nodes )
-import Evaluate ( Score, Delta )
-
+import Valid ( genValidMoves )
+import Defs ( randomChoice, mio )
+import Utils ( myRight )
+import Search ( searchDivide, MoveScore, Depth, Nodes, SearchInfo )
+import Control.Monad.Trans.State ( get, put, StateT )
+import Evaluate (Score)
 
 -- vars / cons
-max_depth = 60 :: Int
-dft_time = 300 :: Int -- seconds
+max_depth = 22 :: Int
+dft_time = 300000 :: Int -- ms, 5 mins
 dft_post_flag = True
 dft_cp_flag = Just False -- Black
 dft_seed = Nothing -- Auto gen random number
+dft_protocol = True -- Xboard protocol || UCI prot...
+
 init_args = PlayArgs dft_time max_depth dft_cp_flag init_game []
-  dft_post_flag dft_seed True
+  dft_post_flag dft_seed dft_protocol
 
-
--- type syns
+-- simple types
 type Protocol = Bool
-
 
 -- adts
 data PlayArgs = PlayArgs {
@@ -55,7 +41,7 @@ data PlayArgs = PlayArgs {
   ,getHist   :: [Game]
   ,getPost   :: Bool
   ,getSeed   :: Maybe Int
-  ,getProt   :: Bool
+  ,getProtocol :: Bool
   } deriving (Eq,Show)
 
 -- setters for PlayArgs
@@ -79,77 +65,83 @@ setPost a_post args = args{getPost=a_post}
 
 
 -- main funcs
-pickMove :: StdGen -> Delta -> [MoveScore] -> Move
-pickMove sg d ms | null ms = null_move
-              | length ms == 1 = (fst . head) ms
-              | otherwise = move
-  where (_,top) = last ms
-        (_,mt) = break bf ms
-        bf = \(m,s) -> s >= top - d
-        move = fst $ randomChoice sg mt
-
-
 think :: StateT PlayArgs IO (Maybe Move)
 think = do
   args <- get
-  gen <- newStdGen
-  let sg = maybe gen mkStdGen (getSeed args)
-  ti <- mio $ getTime Monotonic
-  msn <- iterDeep ti 1
-  let ms = map (\(a,b,_)->(a,b)) msn
-  if not (null ms) then return (Just (pickMove sg 10 ms))
-  else return Nothing
+  let ttime = getCTime args
+  ti <- mio $ getTime Realtime
+  ms <- iterDeep ti 1
+  tf <- mio $ getTime Realtime
+  let dif = difTime tf ti
+--  mio $ print dif
+  put (setTime (ttime-(fromInteger dif `div` round 1e6)) args)
+  if not (null ms) then return (Just (pickMove ms))
+    else return Nothing
+
+pickMove :: [SearchInfo] -> Move
+pickMove ms = (\(a,_,_) -> a) $ last ms
 
 
-checkStop :: StateT PlayArgs IO Bool
-checkStop = do
-  args <- get
-  let cpf = getCpFlag args
-  if  isNothing cpf then return True
-    else return False
-
-
-postInfo :: Protocol -> Depth -> Score -> Nodes -> Move -> IO ()
-postInfo p d s n m | p = putStrLn $ show d ++ " " ++ show s ++ " "
-                   ++ show n ++ " " ++ show m
-                 | otherwise = putStrLn $ "info depth " ++ show d ++
-                   " score cp " ++ show s ++ " nodes " ++ show n
-                   ++ " pv " ++ show m
-
-
-difTime :: TimeSpec -> TimeSpec -> Int
-difTime (TimeSpec fs fns) (TimeSpec is ins)  = fromIntegral
-  $ (fs - is) * round 1e9 + (fns - ins)
+difTime :: TimeSpec -> TimeSpec -> Integer -- nano secs
+difTime tf ti = toNanoSecs $ diffTimeSpec tf ti
 
 
 checkTime :: TimeSpec -> StateT PlayArgs IO Bool
 checkTime ti = do
-  to <- mio $ getTime Monotonic
-  let dif = difTime to ti
+  tf <- mio $ getTime Realtime
+  let dif = difTime tf ti
   args <- get
   let ttime = getCTime args
-  if dif >= (ttime * round 1e9) `div` 43
-    then return True else return False
+  mob <- movesOutOfBook
+  let nMs = min mob 5
+  let facTor = 2 - toRational nMs / 5
+  mtc <- movesUntiTimeControl
+  let target = (ttime * round 1e6) `div` (mtc + 5)
+  let te = round (fromIntegral target * facTor)
+--  mio $ print dif
+  if 2*dif > te then return True
+  else return False
 
-iterDeep :: TimeSpec -> Depth -> StateT PlayArgs IO [MoveInfo]
+movesUntiTimeControl :: StateT PlayArgs IO Int
+movesUntiTimeControl = do
+  args <- get
+  let g = getGame args
+  let nms = nMoves g
+  if nms > 40 then return 0
+  else return (40 - nms)
+
+
+movesOutOfBook :: StateT PlayArgs IO Int
+movesOutOfBook = do
+  args <- get
+  let g = getGame args
+  let nms = nMoves g
+  if nms < 5 then return 0
+  else return (nms - 5)
+
+
+postInfo :: Bool -> Protocol -> Depth -> Score -> Nodes -> Move -> IO ()
+postInfo b p d s n m | b = if p then putStrLn $ show d ++ " " ++ show s ++ " "
+                                ++ show n ++ " " ++ show m
+                           else putStrLn $ "info depth " ++ show d ++
+                                " score cp " ++ show s ++ " nodes " ++ show n
+                                ++ " pv " ++ show m
+                     | otherwise = putStr ""
+
+
+iterDeep :: TimeSpec -> Depth -> StateT PlayArgs IO [SearchInfo]
 iterDeep ti ni = do
   args <- get
   let g = getGame args
+  let prot = getProtocol args
   let post = getPost args
-  let prot = getProt args
-  let !msn = searchList ni g
-  b <- checkStop
+  let !ms = searchDivide g ni
   tc <- checkTime ti
-  let (m,sc,_) = last msn
-  let nds = map (\(_,_,a) -> a) msn
-  let nd = sum nds
-  if not tc && not b && ni < max_depth then do
-    if post then do
-      mio $ postInfo prot ni sc nd m
-      iterDeep ti (ni+1)
-    else iterDeep ti (ni+1)
-  else
-     return msn
+  let (m,s,_) = last ms
+  let nodes = sum $ map (\(_,_,n) -> n) ms
+  mio $ postInfo post prot ni s nodes m
+  if ni < max_depth && not tc then iterDeep ti (ni+1)
+      else return ms
 
 
 takeBack :: PlayArgs -> PlayArgs
@@ -179,7 +171,7 @@ dumpPlay pa = do
   let cp_flag = getCpFlag pa
   let a_hist = getHist pa
   let a_post = getPost pa
-  let a_prot = getProt pa
+  let a_prot = getProtocol pa
   "... Time: " ++ show a_time ++ ", Depth: " ++ show a_depth
     ++ ", CpFlat: " ++ show cp_flag ++ ", Hist: " ++ show (length a_hist)
     ++ ", Post: " ++ show a_post ++ ", Prot: " ++ show a_prot

@@ -1,8 +1,8 @@
 module Main (main) where
 
+import Data.Either
 import Control.Monad
 import Data.Maybe
-import Data.Either
 import qualified System.Exit as Exit
 import Test.HUnit
 import Data.List
@@ -53,4 +53,5 @@ main = do
   let as = ws ++ bs
   let tests = TestList $ map TestCase as
   count <- runTestTT tests
-  when (failures count > 0) Exit.exitFailure 
+  when (failures count > 0) Exit.exitFailure
+

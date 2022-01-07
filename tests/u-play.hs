@@ -1,15 +1,15 @@
 module Main (main) where
 
-import Control.Monad (when)
-import qualified System.Exit as Exit
 import Data.Either
 import Data.Maybe
+import Control.Monad
+import qualified System.Exit as Exit
 import Test.HUnit
 import Game
 import Moves
 import Play
 import Parsing
-import Utils
+import Utils (splitOn)
 
 fixtures = "tests/fixtures/"
 inputs = "make_move_input.csv"
@@ -41,3 +41,4 @@ main =
   let tests = TestList $ map TestCase pre_tests
   count <- runTestTT tests
   when (failures count > 0) Exit.exitFailure
+

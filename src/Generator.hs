@@ -1,4 +1,5 @@
 module Generator where
+
 import Game
 import Board
 import Pieces
@@ -77,10 +78,12 @@ squareAttackByRook  sq si bd =  any isRook
   (mapMaybe (`checkSquare` bd) (genRookSquares sq bd))
   where isRook p = MkPiece (si,Rook) == p
 
+
 squareAttackedByKing :: Side -> Board -> Square -> Bool
 squareAttackedByKing si bd sq = sq `elem`
   genKingSimpleSquares' ksq bd
   where ksq = whereIsKing si bd
+
 
 squareAttackByPawn :: Square -> Side -> Board -> Bool
 squareAttackByPawn sq si bd = any isPawn
@@ -184,10 +187,10 @@ genSquaresFromBranches :: Square -> Board -> CBranch -> [Square]
 genSquaresFromBranches s b c = filter (isAStep s
   b) (genSquaresFromBranches' s b c)
 
-
 genSquaresFromBranches' :: Square -> Board -> CBranch -> [Square]
 genSquaresFromBranches' s b c = map tuple2Square (filter onBoard' (makeSquares'
   (square2Tuple s) c))
+
 
 mkRaysFromBranches :: Square -> Board -> CBranch -> [[Square]]
 mkRaysFromBranches sq bd = map mkRay
@@ -257,12 +260,14 @@ genKingSimpleSquares' :: Square -> Board -> [Square]
 genKingSimpleSquares' s b = genSquaresFromBranches' s b (mini_rook_branches
   ++ mini_bishop_branches)
 
+
 genCastleSquare :: Side -> Bool -> Square
 genCastleSquare s b | s && b = MkSquare (6,0)
                     | s && not b = MkSquare (2,0)
                     | not s && b = MkSquare (6,7)
                     | otherwise = MkSquare (2,7)
 
+ 
 genCastleSquares :: Game -> [Square]
 genCastleSquares g | isInCheck g = []
                    | otherwise = map (genCastleSquare s) $ filter
@@ -285,18 +290,15 @@ isFlagCastle g b | s =  if b then 1 .&. c > 0 else 2 .&. c > 0
         c = castleFlag g
 
 
-
-
 checkCastleSquares :: Game -> Bool -> Bool
 checkCastleSquares g b | s && b     = (((==2) . length) . filterBoth)
-  whiteKingSide
+  whiteKingSide 
                        | s && not b = (((==2) . length) . filterBoth)
   whiteQueenSide && isEmpty (MkSquare (1,0)) bd
                        | not s && b = (((==2) . length) . filterBoth)
   blackKingSide
                        | otherwise  = (((==2) . length) . filterBoth)
   blackQueenSide && isEmpty (MkSquare (1,7)) bd
-
   where
        whiteKingSide  = [MkSquare (5,0), MkSquare (6,0)]
        whiteQueenSide = [MkSquare (3,0), MkSquare (2,0)]
@@ -318,7 +320,9 @@ isBoardInCheck s b = squareAttackOnBoard ns (whereIsKing s b)
   b
   where ns = not s
 
+
 isCapture :: Board -> Move -> Bool
 isCapture bd mv = isJust mp
- where (MkMove (_,dsq,_)) = mv
-       mp = checkSquare dsq bd
+  where (MkMove (_,dsq,_)) = mv
+        mp = checkSquare dsq bd
+

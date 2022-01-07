@@ -1,8 +1,8 @@
 module Main(main) where
 
+import Data.Either
 import qualified System.Exit as Exit
 import Control.Monad
-import Data.Either
 import Test.HUnit
 import Perft
 import Game
@@ -35,3 +35,4 @@ main =
     let tests = TestList $ map TestCase pre_tests
     count <- runTestTT tests
     when (failures count > 0) Exit.exitFailure
+

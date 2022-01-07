@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Control.Monad (when)
+import Control.Monad
 import Data.Maybe
 import Data.Either
 import Game

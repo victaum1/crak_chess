@@ -1,9 +1,8 @@
 module Main (main) where
-
-import qualified System.Exit as Exit
-import Control.Monad(when)
 import Data.Either
 import Test.HUnit
+import qualified System.Exit as Exit
+import Control.Monad(when)
 import Game
 import Utils
 

@@ -1,12 +1,13 @@
 module Game where
 
-import           Board
-import           Data.Maybe
 import           Data.Either
+import           Data.Maybe
+import           Board
 import           Parsing
 import           Pieces
 import           Squares
 import           Utils
+
 
 -- vars / const
 init_fen = init_board_fen ++ "w KQkq - 0 1"
@@ -20,16 +21,8 @@ castle_table' = zip castle_codes castle_chars
 type CastleFlag = Int
 type Nplys = Int
 type Nmoves = Int
+type GamePos = (Board,Side,CastleFlag,Maybe Square)
 type GameState = (Board,Side,CastleFlag,Maybe Square,Nplys,Nmoves)
-
--- data GameState = MkGameState {
---      board :: Board
---     ,turn :: Side
---     ,castleFlag :: castleFlag
---     ,epSquare :: Maybe Square
---     ,nPlys :: Int
---     ,nMoves :: Int
---   } deriving (Eq)
 
 newtype Game = MkGame {fromGame::GameState} deriving (Eq)
 
@@ -40,14 +33,16 @@ epSquare (MkGame (_,_,_,e,_,_)) = e
 nPlys (MkGame (_,_,_,_,p,_)) = p
 nMoves (MkGame (_,_,_,_,_,m)) = m
 
+gamePos (MkGame(b,t,c,e,_,_)) = (b,t,c,e)
 
-showGame :: Game -> String
-showGame (MkGame (bd,si,cf,ep,ps,ms)) = "Game{ " ++ show bd ++ "," ++ show si ++ "," ++ show cf ++ "," ++ show ep ++ "," ++ show ps ++ "," ++ show ms ++ "}" 
 
 instance Show Game where
   show a = showGame a
 
--- funcs 
+-- funcs
+
+showGame (MkGame (bd,si,cf,ep,ps,ms)) = "Game{ " ++ show bd ++ "," ++ show si ++ "," ++ show cf ++ "," ++ show ep ++ "," ++ show ps ++ "," ++ show ms ++ "}" 
+
 packCastle :: String -> Int -> String -> Maybe Int
 packCastle [] n _ = Just n
 packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
@@ -59,6 +54,7 @@ packCastle (c:cs) n xs | isInTable = packCastle cs nCastle (xs++[c])
 
 fen2Game :: String -> Either ParseError Game
 fen2Game = parse pGame ""
+
 
 showCflags :: Int -> String
 showCflags n | isInTable = [findChar]
@@ -126,3 +122,4 @@ pGame = do
   space
   nm <- pNmoves
   return (MkGame (bd,t,c,sq,ps,nm))
+

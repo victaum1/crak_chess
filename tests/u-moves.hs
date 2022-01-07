@@ -4,12 +4,12 @@ import qualified System.Exit as Exit
 import Data.Maybe
 import Test.HUnit
 import Control.Monad
-import Moves
 import Utils
 import Parsing
+import Moves
 
 fixtures = "tests/fixtures/"
-inputs   = "make_move_input.csv"
+inputs = "make_move_input.csv"
 
 genMoves = myRight . parse pMoveCoord ""
 

@@ -10,7 +10,6 @@ import Board
 prop_read_board_fail str = readBoard str == empty_board ==>
   (isLeft . parse pBoard "") str
 
-
 -- readBoard and showBoard are reverse
 genSafeCChar :: Gen Char
 genSafeCChar = elements ".pnbrqkPNBRQK"

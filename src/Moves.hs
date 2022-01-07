@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
 module Moves where
 
 import Data.Maybe
@@ -10,12 +9,6 @@ import Utils
 -- adts
 type Tmove = (Square,Square,Ptype)
 
--- data Move = Move
---    getInitSq :: Square
---  , getDestSq :: Square
---  , getCrown  :: Ptype
---          } deriving (Eq,Ord)
-
 newtype Move = MkMove{
   fromMove :: Tmove } deriving (Eq,Ord)
 
@@ -25,6 +18,7 @@ instance Show Move where
   show (MkMove (a,b,c)) = showSquare a ++ showSquare b ++ show c
 
 -- vars
+
 null_move = MkMove (MkSquare (0,0), MkSquare (0,0), MkPtype Nothing)
 
 std_w_move = head std_pv
@@ -34,6 +28,7 @@ std_pv = map (myRight . readMove) ["e2e4","e7e5","g1f3"]
 
 
 -- funcs
+
 getInitSq :: Move -> Square
 getInitSq (MkMove (i,_,_)) = i  
 
@@ -66,3 +61,4 @@ pMoveCoord = do
 
 readMove :: String -> Either ParseError Move
 readMove = parse (many space >> pMoveCoord) "(not a move)"
+

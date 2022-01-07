@@ -1,6 +1,5 @@
 # Revision history for crak-chess
 
-
 ## 0.1.9.0 -- 2021-09-19 
 
 * Manage Time with Search!

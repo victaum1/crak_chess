@@ -17,11 +17,13 @@ gen_funcs = concat $ map (replicate 3) [
     genKnightMoves, genBishopMoves, genRookMoves, genQueenMoves
   ]
 
+
 toMaybe = either (const Nothing) Just
 
 manyPMove = toMaybe . parse (many (many space>>pMoveCoord)) ""
 manyPBoard = map (myRight . parse pFenBoard "") . words
 manyPSquare = myRight . parse (many (many space>>pSquare)) ""
+
 
 assertEq = assertEqual "falla: " :: Move -> Move -> Assertion
 
@@ -51,3 +53,4 @@ main = do
   let tests = TestList $ map TestCase pre_tests
   count <- runTestTT tests
   when (failures count > 0) Exit.exitFailure
+

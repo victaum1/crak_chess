@@ -1,19 +1,9 @@
 module Xboard where
 
--- import Control.Monad.Trans.State
--- import Data.Maybe
--- import Data.Either
--- import Defs
--- import Parsing
--- import Pieces
--- import Moves
--- import Game
--- import SubEngine
--- import Engine
-
-import Control.Monad.Trans.State
-import Data.Maybe
+-- import System.Console.Readline
 import Data.Either
+import Data.Maybe
+import Control.Monad.Trans.State
 import Defs
 import Parsing
 import Pieces
@@ -23,7 +13,6 @@ import SubEngine
 import Engine
 import Utils
 
--- import System.Console.Readline
 
 -- vars
 features_str = unwords [
@@ -96,10 +85,11 @@ xbLoop = do
       let res = lookup cmd xb_map
       let pm = parse pMoveCoord "" cmd
       if isLeft pm then maybe (mio (errorCmd ["unknown command",
+
                                             unwords input]) >>
                               xbLoop)
         (\a -> a args) res else userMove [cmd]
-
+  
 
 xGo = xThink >> xbLoop
 
@@ -164,6 +154,7 @@ userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
          if getCpFlag args == Just (turn (getGame args)) then
            xGo
          else xbLoop
+
 
 undo = do
          args <- get
@@ -231,4 +222,4 @@ xboardLoop :: PlayArgs -> IO ()
 xboardLoop pa = do
   putStrLn ""
   evalStateT xbLoop pa
-  
+

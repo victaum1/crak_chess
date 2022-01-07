@@ -1,20 +1,8 @@
 module Uci where
 
--- import Control.Monad.Trans.State
--- import System.Random
--- import Data.Either
--- import Data.Maybe
--- import Defs
--- import Parsing
--- import Moves
--- import Game
--- import SubEngine
--- import Engine
--- import Utils
-
+import Data.Either
 import Control.Monad.Trans.State
 import System.Random
-import Data.Either
 import Data.Maybe
 import Defs
 import Parsing
@@ -40,13 +28,15 @@ ui_map = [
   ,("go", const uGo)
   ,("uci", const uciInfo)
          ]
-         
+
+
 uNew = do
        args <- get
-       let arg_ = init_args{getSeed=getSeed args, getProt=False}
+       let arg_ = init_args{getProtocol=False}
        put arg_
        uiLoop
 
+         
 uciInfo :: StateT PlayArgs IO ()
 uciInfo = do
         mio (putStrLn uci_info)
@@ -91,6 +81,7 @@ pFg = do
   g <- pGame
   s <- getInput
   return (g,s)
+
 
 setUpos :: [String] -> StateT PlayArgs IO ()
 setUpos [] = mio $ errorCmd ["incomplete", []]
@@ -144,7 +135,7 @@ setListMoves (m:ms) = do
   mMakeMove m
   setListMoves ms
 
-
 uciLoop :: PlayArgs -> IO ()
 uciLoop pa = do
              evalStateT uiLoop pa
+

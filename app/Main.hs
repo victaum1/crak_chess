@@ -1,36 +1,20 @@
 module Main where
 
-
--- import Control.Monad.Trans.State
--- import Defs
--- import Engine
--- import Moves
--- import Parsing
--- import SubEngine
--- import System.IO
--- import System.Environment
--- import Uci
--- import Xboard
--- import Data.Maybe
--- import Data.Either
--- import Game
--- import Utils
-
-
+import Data.Either
+import Data.Maybe
+import System.IO
+import System.Environment
 import Control.Monad.Trans.State
 import Defs
 import Engine
 import Moves
 import Parsing
 import SubEngine
-import System.IO
-import System.Environment
 import Uci
 import Xboard
-import Data.Maybe
-import Data.Either
 import Game
 import Utils
+
 
 help_str = unlines [
   "quit - Exits the engine."
@@ -59,24 +43,23 @@ play_map = [
   ,("help", const helpPlay)
   ,("quit", const quitPlay)
   ,("xboard", const $ mio $ xboardLoop init_args)
-  ,("uci", const $ mio mUci)
+  ,("uci", const $ mio $ uciLoop init_args)
   ,("setposition", setPos)
   ,("sp", setPos)
   ,("dumpfen", const (mDumpFEN >> playLoop))
   ,("dumpplay", const (mDumpPlay >> playLoop))
   ]
 
-
-mUci = do
-  let args = init_args{getProt=False}
-  uciLoop args
-
-
 mNew = do
        args <- get
        let arg_ = init_args{getSeed=getSeed args}
        put arg_
        playLoop
+
+
+mUci = do
+  let args = init_args{getProtocol=False}
+  uciLoop args
 
 
 playLoop = do
@@ -176,6 +159,7 @@ mainLoop pa = do
     fromMaybe (putStrLn "" >> mainLoop pa)
           (mbAction <*> Just pa)
 
+
 help_cmd_args = unlines [
     "-s <n> [<playFlag>]"
   , "Sets Radom Number Seed."
@@ -198,12 +182,12 @@ parseArgs ["-h"] = putStr help_cmd_args
 parseArgs [] = mainLoop init_args
 parseArgs ss = putStr "Invalid args: see '-h'."
 
-
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
-  putStrLn $ "Craken " ++ version ++ " " ++ author
+  putStrLn $ name ++ " " ++ version ++ " by " ++ author ++ "."
   putStrLn $ date ++ "."
   putStrLn "'help' show usage."
   args <- getArgs
   parseArgs args
+

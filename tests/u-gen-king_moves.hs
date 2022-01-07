@@ -1,12 +1,11 @@
 module Main (main) where
 
+import Data.Either
 import Control.Monad
--- import Data.Maybe (fromJust)
+import Data.Maybe
 import qualified System.Exit as Exit
 import Test.HUnit
 import Data.List
-import Data.Maybe
-import Data.Either
 import Game
 import Moves
 import Generator
@@ -44,3 +43,4 @@ main = -- undefined
   let tests = TestList $ map TestCase pre_tests
   count <- runTestTT tests
   when (failures count > 0) Exit.exitFailure
+

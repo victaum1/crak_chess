@@ -1,5 +1,6 @@
 module SubEngine where
 
+import Data.Either
 import Control.Monad.Trans.State
 import System.Random
 import Engine
@@ -11,7 +12,7 @@ import Valid
 import Play
 import Generator
 import Utils
-import Data.Either
+
 
 mTakeBack :: StateT PlayArgs IO ()
 mTakeBack = do
@@ -36,10 +37,6 @@ mAdjudicate = do
 
 mThinkMove :: StateT PlayArgs IO ()
 mThinkMove = do
---  args <- get
---  gen  <- newStdGen
---  let gen_ = maybe gen mkStdGen (getSeed args)
---  let a_game = getGame args
   a_move <- think
   maybe mAdjudicate (
     \m -> do

@@ -10,3 +10,4 @@ splitOn pc s | null s = []
         pred = (pc ==)
 
 myRight = fromRight undefined
+

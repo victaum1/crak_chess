@@ -1,15 +1,10 @@
 module Perft where
 
--- import Data.Maybe
--- import Game
--- import Valid
--- import Play
-
-
-import Data.Maybe ( mapMaybe )
-import Game ( Game )
+import Data.Maybe ( mapMaybe, fromJust )
+import Moves ( Move )
+import Game ( Game, init_game)
 import Valid ( genValidMoves )
-import Play ( makeMove )
+import Play ( makeMove)
 
 perft :: Game -> Int -> Int
 perft p d | d == 0 = 1

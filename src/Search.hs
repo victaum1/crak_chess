@@ -1,93 +1,98 @@
 module Search where
 
-import Data.Maybe
-import Data.Bifunctor
-import Data.List
-import Moves
-import Evaluate
-import Game
-import Squares
-import Valid
-import Play
-import Generator
+import Game ( Game, init_game, board, GamePos, gamePos )
+import Moves ( Move, null_move )
+import Data.Maybe ( fromJust, mapMaybe )
+import Play ( makeMove )
+import Valid ( genValidMoves )
+import Evaluate ( evaluate, Score, _inf_score, inf_score, eval_factors )
+import Generator (isCapture)
+import Data.List (sortBy)
+import qualified Data.Bifunctor
 
+-- vars
+max_depth = 22 :: Int
 
+-- types
 type Depth = Int
-
 type Nodes = Int
-
-type ABInfo = (Score,Nodes)
-
 type MoveScore = (Move,Score)
+type SearchInfo = (Move,Score,Nodes)
+type ScoreNodes = (Score,Nodes)
 
-type MoveInfo = (Move,Score,Nodes)
-
-inf_score = mate_score + 1
-_inf_score = negate inf_score
-
-
-
-abQuiesence :: Nodes -> Score -> Score -> Score -> Game -> ABInfo 
-abQuiesence n a b r g | mod n 2048 == 0 ||  null moves = (evalPos g,n+1)
-                      | otherwise = (score, tn)
-  where bd = board g
-        moves = filter (isCapture bd) (genValidMoves g)
-        sucPos = mapMaybe (`makeMove` g) moves
-        bsn = betaCutQ n a b r sucPos
-        score = fst bsn
-        tn = snd bsn
-
-
-betaCutQ :: Nodes -> Score -> Score -> Score -> [Game] -> ABInfo
-betaCutQ n a b r [] = (r,n)
-betaCutQ n a b r (gi:gs) = bnext
-  where (si,n_) = abQuiesence 0 (negate b) (negate a) r gi
-        nsi = negate si
-        anext = if nsi > a then nsi else a
-        bnext = if nsi >= b then (b,nnext) else betaCutQ nnext anext b
-          rnext gs
-        rnext = if nsi > r then nsi else r
-        nnext = n + n_
-
-alphaBeta :: Nodes -> Score -> Score -> Score -> Depth -> Game -> ABInfo
-alphaBeta n a b r d g | d <= 0 = abQuiesence n a b r g
-                      | d >= 80 = alphaBeta n a b r 80 g
-                      | otherwise = if score <= negate mate_score
-                          then (negate mate_score + d, tn) else (score, tn)
+-- funcs
+searchDivide :: Game -> Depth -> [SearchInfo]
+searchDivide g d | d < 0 = []
+                 | d == 0 = [(null_move,evaluate g,1)]
+                 | otherwise = sortBy (\(_,a,_) (_,b,_) -> compare a b)
+                                 mScores
   where moves = genValidMoves g
         sucPos = mapMaybe (`makeMove` g) moves
-        bsn = betaCut n a b r d sucPos
-        score = fst bsn
-        tn = snd bsn
-
-betaCut :: Nodes -> Score -> Score -> Score -> Depth -> [Game] -> ABInfo
-betaCut n a b r d [] = (r,n)
-betaCut n a b r d (gi:gs) = bnext
-  where (si,n_) = alphaBeta 0 (negate b) (negate a) r (d-1) gi
-        nsi = negate si
-        anext = if nsi > a then nsi else a
-        bnext = if nsi >= b then (b,nnext) else betaCut nnext anext b
-          rnext (d-1) gs
-        rnext = if nsi > r then nsi else r
-        nnext = n + n_
+        scoresNodes = map (Data.Bifunctor.first negate . search (d-1)) sucPos
+        mScores = zipWith (\a (b,c) -> (a,b,c)) moves scoresNodes
 
 
-searchList :: Depth -> Game -> [MoveInfo]
-searchList d g | d <= 0 = [(null_move,evalPos g,1)]
-               | otherwise = sortBy (\(_,a,_) (_,b,_) -> compare a b) mns
-  where ms = genValidMoves g
-        sucPos = mapMaybe (`makeMove` g) ms
-        npb = map (alphaBeta 0 _inf_score inf_score _inf_score (d - 1))
-          sucPos
-        msn = zipWith (\a (s,n) -> (a,s,n)) ms npb
-        mns = map (\(a,s,n)->(a,negate s,n)) msn
+search :: Depth -> Game -> ScoreNodes
+-- search = negaMax
+search = alphaBetaRoot
 
-search :: Depth -> Game -> MoveInfo
-search d g = (move,score,tn)
- where mso = searchList d g
-       nullMso = null mso
-       msi = if nullMso then (null_move,_inf_score,0) else last mso
-       (move,_,_) = msi
-       (_,score,_) = msi
-       trd (a,b,c) = c
-       tn = sum $ map trd mso
+
+-- negaMax :: Depth -> Game  -> Score
+-- negaMax d g | d < 0 = undefined
+--             | d == 0 = evaluate g
+--             | otherwise = maximum (map (negate . negaMax (d-1))
+--                                    sucPos)
+--   where moves = genValidMoves g
+--         sucPos = mapMaybe (`makeMove` g) moves
+
+
+alphaBetaRoot :: Depth -> Game -> ScoreNodes
+alphaBetaRoot = alphaBeta [] 0 _inf_score inf_score
+
+
+isRep :: [GamePos] -> Game -> Bool
+isRep gp g = gamePos g `elem` gp
+
+alphaBeta :: [GamePos] -> Nodes -> Score -> Score -> Depth -> Game -> ScoreNodes
+alphaBeta _  _  _ _ d _  | d < 0                = undefined
+alphaBeta gp ni a b d g  | depthi >=  max_depth = (evaluate g,ni+1)
+                         | isRep gp g           = (0,ni+1)
+                         | d == 0               = qS gp ni a b g
+                         | otherwise            = abIt (gpi:gp) ni a b
+                           (d-1) sucPos
+  where moves = genValidMoves g
+        sucPos = mapMaybe (`makeMove` g) moves
+        gpi = gamePos g
+        depthi = length gp
+
+abIt :: [GamePos] -> Nodes -> Score -> Score -> Depth -> [Game] -> ScoreNodes
+abIt gp ni a _ _ []      = (a,ni)
+abIt gp ni a b d (gi:gs) | si >= b    = (si,nf)
+                         | si >  a    = abIt gp nf si b d gs
+                         | otherwise  = abIt gp nf a b d gs
+
+  where (si_,nf) = alphaBeta gp ni (negate b) (negate a) d gi
+        si = negate si_
+
+-- Quiescence
+qS :: [GamePos] -> Nodes -> Score -> Score -> Game -> ScoreNodes
+qS gp ni a b g | isRep gp g = (0,ni+1)
+               | standPat >= b = (b,ni+1)
+               | a < standPat = qS gp (ni+1) standPat b g
+               | otherwise = qSIt (gpi:gp) ni a b sucGs
+  where standPat = evaluate g
+        moves = genValidMoves g
+        captures = filter (isCapture bd) moves
+        bd = board g
+        sucGs = mapMaybe (`makeMove` g) captures
+        gpi = gamePos g
+
+qSIt :: [GamePos] -> Nodes -> Score -> Score -> [Game] -> ScoreNodes
+qSIt gp ni a _ [] = (a,ni)
+qSIt gp ni a b (gi:gs) | si >= b = (b,nf)
+                       | si > a = qSIt gp nf si b gs
+                       | otherwise = qSIt gp nf a b gs
+
+  where (si_,nf) = qS gp ni (negate b) (negate a) gi
+        si = negate si_
+

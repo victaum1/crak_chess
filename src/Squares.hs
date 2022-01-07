@@ -1,10 +1,6 @@
 module Squares
   where
 
--- import           Data.Char
--- import           Data.Maybe
--- import           Parsing
-
 import Data.Char ( ord, chr, toLower )
 import Data.Maybe ( fromJust, isNothing )
 import Parsing
@@ -16,12 +12,10 @@ files = [0..7]::[Int]
 ranks = files
 all_squares = zipWith (curry MkSquare) files ranks
 
-
 --adts
 type File = Int
 type Rank = Int
 type SquareTuple = (Int,Int)
-
 
 newtype Square = MkSquare {
   fromSquare :: SquareTuple } deriving (Eq,Ord)
@@ -50,9 +44,10 @@ showRank r | (r<0) || (r>7) = error "showRank: Out of bounds"
 showSquare :: Square -> String
 showSquare (MkSquare a) = showFile (fst a) : [showRank (snd a)]
 
+
 toInt = ord
 
--- Reading Data Structures / Parsing
+-- Reading Data Structures
 readCFile :: Char -> Maybe File
 readCFile c | (c2int <97) || (c2int>104) = Nothing
             | otherwise = Just $ c2int - 97
@@ -75,7 +70,8 @@ readSquare :: String -> Maybe Square
 readSquare str = if length str < 2  then Nothing else readSquare'
   (head str) (str!!1)
 
--- parsing 
+-- Parsing
+
 pFile :: GenParser Char st File
 pFile = do
   mf <- readCFile <$> anyChar
@@ -85,7 +81,7 @@ pRank :: GenParser Char st Rank
 pRank = do
   mf <- readRank <$> anyChar
   maybe (fail "(not a rank)") return mf
-
+ 
 pSquare :: GenParser Char st Square
 pSquare = do
   f <- pFile

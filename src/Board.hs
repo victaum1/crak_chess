@@ -1,14 +1,5 @@
 module Board where
 
--- import Data.Char
--- import Data.Maybe
--- import Prelude hiding (lookup)
--- import Data.Map.Strict (Map)
--- import qualified Data.Map.Strict as Map
--- import Parsing
--- import Pieces
--- import Squares
-
 import Data.Char
 import Data.Maybe
 import Prelude hiding (lookup)
@@ -17,6 +8,7 @@ import qualified Data.Map.Strict as Map
 import Parsing
 import Pieces
 import Squares
+
 
 -- vars / const
 init_board_str = unlines [
@@ -34,6 +26,7 @@ empty_board = MkBoard Map.empty
 -- adts
 type Pos = (SquareTuple,Tpiece)
 type Tboard = Map SquareTuple Tpiece
+
 -- type PieceList_ = Map Tpiece [SquareTuple]
 type PieceList = Map Piece [Square]
 type PosList = [Pos]
@@ -51,8 +44,10 @@ makePosList (a:as) n | isJust a = (square2Tuple (fromJust (intToSquare n))
                      | otherwise = nexT
                    where nexT = makePosList as (n+1)
 
+
 readBoard :: String -> Board
 readBoard = MkBoard . Map.fromList . readBoardList
+
 
 readBoardList :: String -> PosList
 readBoardList str | isNull = []
@@ -67,6 +62,7 @@ readBoardList' str | null (filterBoard $ concat $ lines str) =
                    | otherwise =Just $ readBd $ lines str
                    where readBd = (map . map) readCPiece
 
+
 filterBoard :: String -> String
 filterBoard [] = []
 filterBoard [r]    | inPiece r = [r]
@@ -77,6 +73,7 @@ filterBoard (r:cs) | inPiece r = if null (filterBoard cs)
                    | otherwise = []
 
 inPiece r = r `elem` board_piece_chars
+
 
 showBoard :: Board -> String
 showBoard = showBoard_ . Map.toAscList . fromBoard
@@ -158,6 +155,17 @@ board2FEN_ :: PosList -> String
 board2FEN_ = init . packFENline . subs '\n' '/' . showBoard_
 
 
+pFenBoard :: GenParser Char st Board
+pFenBoard = do
+  inp <- many anyChar
+  let ib = f2B_ inp
+  if null ib then fail "(not a FEN)" else do
+    let r = MkBoard $ Map.fromList ib
+    let s = drop (length $ board2FEN r) inp
+    setInput s
+    return r
+  where f2B_ = fen2Board_
+
 pBoard :: GenParser Char st Board
 pBoard = do
   inp <- many anyChar
@@ -170,13 +178,3 @@ pBoard = do
   where res x = if length x >= 72 then readBoardList $ take 72 x
         else []
 
-pFenBoard :: GenParser Char st Board
-pFenBoard = do
-  inp <- many anyChar
-  let ib = f2B_ inp
-  if null ib then fail "(not a FEN)" else do
-    let r = MkBoard $ Map.fromList ib
-    let s = drop (length $ board2FEN r) inp
-    setInput s
-    return r
-  where f2B_ = fen2Board_

@@ -7,11 +7,10 @@ import System.Random
 version = "0.1.9.0"
 author  = "V. Manotas"
 name    = "Craken"
-date    = "12/09/2021"
+date    = "06/01/2022"
 
-
-randomChoice :: StdGen -> [a] -> a
-randomChoice g l = l !! fst (randomR (0, length l - 1) g)
+randomChoice :: [a] -> StdGen -> a
+randomChoice l g = l !! fst (randomR (0, length l - 1) g)
 
 -- IO
 quit :: IO ()
