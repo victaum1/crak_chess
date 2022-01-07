@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Moves where
 
-
+import Data.Maybe
 import Squares
 import Parsing
 import Pieces
-import Data.Maybe
+import Utils
 
 -- adts
 type Tmove = (Square,Square,Ptype)
@@ -26,6 +26,12 @@ instance Show Move where
 
 -- vars
 null_move = MkMove (MkSquare (0,0), MkSquare (0,0), MkPtype Nothing)
+
+std_w_move = head std_pv
+std_b_move = head $ tail std_pv
+
+std_pv = map (myRight . readMove) ["e2e4","e7e5","g1f3"]
+
 
 -- funcs
 getInitSq :: Move -> Square
