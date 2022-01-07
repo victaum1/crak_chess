@@ -33,10 +33,12 @@ library:
       - Evaluate
       - Search
       - MyHash
+      - PvTable
     dependencies:
       - containers
       - parsec
       - random
+      - array
 
 executables:
   crakchess-exe:
