@@ -1,20 +1,36 @@
 module Main where
 
-import Data.Either
-import Data.Maybe
-import System.IO
-import System.Environment
-import Control.Monad.Trans.State
-import Defs
-import Engine
-import Moves
-import Parsing
-import SubEngine
-import Uci
-import Xboard
-import Game
-import Utils
+import System.IO (hSetBuffering, BufferMode (NoBuffering), stdout)
+import System.Environment (getArgs)
+import Control.Monad.Trans.State ( StateT (runStateT), evalStateT, evalState, get, put )
+import Defs (author, version, name, date, mio, quit, errorCmd, endOfLine)
+import Engine (PlayArgs, getSeed, init_args, getProtocol, getCpFlag, getGame, getHist)
+import Data.Maybe (fromMaybe, isNothing)
+import Moves (pMoveCoord)
+import Parsing (parse)
+import Data.Either (isLeft)
+import Utils (myRight)
+import SubEngine (mMakeMove, mTakeBack, mDump, mSetPosition, mDumpFEN, mDumpPlay)
+import Game (turn)
+import IoSearch (ioSearch)
+import Xboard (comXboard)
+import Uci (comUci, uci_info)
 
+-- vars
+
+play_map :: [(String, String -> StateT PlayArgs IO ())]
+play_map = [
+  ("play", const playGo)
+  ,("stop", const stop)
+  ,("new", const mNew)
+  ,("undo", const playUndo)
+  ,("dump", const mainDump)
+  ,("help", const helpPlay)
+  ,("setposition", setPos)
+  ,("sp", setPos)
+  ,("dumpfen", const mDumpFEN)
+  ,("dumpplay", const mDumpPlay)
+  ]
 
 help_str = unlines [
   "quit - Exits the engine."
@@ -33,38 +49,23 @@ help_str = unlines [
   ]
 
 
-play_map :: [(String, String -> StateT PlayArgs IO ())]
-play_map = [
-  ("play", const playGo)
-  ,("stop", const stop)
-  ,("new", const mNew)
-  ,("undo", const playUndo)
-  ,("dump", const mainDump)
-  ,("help", const helpPlay)
-  ,("quit", const quitPlay)
-  ,("xboard", const $ mio $ xboardLoop init_args)
-  ,("uci", const $ mio $ uciLoop init_args)
-  ,("setposition", setPos)
-  ,("sp", setPos)
-  ,("dumpfen", const (mDumpFEN >> playLoop))
-  ,("dumpplay", const (mDumpPlay >> playLoop))
+main_map :: [(String, PlayArgs -> IO ())]
+main_map = [
+  ("quit", const quit)
+  ,("help", const mainHelp)
+  ,("xboard", \pa -> evalStateT eventLoop (Just True,pa))
+  ,("uci"   , \pa -> do
+       putStr uci_info
+       evalStateT eventLoop (Just False,pa{getCpFlag=Nothing}))
+  ,("play"  , \pa -> evalStateT eventLoop (Nothing,pa)) -- comPlay
   ]
 
-mNew = do
-       args <- get
-       let arg_ = init_args{getSeed=getSeed args}
-       put arg_
-       playLoop
+-- funcs
 
-
-mUci = do
-  let args = init_args{getProtocol=False}
-  uciLoop args
-
-
-playLoop = do
-  line <- mio $ getPlay "play> "
-  if null line then playLoop
+comPlay :: String -> StateT PlayArgs IO ()
+comPlay line = do
+  mio $ putStrLn "play>"
+  if null line then endOfLine -- keep going
   else do
     let input = words line
     let cmd = head input
@@ -72,24 +73,11 @@ playLoop = do
     let a_move = parse pMoveCoord "" cmd
     if isLeft a_move then do
         let res = lookup cmd play_map
-        maybe (mio (errorCmd ["unknown command", unwords input]) >>
-          playLoop)
+        maybe (mio (errorCmd ["unknown command", unwords input]))
           (\a -> a args) res
     else do
       let m = myRight a_move
       mMakeMove m
-      pargs <-get
-      let cpf = getCpFlag pargs
-      let s = turn $ getGame pargs
-      if Just s == cpf then do
-         mThinkMove
-         playLoop
-      else
-        playLoop
-
-
-setPos :: String -> StateT PlayArgs IO ()
-setPos strs = mSetPosition strs >> playLoop
 
 
 playGo = do
@@ -97,62 +85,76 @@ playGo = do
   let g = getGame args
   let s = turn g
   let arg_ = args{getCpFlag=Just s}
-  mThinkMove
-  playLoop
+  put arg_
 
 
-stop = playLoop
+stop = endOfLine -- just keep going
+
+
+mNew = do
+       args <- get
+       let arg_ = init_args{getSeed=getSeed args}
+       put arg_
 
 
 playUndo = do
   args <- get
   let a_hist = getHist args
-  if length a_hist < 2 then playLoop
+  if length a_hist < 2 then mio $ print ""
     else do
            mTakeBack
            mTakeBack
-           playLoop
 
 
 mainDump :: StateT PlayArgs IO ()
 mainDump = do
   mDump
-  playLoop
 
 
 helpPlay = do
   mio $ putStr help_str
-  playLoop
-
-quitPlay = mio quit
 
 
-main_map :: [(String, PlayArgs -> IO ())]
-main_map = [
-  ("quit", const quit)
-  ,("help", mainHelp)
-  ,("xboard", xboardLoop)
-  ,("uci", const mUci)
-  ,("play", mainPlay)
-  ]
+setPos :: String -> StateT PlayArgs IO ()
+setPos = mSetPosition
 
 
-mainHelp pa = do
+eventLoop :: StateT (Maybe Bool,PlayArgs) IO ()
+eventLoop = do
+  mio $ print "In the event loop..."
+  (mb,pa) <- get
+  if isNothing mb then do
+    mio $ putStr "play> "
+    input <- mio getLine
+    if input == "quit" then mio quit else do
+      (_,opa) <- mio $ runStateT (comPlay input >> ioSearch) pa
+      put (mb,opa)
+      eventLoop
+  else do
+    if mb == Just True then do
+      input <- mio getLine
+      if input == "quit" then mio quit else do
+        (_,opa) <- mio $ runStateT (comXboard input >> ioSearch) pa
+        put (mb,opa)
+        eventLoop
+    else do
+      input <- mio getLine
+      if input == "quit" then mio quit else do
+        (_,opa) <- mio $ runStateT (comUci input >> ioSearch) pa
+        put (mb,opa)
+        eventLoop
+
+
+mainHelp :: IO ()
+mainHelp = do
   putStr help_str
-  mainLoop pa
-
-
-mainPlay = evalStateT playLoop
-
-
-getPlay caller = do
-  putStr caller
-  getLine
+  mainLoop init_args
 
 
 mainLoop :: PlayArgs -> IO ()
 mainLoop pa = do
-  res <- getPlay ""
+  -- print "In the main loop..."
+  res <- getLine
   if null res then mainLoop pa
   else do
     let mbAction = lookup res main_map
@@ -172,12 +174,19 @@ help_cmd_args = unlines [
 setSeed :: Int -> PlayArgs
 setSeed n = init_args{getSeed=Just n}
 
-parseArgs :: [String] -> IO()
-parseArgs ["-s", n, "-x"] = xboardLoop (setSeed (read n))
-parseArgs ["-s", n, "-u"] = uciLoop (setSeed (read n))
-parseArgs ["-s", n] = mainLoop (setSeed (read n))
-parseArgs ["-x"] = xboardLoop init_args
-parseArgs ["-u"] = uciLoop init_args
+setProt :: Bool -> PlayArgs
+setProt b | b = init_args{getProtocol=True}
+          | otherwise = init_args{getProtocol=False}
+
+parseArgs :: [String] -> IO ()
+parseArgs ["-s", n, "-x"] = mainLoop (setSeed (read n))
+parseArgs ["-s", n, "-u"] = mainLoop (setSeed (read n))
+parseArgs ["-s", n] =  mainLoop (setSeed (read n))
+parseArgs ["-x"] =  mainLoop (setProt True)
+parseArgs ["-u"] = do
+  putStrLn uci_info
+  putStrLn "uciok"
+  mainLoop (init_args{getProtocol = False, getCpFlag = Nothing})
 parseArgs ["-h"] = putStr help_cmd_args
 parseArgs [] = mainLoop init_args
 parseArgs ss = putStr "Invalid args: see '-h'."
@@ -190,4 +199,3 @@ main = do
   putStrLn "'help' show usage."
   args <- getArgs
   parseArgs args
-

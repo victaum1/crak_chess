@@ -26,8 +26,8 @@ features_str = unwords [
 
 xb_map :: [(String, [String] -> StateT PlayArgs IO ())]
 xb_map = [
-           ("xboard"   , const xbLoop)
-           ,("otim"    , const xbLoop)
+           ("xboard"   , const endOfLine )
+           ,("otim"    , const endOfLine  )
            ,("quit"    , const $ mio quit)
            ,("new"     , const new)
            ,("force"   , const force)
@@ -44,14 +44,14 @@ xb_map = [
            ,("accepted", const accepted)
            ,("rejected", const rejected)
            ,("setboard", setXpos)
-           ,("dump", const (mDump >> xbLoop))
-           ,("dumpfen", const (mDumpFEN >> xbLoop))
-           ,("dumpplay", const (mDumpPlay >> xbLoop))
-           ,("random", const xbLoop)
-           ,("level", const xbLoop)
-           ,("hard", const xbLoop)
-           ,("easy", const xbLoop)
-           ,("computer", const xbLoop)
+           ,("dump", const mDump)
+           ,("dumpfen", const mDumpFEN)
+           ,("dumpplay", const mDumpPlay)
+           ,("random", const endOfLine )
+           ,("level", const endOfLine )
+           ,("hard", const endOfLine )
+           ,("easy", const endOfLine )
+           ,("computer", const endOfLine )
            ,("white", const $ xTurn True)
            ,("black", const $ xTurn False)
          ]
@@ -62,7 +62,6 @@ new = do
       args <- get
       let args_ = init_args{getSeed=getSeed args}
       put args_
-      xbLoop
 
 
 -- inner xboard loop
@@ -71,13 +70,11 @@ xTurn f = do
           args <- get
           let arg_ = args{getCpFlag= Just f}
           put arg_
-          xbLoop
 
 
-xbLoop :: StateT PlayArgs IO ()
-xbLoop = do
-  line <- mio getLine
-  if null line then xbLoop
+comXboard :: String -> StateT PlayArgs IO ()
+comXboard line = do
+  if null line then endOfLine
     else do
       let input = words line
       let cmd = head input
@@ -86,140 +83,102 @@ xbLoop = do
       let pm = parse pMoveCoord "" cmd
       if isLeft pm then maybe (mio (errorCmd ["unknown command",
 
-                                            unwords input]) >>
-                              xbLoop)
+                                            unwords input]))
         (\a -> a args) res else userMove [cmd]
-  
-
-xGo = xThink >> xbLoop
 
 
-xThink :: StateT PlayArgs IO ()
-xThink = do
-          args <- get
-          if getPost args then printPost >> mThinkMove
-          else mThinkMove
+xGo = do
+  args <- get
+  let g = getGame args
+  let s = turn g
+  let arg_ = args{getCpFlag=Just s}
+  put arg_
 
 
 setXpos :: [String] -> StateT PlayArgs IO ()
-setXpos args | null args = mio (errorCmd ["incomplete", unwords args]) >>
-               xbLoop
+setXpos args | null args = mio (errorCmd ["incomplete", unwords args])
              | otherwise = do
                 mSetPosition $ unwords args
-                xbLoop
 
-accepted = xbLoop
-rejected = xbLoop
+accepted = endOfLine
+rejected = endOfLine
 
 
 ping :: [String] -> StateT PlayArgs IO ()
-ping args | null args = mio (errorCmd ["incomplete", unwords args]) >> xbLoop
+ping args | null args = mio (errorCmd ["incomplete", unwords args])
           | otherwise = do
               let n = parse pNat (head $ take 1 args) ""
               if isLeft n then
                 mio (errorCmd ["not a number", unwords args])
-                >>
-                xbLoop
-              else do
+              else
                 mio $ putStrLn $ "pong " ++ show (myRight n)
-                xbLoop
 
 
 protover :: [String] -> StateT PlayArgs IO ()
-protover strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
+protover strs | null strs = mio (errorCmd ["incomplete",unwords strs])
               | otherwise = do
   let res_n = parse pNat (head $ take 1 strs) ""
-  if isLeft res_n then mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
+  if isLeft res_n then mio (errorCmd ["incomplete",unwords strs])
     else do
            let n = myRight res_n
-           if n==1 then xbLoop
+           if n==1 then endOfLine
              else if n==2 then do
                mio $ putStrLn features_str
                mio $ putStrLn "feature done=1"
-               xbLoop
-             else xbLoop
+             else endOfLine
 
 
 userMove :: [String] -> StateT PlayArgs IO ()
-userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs]) >> xbLoop
+userMove strs | null strs = mio (errorCmd ["incomplete",unwords strs])
               | otherwise =  do
   let res_m = parse pMoveCoord "" (head $ take 1 strs)
-  if isLeft res_m then do
+  if isLeft res_m then
     mio $ putStrLn $ "Illegal move (not a move): " ++ head strs
-    xbLoop
   else do
          let m = myRight res_m
          mMakeMove m
          args <- get
          if getCpFlag args == Just (turn (getGame args)) then
            xGo
-         else xbLoop
+         else endOfLine
 
 
 undo = do
          args <- get
          let a_hist = getHist args
-         if  null a_hist then xbLoop
+         if  null a_hist then endOfLine
            else do
                   mTakeBack
-                  xbLoop
 
 
 remove = do
            args <- get
            let a_hist = getHist args
-           if length a_hist < 2 then xbLoop
+           if length a_hist < 2 then endOfLine
              else do
                     mTakeBack
                     mTakeBack
-                    xbLoop
 
 
-force = do
-          force'
-          xbLoop
-
-
-force' :: StateT PlayArgs IO ()
-force' = do
+force  :: StateT PlayArgs IO ()
+force  = do
          args <- get
          let arg_ = args{getCpFlag=Nothing}
          put arg_
 
 
-printPost :: StateT PlayArgs IO ()
-printPost = do
-          args <- get
-          if turn (getGame args) then
-              mio $ putStrLn "1 0 1 1 e2e4"
-          else mio $ putStrLn "1 0 1 1 e7e5"
-
-
 hint :: StateT PlayArgs IO ()
 hint = do
-          args <- get
-          if turn (getGame args) then mio $ putStrLn "Hint: e2e4"
-            else mio $ putStrLn "Hint: e7e5"
-          xbLoop
+          mio $ putStrLn "Hint: 0000"
 
 
 post = do
           args <- get
           let args_ = setPost True args
           put args_
-          xbLoop
 
 
 noPost = do
           args <- get
           let args_ = setPost False args
           put args_
-          xbLoop
-
-
--- main loop
-xboardLoop :: PlayArgs -> IO ()
-xboardLoop pa = do
-  putStrLn ""
-  evalStateT xbLoop pa
-

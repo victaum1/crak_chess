@@ -19,6 +19,10 @@ quit = return ()
 mio :: IO a -> StateT s IO a
 mio = lift
 
+
+endOfLine = mio $ putStr ""
+
+
 errorCmd :: [String] -> IO ()
 errorCmd [] = putStrLn "Error (Incomplete)"
 errorCmd [_] = putStrLn "Error (Incomplete)"

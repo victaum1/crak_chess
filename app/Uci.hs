@@ -17,57 +17,53 @@ uci_info = unlines ["id name " ++ name ++ " " ++ version,"id author " ++ author,
 
 ui_map :: [(String, [String] -> StateT PlayArgs IO())]
 ui_map = [
-   ("quit", const $ mio quit)
-  ,("isready", const $ mio (putStrLn "readyok")>>uiLoop)
-  ,("ucinewgame", const $ uNew)
-  ,("stop", const $ mio (putStrLn "bestmove 0000")>>uiLoop)
-  ,("position", \ss -> setUpos ss >> uiLoop)
-  ,("dump", const (mDump >> uiLoop))
-  ,("dumpfen", const (mDumpFEN >> uiLoop))
-  ,("dumpplay", const (mDumpPlay >> uiLoop))
+   ("isready", const $ mio (putStrLn "readyok"))
+  ,("ucinewgame", const uNew)
+  ,("stop", const stop)
+  ,("position", setUpos)
+  ,("dump", const mDump)
+  ,("dumpfen", const mDumpFEN)
+  ,("dumpplay", const mDumpPlay)
   ,("go", const uGo)
-  ,("uci", const uciInfo)
+  ,("uci", const uciOk)
          ]
 
+stop = do
+  args <- get
+  let arg_ = args{getCpFlag=Nothing}
+  put arg_
 
 uNew = do
        args <- get
-       let arg_ = init_args{getProtocol=False}
+       let arg_ = init_args{getCpFlag=Nothing ,getProtocol=False}
        put arg_
-       uiLoop
 
-         
-uciInfo :: StateT PlayArgs IO ()
-uciInfo = do
-        mio (putStrLn uci_info)
-        uiLoop
 
-uiLoop :: StateT PlayArgs IO ()
-uiLoop = do
-            line <- mio getLine
-            if null line then uiLoop
+uciOk :: StateT PlayArgs IO ()
+uciOk = do
+        mio (putStrLn "uciok")
+
+comUci :: String -> StateT PlayArgs IO ()
+comUci line = do
+            mio $ putStrLn "In comUci..."
+            if null line then endOfLine
               else do
                      let input = words line
                      let cmd = head input
                      let args = tail input
                      let res = lookup cmd ui_map
                      maybe (mio (errorCmd ["unknown command"
-                                          , unwords input]) >>
-                             uiLoop)
+                                          , unwords input]))
                            (\a -> a args) res
 
 
 uGo :: StateT PlayArgs IO ()
 uGo = do
-  uThink
-  uiLoop
-
-uThink = do
-  a_move <- think
-  maybe (mio $ putStrLn "bestmove 0000") (
-    \m -> do
-      mio $ putStrLn $ "bestmove " ++ show m
-    ) a_move
+  args <- get
+  let g = getGame args
+  let s = turn g
+  let arg_ = args{getCpFlag=Just s}
+  put arg_
 
 
 pIpos = do
@@ -134,8 +130,3 @@ setListMoves [m]    = mMakeMove m
 setListMoves (m:ms) = do
   mMakeMove m
   setListMoves ms
-
-uciLoop :: PlayArgs -> IO ()
-uciLoop pa = do
-             evalStateT uiLoop pa
-
