@@ -37,7 +37,7 @@ play_map :: [(String, String -> StateT PlayArgs IO ())]
 play_map = [
   ("play", const playGo)
   ,("stop", const stop)
-  ,("new", const $ mNew)
+  ,("new", const mNew)
   ,("undo", const playUndo)
   ,("dump", const mainDump)
   ,("help", const helpPlay)

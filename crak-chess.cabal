@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4f2a0f2b1d61e3464cc2138cb59d162fd00cb7ee40bccd64523880b7c225ca68
+-- hash: c010504f454265d48366aa301c6a7f0f61d9a898fab0f6c83c308b59118c1be8
 
 name:           crak-chess
 version:        0.1.9.0
@@ -57,6 +57,7 @@ executable crakchess-exe
       Defs
       Engine
       SubEngine
+      Test
       Uci
       Xboard
       Paths_crak_chess
