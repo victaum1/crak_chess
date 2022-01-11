@@ -123,7 +123,7 @@ setPos = mSetPosition
 
 eventLoop :: StateT (Maybe Bool,PlayArgs) IO ()
 eventLoop = do
-  mio $ print "In the event loop..."
+--  mio $ print "In the event loop..."
   (mb,pa) <- get
 --  mio $ print $ dumpPlay pa
   if isNothing mb then do

@@ -17,6 +17,7 @@ import Utils ( myRight )
 import Search ( searchDivide, MoveScore, Depth, Nodes, SearchInfo )
 import Control.Monad.Trans.State ( get, put, StateT )
 import Evaluate (Score)
+import PvTable (PvTable,initPvTable,showPVLine, storePvMove, getPvLine)
 
 -- vars / cons
 max_depth = 22 :: Int
@@ -25,9 +26,10 @@ dft_post_flag = True
 dft_cp_flag = Just False -- Black
 dft_seed = Nothing -- Auto gen random number
 dft_protocol = True -- Xboard protocol || UCI prot...
+dft_pv_table = initPvTable 20
 
 init_args = PlayArgs dft_time max_depth dft_cp_flag init_game []
-  dft_post_flag dft_seed dft_protocol
+  dft_post_flag dft_seed dft_protocol dft_pv_table
 
 -- simple types
 type Protocol = Bool
@@ -42,6 +44,7 @@ data PlayArgs = PlayArgs {
   ,getPost   :: Bool
   ,getSeed   :: Maybe Int
   ,getProtocol :: Bool
+  ,getPv :: PvTable
   } deriving (Eq,Show)
 
 -- setters for PlayArgs
@@ -73,10 +76,8 @@ think = do
   ms <- iterDeep ti 1
   tf <- mio $ getTime Realtime
   let dif = difTime tf ti
---  mio $ print dif
   let nt = ttime-(fromInteger dif `div` round 1e6)
   put (setTime nt args)
---  mio $ print nt
   if not (null ms) then return (Just (pickMove ms))
     else return Nothing
 
@@ -100,7 +101,6 @@ checkTime ti = do
   mtc <- movesUntiTimeControl
   let target = (ttime * round 1e6) `div` (mtc + 5)
   let te = round (fromIntegral target * facTor)
---  mio $ print dif
   if 2*dif > te then return True
   else return False
 
@@ -122,12 +122,12 @@ movesOutOfBook = do
   else return (nms - 5)
 
 
-postInfo :: Bool -> Protocol -> Depth -> Score -> Nodes -> Move -> IO ()
-postInfo b p d s n m | b = if p then putStrLn $ show d ++ " " ++ show s ++ " "
-                                ++ show n ++ " " ++ show m
+postInfo :: Bool -> Protocol -> Depth -> Score -> Nodes -> [Move] -> IO ()
+postInfo b p d s n pv | b = if p then putStrLn $ show d ++ " " ++ show s ++ " "
+                                ++ show n ++ " " ++ showPVLine pv
                            else putStrLn $ "info depth " ++ show d ++
                                 " score cp " ++ show s ++ " nodes " ++ show n
-                                ++ " pv " ++ show m
+                                ++ " pv " ++ showPVLine pv
                      | otherwise = putStr ""
 
 
@@ -137,11 +137,17 @@ iterDeep ti ni = do
   let g = getGame args
   let prot = getProtocol args
   let post = getPost args
+  let pvt = getPv args
   let !ms = searchDivide g ni
   tc <- checkTime ti
   let (m,s,_) = last ms
+  put args{getPv=storePvMove g m pvt}
   let nodes = sum $ map (\(_,_,n) -> n) ms
-  mio $ postInfo post prot ni s nodes m
+  args <- get
+  let pvo = getPv args
+  let pv = getPvLine g pvo
+  mio $ print pvo
+  mio $ postInfo post prot ni s nodes pv
   if ni < max_depth && not tc then iterDeep ti (ni+1)
       else return ms
 
