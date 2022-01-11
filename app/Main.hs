@@ -88,7 +88,9 @@ playGo = do
   put arg_
 
 
-stop = endOfLine -- just keep going
+stop = do
+  args <- get
+  put args{getCpFlag=Nothing}
 
 
 mNew = do
