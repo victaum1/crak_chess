@@ -74,7 +74,9 @@ think = do
   tf <- mio $ getTime Realtime
   let dif = difTime tf ti
 --  mio $ print dif
-  put (setTime (ttime-(fromInteger dif `div` round 1e6)) args)
+  let nt = ttime-(fromInteger dif `div` round 1e6)
+  put (setTime nt args)
+--  mio $ print nt
   if not (null ms) then return (Just (pickMove ms))
     else return Nothing
 

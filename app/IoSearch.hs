@@ -21,4 +21,3 @@ ioSearch = do
       maybe (mio $ putStrLn "bestmove 0000") ( -- ilegal?
          \m -> do
          mio $ putStrLn $ "bestmove " ++ show m) a_move
-      put pa{getCpFlag=Nothing}

@@ -4,7 +4,7 @@ import System.IO (hSetBuffering, BufferMode (NoBuffering), stdout)
 import System.Environment (getArgs)
 import Control.Monad.Trans.State ( StateT (runStateT), evalStateT, evalState, get, put )
 import Defs (author, version, name, date, mio, quit, errorCmd, endOfLine)
-import Engine (PlayArgs, getSeed, init_args, getProtocol, getCpFlag, getGame, getHist)
+import Engine (PlayArgs, getSeed, init_args, getProtocol, getCpFlag, getGame, getHist, dump, dumpPlay)
 import Data.Maybe (fromMaybe, isNothing)
 import Moves (pMoveCoord)
 import Parsing (parse)
@@ -125,6 +125,7 @@ eventLoop :: StateT (Maybe Bool,PlayArgs) IO ()
 eventLoop = do
   mio $ print "In the event loop..."
   (mb,pa) <- get
+--  mio $ print $ dumpPlay pa
   if isNothing mb then do
     mio $ putStr "play> "
     input <- mio getLine
@@ -142,8 +143,10 @@ eventLoop = do
     else do
       input <- mio getLine
       if input == "quit" then mio quit else do
-        (_,opa) <- mio $ runStateT (comUci input >> ioSearch) pa
-        put (mb,opa)
+        (_,opa) <- mio $ runStateT (comUci input >> ioSearch)
+          pa{getProtocol=False}
+--        mio $ print $ dumpPlay opa
+        put (mb,opa{getCpFlag=Nothing,getProtocol=False})
         eventLoop
 
 
