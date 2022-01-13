@@ -45,7 +45,7 @@ uciOk = do
 
 comUci :: String -> StateT PlayArgs IO ()
 comUci line = do
---            mio $ putStrLn "In comUci..."
+--            mio $ putStrLn "comUci..."
             if null line then endOfLine
               else do
                      let input = words line

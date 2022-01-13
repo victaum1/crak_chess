@@ -1,11 +1,11 @@
 module Main where
 
-import System.IO (hSetBuffering, BufferMode (NoBuffering), stdout)
+import System.IO (hSetBuffering, BufferMode (NoBuffering), stdout, stdin, hReady)
 import System.Environment (getArgs)
 import Control.Monad.Trans.State ( StateT (runStateT), evalStateT, evalState, get, put )
 import Defs (author, version, name, date, mio, quit, errorCmd, endOfLine)
 import Engine (PlayArgs, getSeed, init_args, getProtocol, getCpFlag, getGame, getHist, dump, dumpPlay)
-import Data.Maybe (fromMaybe, isNothing)
+import Data.Maybe (fromMaybe, isNothing, isJust)
 import Moves (pMoveCoord)
 import Parsing (parse)
 import Data.Either (isLeft)
@@ -57,14 +57,14 @@ main_map = [
   ,("uci"   , \pa -> do
        putStr uci_info
        evalStateT eventLoop (Just False,pa{getCpFlag=Nothing}))
-  ,("play"  , \pa -> evalStateT eventLoop (Nothing,pa)) -- comPlay
+  ,("play"  , \pa -> evalStateT (mio (putStrLn "play> ") >> eventLoop) (Nothing,pa)) -- comPlay
   ]
 
 -- funcs
 
 comPlay :: String -> StateT PlayArgs IO ()
 comPlay line = do
-  mio $ putStrLn "play>"
+--  mio $ print "comPlay..."
   if null line then endOfLine -- keep going
   else do
     let input = words line
@@ -123,31 +123,54 @@ setPos = mSetPosition
 
 eventLoop :: StateT (Maybe Bool,PlayArgs) IO ()
 eventLoop = do
---  mio $ print "In the event loop..."
+  -- mio $ print "event loop..."
   (mb,pa) <- get
---  mio $ print $ dumpPlay pa
-  if isNothing mb then do
-    mio $ putStr "play> "
+  hin <- mio $ hReady stdin
+  if not hin then do
+    (_,opa) <- mio $ runStateT ioSearch pa
+    put (mb,opa)
+    eventLoop
+  else do
     input <- mio getLine
     if input == "quit" then mio quit else do
-      (_,opa) <- mio $ runStateT (comPlay input >> ioSearch) pa
-      put (mb,opa)
-      eventLoop
-  else do
-    if mb == Just True then do
-      input <- mio getLine
-      if input == "quit" then mio quit else do
-        (_,opa) <- mio $ runStateT (comXboard input >> ioSearch) pa
-        put (mb,opa)
-        eventLoop
-    else do
-      input <- mio getLine
-      if input == "quit" then mio quit else do
-        (_,opa) <- mio $ runStateT (comUci input >> ioSearch)
-          pa{getProtocol=False}
---        mio $ print $ dumpPlay opa
-        put (mb,opa{getCpFlag=Nothing,getProtocol=False})
-        eventLoop
+      if isNothing mb then do
+          mio $ putStrLn "play> "
+          (_,opa) <- mio $ runStateT (comPlay input >> ioSearch) pa
+          put (mb,opa{getCpFlag=Nothing})
+          eventLoop
+      else do
+        if input == "quit" then mio quit else if mb == Just True then do
+          (_,opa) <- mio $ runStateT (comXboard input >> ioSearch) pa
+          put (mb,opa{getCpFlag=Nothing})
+          eventLoop
+        else do
+         (_,opa) <- mio $ runStateT (comUci input >> ioSearch)
+            pa{getProtocol=False}
+         put (mb,opa{getCpFlag=Nothing})
+         eventLoop
+
+--   (mb,pa) <- get
+--   if isNothing mb then do
+--     mio $ putStr "play> "
+--     input <- mio getLine
+--     if input == "quit" then mio quit else do
+--       (_,opa) <- mio $ runStateT (comPlay input >> ioSearch) pa
+--       put (mb,opa)
+--       eventLoop
+--   else do
+--     if mb == Just True then do
+--       input <- mio getLine
+--       if input == "quit" then mio quit else do
+--         (_,opa) <- mio $ runStateT (comXboard input >> ioSearch) pa
+--         put (mb,opa)
+--         eventLoop
+--     else do
+--       input <- mio getLine
+--       if input == "quit" then mio quit else do
+--         (_,opa) <- mio $ runStateT (comUci input >> ioSearch)
+--           pa{getProtocol=False}
+--         put (mb,opa{getCpFlag=Nothing,getProtocol=False})
+--         eventLoop
 
 
 mainHelp :: IO ()
@@ -158,7 +181,6 @@ mainHelp = do
 
 mainLoop :: PlayArgs -> IO ()
 mainLoop pa = do
-  -- print "In the main loop..."
   res <- getLine
   if null res then mainLoop pa
   else do

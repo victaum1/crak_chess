@@ -23,7 +23,7 @@ import PvTable (PvTable,initPvTable,showPVLine, storePvMove, getPvLine)
 max_depth = 22 :: Int
 dft_time = 300000 :: Int -- ms, 5 mins
 dft_post_flag = True
-dft_cp_flag = Just False -- Black
+dft_cp_flag = Nothing -- Force mode - Human vs Human
 dft_seed = Nothing -- Auto gen random number
 dft_protocol = True -- Xboard protocol || UCI prot...
 dft_pv_table = initPvTable 20
@@ -146,7 +146,7 @@ iterDeep ti ni = do
   args <- get
   let pvo = getPv args
   let pv = getPvLine g pvo
-  mio $ print pvo
+--  mio $ print pvo
   mio $ postInfo post prot ni s nodes pv
   if ni < max_depth && not tc then iterDeep ti (ni+1)
       else return ms

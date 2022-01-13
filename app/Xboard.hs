@@ -74,6 +74,7 @@ xTurn f = do
 
 comXboard :: String -> StateT PlayArgs IO ()
 comXboard line = do
+--  mio $ print "comXboard..."
   if null line then endOfLine
     else do
       let input = words line
